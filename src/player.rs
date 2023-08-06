@@ -11,12 +11,12 @@ impl Plugin for PlayerPlugin {
 }
 
 #[derive(Component)]
-pub struct Speed(pub f32);
+struct Speed(f32);
 
 #[derive(Component)]
-pub struct Jump(pub f32);
+struct Jump(f32);
 
-pub fn spawn_player(mut commands: Commands) {
+fn spawn_player(mut commands: Commands) {
     commands.spawn((
         SpriteBundle {
             sprite: Sprite {
@@ -36,7 +36,7 @@ pub fn spawn_player(mut commands: Commands) {
     ));
 }
 
-pub fn player_controller_movement(
+fn player_controller_movement(
     mut player_query: Query<(&Speed, &mut Velocity)>,
     keys: Res<Input<KeyCode>>,
 ) {
