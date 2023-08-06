@@ -88,10 +88,6 @@ struct PlayerBundle {
     // colliders
     collider: Collider,
 
-    // rendering
-    // sprite: Sprite,
-    // texture: Handle<Image>,
-
     // tags
     player: Player,
 
@@ -132,19 +128,11 @@ struct PlayerGraphicsBundle {
 }
 
 impl PlayerBundle {
-    fn new(
-        speed: f32,
-        jump_force: f32,
-        collider: Collider,
-        sprite: Sprite,
-        texture: Handle<Image>,
-    ) -> Self {
+    fn new(speed: f32, jump_force: f32, collider: Collider) -> Self {
         Self {
             speed: Speed(speed),
             jump: Jump(jump_force),
             collider,
-            // sprite,
-            // texture,
             player: Player,
             rigid_body: RigidBody::Dynamic,
             friction: Friction {
@@ -264,12 +252,6 @@ impl Default for PlayerBundle {
             speed: Speed(300.),
             jump: Jump(100.),
             collider: Collider::cuboid(50., 50.),
-            // sprite: Sprite {
-            //     color: Color::WHITE,
-            //     custom_size: Some(Vec2::splat(100.)),
-            //     ..default()
-            // },
-            // texture: DEFAULT_IMAGE_HANDLE.typed(),
             player: Player,
             rigid_body: RigidBody::Dynamic,
             friction: Friction {
