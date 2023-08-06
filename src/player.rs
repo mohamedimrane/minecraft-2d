@@ -25,7 +25,7 @@ impl Plugin for PlayerPlugin {
         app.add_systems(Startup, spawn_player)
             .add_systems(Update, (player_controller_movement, animate_player))
             // Reflection
-            .register_type::<PlayerGraphics>()
+            .register_type::<PlayerGraphicsPart>()
             .register_type::<Speed>()
             .register_type::<Jump>();
     }
@@ -40,7 +40,7 @@ struct Player;
 struct PlayerGraphicsHolder;
 
 #[derive(Component, Reflect)]
-enum PlayerGraphics {
+enum PlayerGraphicsPart {
     Head,
     Body,
     RightArm,
@@ -66,18 +66,24 @@ fn spawn_player(mut commands: Commands) {
                 Name::new("Graphics Holder"),
             ))
             .with_children(|cb| {
-                cb.spawn((PlayerGraphicsBundle::new_head(), Name::new("Head")));
-                cb.spawn((PlayerGraphicsBundle::new_body(), Name::new("Body")));
+                cb.spawn((PlayerGraphicsPartBundle::new_head(), Name::new("Head")));
+                cb.spawn((PlayerGraphicsPartBundle::new_body(), Name::new("Body")));
                 cb.spawn((
-                    PlayerGraphicsBundle::new_right_arm(),
+                    PlayerGraphicsPartBundle::new_right_arm(),
                     Name::new("Right Arm"),
                 ));
-                cb.spawn((PlayerGraphicsBundle::new_left_arm(), Name::new("Left Arm")));
                 cb.spawn((
-                    PlayerGraphicsBundle::new_right_leg(),
+                    PlayerGraphicsPartBundle::new_left_arm(),
+                    Name::new("Left Arm"),
+                ));
+                cb.spawn((
+                    PlayerGraphicsPartBundle::new_right_leg(),
                     Name::new("Right Leg"),
                 ));
-                cb.spawn((PlayerGraphicsBundle::new_left_leg(), Name::new("Left Leg")));
+                cb.spawn((
+                    PlayerGraphicsPartBundle::new_left_leg(),
+                    Name::new("Left Leg"),
+                ));
             });
         });
 }
@@ -140,13 +146,13 @@ struct PlayerGraphicsHolderBundle {
 }
 
 #[derive(Bundle)]
-struct PlayerGraphicsBundle {
+struct PlayerGraphicsPartBundle {
     // rendering
     sprite: Sprite,
     texture: Handle<Image>,
 
     // tags
-    tag: PlayerGraphics,
+    tag: PlayerGraphicsPart,
 
     // required
     transform_bundle: TransformBundle,
@@ -174,7 +180,7 @@ impl PlayerBundle {
     }
 }
 
-impl PlayerGraphicsBundle {
+impl PlayerGraphicsPartBundle {
     fn new_head() -> Self {
         Self {
             sprite: Sprite {
@@ -185,7 +191,7 @@ impl PlayerGraphicsBundle {
                 ..default()
             },
             texture: DEFAULT_IMAGE_HANDLE.typed(),
-            tag: PlayerGraphics::Head,
+            tag: PlayerGraphicsPart::Head,
             transform_bundle: TransformBundle {
                 local: Transform::from_xyz(0., HEAD_OFFSET, 0.0),
                 ..default()
@@ -204,7 +210,7 @@ impl PlayerGraphicsBundle {
                 ..default()
             },
             texture: DEFAULT_IMAGE_HANDLE.typed(),
-            tag: PlayerGraphics::Body,
+            tag: PlayerGraphicsPart::Body,
             transform_bundle: TransformBundle::default(),
             visibility_bunde: VisibilityBundle::default(),
         }
@@ -220,7 +226,7 @@ impl PlayerGraphicsBundle {
                 ..default()
             },
             texture: DEFAULT_IMAGE_HANDLE.typed(),
-            tag: PlayerGraphics::RightArm,
+            tag: PlayerGraphicsPart::RightArm,
             transform_bundle: TransformBundle {
                 local: Transform::from_xyz(0., ARM_OFFSET, 0.0),
                 ..default()
@@ -239,7 +245,7 @@ impl PlayerGraphicsBundle {
                 ..default()
             },
             texture: DEFAULT_IMAGE_HANDLE.typed(),
-            tag: PlayerGraphics::LeftArm,
+            tag: PlayerGraphicsPart::LeftArm,
             transform_bundle: TransformBundle {
                 local: Transform::from_xyz(0., ARM_OFFSET, 0.0),
                 ..default()
@@ -258,7 +264,7 @@ impl PlayerGraphicsBundle {
                 ..default()
             },
             texture: DEFAULT_IMAGE_HANDLE.typed(),
-            tag: PlayerGraphics::RightLeg,
+            tag: PlayerGraphicsPart::RightLeg,
             transform_bundle: TransformBundle {
                 local: Transform::from_xyz(0., LEG_OFFSET, 0.0),
                 ..default()
@@ -277,7 +283,7 @@ impl PlayerGraphicsBundle {
                 ..default()
             },
             texture: DEFAULT_IMAGE_HANDLE.typed(),
-            tag: PlayerGraphics::LeftLeg,
+            tag: PlayerGraphicsPart::LeftLeg,
             transform_bundle: TransformBundle {
                 local: Transform::from_xyz(0., LEG_OFFSET, 0.0),
                 ..default()
