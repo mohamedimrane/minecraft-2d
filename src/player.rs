@@ -43,17 +43,28 @@ struct Jump(f32);
 // SYSTEMS
 
 fn spawn_player(mut commands: Commands) {
-    commands.spawn(PlayerBundle::default()).with_children(|cb| {
-        cb.spawn(PlayerGraphicsHolderBundle::default())
+    commands
+        .spawn((PlayerBundle::default(), Name::new("Player")))
+        .with_children(|cb| {
+            cb.spawn((
+                PlayerGraphicsHolderBundle::default(),
+                Name::new("Graphics Holder"),
+            ))
             .with_children(|cb| {
-                cb.spawn(PlayerGraphicsBundle::new_head());
-                cb.spawn(PlayerGraphicsBundle::new_body());
-                cb.spawn(PlayerGraphicsBundle::new_right_arm());
-                cb.spawn(PlayerGraphicsBundle::new_left_arm());
-                cb.spawn(PlayerGraphicsBundle::new_right_leg());
-                cb.spawn(PlayerGraphicsBundle::new_left_leg());
+                cb.spawn((PlayerGraphicsBundle::new_head(), Name::new("Head")));
+                cb.spawn((PlayerGraphicsBundle::new_body(), Name::new("Body")));
+                cb.spawn((
+                    PlayerGraphicsBundle::new_right_arm(),
+                    Name::new("Right Arm"),
+                ));
+                cb.spawn((PlayerGraphicsBundle::new_left_arm(), Name::new("Left Arm")));
+                cb.spawn((
+                    PlayerGraphicsBundle::new_right_leg(),
+                    Name::new("Right Leg"),
+                ));
+                cb.spawn((PlayerGraphicsBundle::new_left_leg(), Name::new("Left Leg")));
             });
-    });
+        });
 }
 
 fn player_controller_movement(
@@ -152,8 +163,8 @@ impl PlayerGraphicsBundle {
     fn new_head() -> Self {
         Self {
             sprite: Sprite {
-                color: Color::GREEN,
-                custom_size: Some(Vec2::splat(10.)),
+                color: Color::BLUE,
+                custom_size: Some(Vec2::splat(38.)),
                 anchor: Anchor::BottomCenter,
                 // rect: Some(Rect::new(, , , )),
                 ..default()
@@ -168,8 +179,8 @@ impl PlayerGraphicsBundle {
     fn new_body() -> Self {
         Self {
             sprite: Sprite {
-                color: Color::GREEN,
-                custom_size: Some(Vec2::new(10., 60.)),
+                color: Color::SEA_GREEN,
+                custom_size: Some(Vec2::new(19., 57.)),
                 anchor: Anchor::Center,
                 // rect: Some(Rect::new(, , , )),
                 ..default()
@@ -184,8 +195,8 @@ impl PlayerGraphicsBundle {
     fn new_right_arm() -> Self {
         Self {
             sprite: Sprite {
-                color: Color::GREEN,
-                custom_size: Some(Vec2::new(10., 50.)),
+                color: Color::RED,
+                custom_size: Some(Vec2::new(19., 57.)),
                 anchor: Anchor::TopCenter,
                 // rect: Some(Rect::new(, , , )),
                 ..default()
@@ -200,8 +211,8 @@ impl PlayerGraphicsBundle {
     fn new_left_arm() -> Self {
         Self {
             sprite: Sprite {
-                color: Color::GREEN,
-                custom_size: Some(Vec2::new(10., 50.)),
+                color: Color::YELLOW,
+                custom_size: Some(Vec2::new(19., 57.)),
                 anchor: Anchor::TopCenter,
                 // rect: Some(Rect::new(, , , )),
                 ..default()
@@ -216,8 +227,8 @@ impl PlayerGraphicsBundle {
     fn new_right_leg() -> Self {
         Self {
             sprite: Sprite {
-                color: Color::GREEN,
-                custom_size: Some(Vec2::new(10., 50.)),
+                color: Color::ORANGE_RED,
+                custom_size: Some(Vec2::new(19., 57.)),
                 anchor: Anchor::BottomCenter,
                 // rect: Some(Rect::new(, , , )),
                 ..default()
@@ -233,7 +244,7 @@ impl PlayerGraphicsBundle {
         Self {
             sprite: Sprite {
                 color: Color::GREEN,
-                custom_size: Some(Vec2::new(10., 50.)),
+                custom_size: Some(Vec2::new(19., 57.)),
                 anchor: Anchor::BottomCenter,
                 // rect: Some(Rect::new(, , , )),
                 ..default()
