@@ -240,7 +240,7 @@ impl PlayerGraphicsBundle {
             sprite: Sprite {
                 color: Color::ORANGE_RED,
                 custom_size: Some(Vec2::new(LEG_W_SIZE, LEG_H_SIZE)),
-                anchor: Anchor::BottomCenter,
+                anchor: Anchor::TopCenter,
                 // rect: Some(Rect::new(, , , )),
                 ..default()
             },
@@ -256,7 +256,7 @@ impl PlayerGraphicsBundle {
             sprite: Sprite {
                 color: Color::GREEN,
                 custom_size: Some(Vec2::new(LEG_W_SIZE, LEG_H_SIZE)),
-                anchor: Anchor::BottomCenter,
+                anchor: Anchor::TopCenter,
                 // rect: Some(Rect::new(, , , )),
                 ..default()
             },
