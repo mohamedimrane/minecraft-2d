@@ -1,4 +1,4 @@
-use bevy::{prelude::*, render::texture::DEFAULT_IMAGE_HANDLE};
+use bevy::{prelude::*, render::texture::DEFAULT_IMAGE_HANDLE, sprite::Anchor};
 use bevy_rapier2d::prelude::*;
 
 // PLUGINS
@@ -18,7 +18,17 @@ impl Plugin for PlayerPlugin {
 struct Player;
 
 #[derive(Component)]
-struct PlayerGraphics;
+struct PlayerGraphicsHolder;
+
+#[derive(Component)]
+enum PlayerGraphics {
+    Head,
+    Body,
+    RightArm,
+    LeftArm,
+    RightLeg,
+    LeftLeg,
+}
 
 #[derive(Component)]
 struct Speed(f32);
@@ -30,17 +40,15 @@ struct Jump(f32);
 
 fn spawn_player(mut commands: Commands) {
     commands.spawn(PlayerBundle::default()).with_children(|cb| {
-        cb.spawn((
-            PlayerGraphics,
-            SpriteBundle {
-                sprite: Sprite {
-                    color: Color::WHITE,
-                    custom_size: Some(Vec2::splat(100.)),
-                    ..default()
-                },
-                ..default()
-            },
-        ));
+        cb.spawn(PlayerGraphicsHolderBundle::default())
+            .with_children(|cb| {
+                cb.spawn(PlayerGraphicsBundle::new_head());
+                cb.spawn(PlayerGraphicsBundle::new_body());
+                cb.spawn(PlayerGraphicsBundle::new_right_arm());
+                cb.spawn(PlayerGraphicsBundle::new_left_arm());
+                cb.spawn(PlayerGraphicsBundle::new_right_leg());
+                cb.spawn(PlayerGraphicsBundle::new_left_leg());
+            });
     });
 }
 
@@ -95,6 +103,30 @@ struct PlayerBundle {
     visibility_bundle: VisibilityBundle,
 }
 
+#[derive(Bundle)]
+struct PlayerGraphicsHolderBundle {
+    // tags
+    tag: PlayerGraphicsHolder,
+
+    // required
+    transform_bundle: TransformBundle,
+    visibility_bundle: VisibilityBundle,
+}
+
+#[derive(Bundle)]
+struct PlayerGraphicsBundle {
+    // rendering
+    sprite: Sprite,
+    texture: Handle<Image>,
+
+    // tags
+    tag: PlayerGraphics,
+
+    // required
+    transform_bundle: TransformBundle,
+    visibility_bunde: VisibilityBundle,
+}
+
 impl PlayerBundle {
     fn new(
         speed: f32,
@@ -124,6 +156,104 @@ impl PlayerBundle {
     }
 }
 
+impl PlayerGraphicsBundle {
+    fn new_head() -> Self {
+        Self {
+            sprite: Sprite {
+                color: Color::GREEN,
+                custom_size: Some(Vec2::splat(10.)),
+                anchor: Anchor::BottomCenter,
+                // rect: Some(Rect::new(, , , )),
+                ..default()
+            },
+            texture: DEFAULT_IMAGE_HANDLE.typed(),
+            tag: PlayerGraphics::Head,
+            transform_bundle: TransformBundle::default(),
+            visibility_bunde: VisibilityBundle::default(),
+        }
+    }
+
+    fn new_body() -> Self {
+        Self {
+            sprite: Sprite {
+                color: Color::GREEN,
+                custom_size: Some(Vec2::new(10., 60.)),
+                anchor: Anchor::Center,
+                // rect: Some(Rect::new(, , , )),
+                ..default()
+            },
+            texture: DEFAULT_IMAGE_HANDLE.typed(),
+            tag: PlayerGraphics::Body,
+            transform_bundle: TransformBundle::default(),
+            visibility_bunde: VisibilityBundle::default(),
+        }
+    }
+
+    fn new_right_arm() -> Self {
+        Self {
+            sprite: Sprite {
+                color: Color::GREEN,
+                custom_size: Some(Vec2::new(10., 50.)),
+                anchor: Anchor::TopCenter,
+                // rect: Some(Rect::new(, , , )),
+                ..default()
+            },
+            texture: DEFAULT_IMAGE_HANDLE.typed(),
+            tag: PlayerGraphics::RightArm,
+            transform_bundle: TransformBundle::default(),
+            visibility_bunde: VisibilityBundle::default(),
+        }
+    }
+
+    fn new_left_arm() -> Self {
+        Self {
+            sprite: Sprite {
+                color: Color::GREEN,
+                custom_size: Some(Vec2::new(10., 50.)),
+                anchor: Anchor::TopCenter,
+                // rect: Some(Rect::new(, , , )),
+                ..default()
+            },
+            texture: DEFAULT_IMAGE_HANDLE.typed(),
+            tag: PlayerGraphics::LeftArm,
+            transform_bundle: TransformBundle::default(),
+            visibility_bunde: VisibilityBundle::default(),
+        }
+    }
+
+    fn new_right_leg() -> Self {
+        Self {
+            sprite: Sprite {
+                color: Color::GREEN,
+                custom_size: Some(Vec2::new(10., 50.)),
+                anchor: Anchor::BottomCenter,
+                // rect: Some(Rect::new(, , , )),
+                ..default()
+            },
+            texture: DEFAULT_IMAGE_HANDLE.typed(),
+            tag: PlayerGraphics::RightLeg,
+            transform_bundle: TransformBundle::default(),
+            visibility_bunde: VisibilityBundle::default(),
+        }
+    }
+
+    fn new_left_leg() -> Self {
+        Self {
+            sprite: Sprite {
+                color: Color::GREEN,
+                custom_size: Some(Vec2::new(10., 50.)),
+                anchor: Anchor::BottomCenter,
+                // rect: Some(Rect::new(, , , )),
+                ..default()
+            },
+            texture: DEFAULT_IMAGE_HANDLE.typed(),
+            tag: PlayerGraphics::LeftLeg,
+            transform_bundle: TransformBundle::default(),
+            visibility_bunde: VisibilityBundle::default(),
+        }
+    }
+}
+
 impl Default for PlayerBundle {
     fn default() -> Self {
         Self {
@@ -147,6 +277,16 @@ impl Default for PlayerBundle {
             locked_axes: LockedAxes::ROTATION_LOCKED,
             transform_bundle: default(),
             visibility_bundle: default(),
+        }
+    }
+}
+
+impl Default for PlayerGraphicsHolderBundle {
+    fn default() -> Self {
+        Self {
+            tag: PlayerGraphicsHolder,
+            transform_bundle: TransformBundle::default(),
+            visibility_bundle: VisibilityBundle::default(),
         }
     }
 }
