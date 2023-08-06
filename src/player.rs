@@ -8,7 +8,11 @@ pub struct PlayerPlugin;
 impl Plugin for PlayerPlugin {
     fn build(&self, app: &mut App) {
         app.add_systems(Startup, spawn_player)
-            .add_systems(Update, (player_controller_movement, animate_player));
+            .add_systems(Update, (player_controller_movement, animate_player))
+            // Reflection
+            .register_type::<PlayerGraphics>()
+            .register_type::<Speed>()
+            .register_type::<Jump>();
     }
 }
 
@@ -20,7 +24,7 @@ struct Player;
 #[derive(Component)]
 struct PlayerGraphicsHolder;
 
-#[derive(Component)]
+#[derive(Component, Reflect)]
 enum PlayerGraphics {
     Head,
     Body,
@@ -30,10 +34,10 @@ enum PlayerGraphics {
     LeftLeg,
 }
 
-#[derive(Component)]
+#[derive(Component, Reflect)]
 struct Speed(f32);
 
-#[derive(Component)]
+#[derive(Component, Reflect)]
 struct Jump(f32);
 
 // SYSTEMS
