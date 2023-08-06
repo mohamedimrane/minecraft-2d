@@ -5,12 +5,16 @@ use bevy_rapier2d::prelude::*;
 
 const RATIO: f32 = 4.75;
 const HEAD_SIZE: f32 = 8. * RATIO;
-const BODY_H_SIZE: f32 = 12. * RATIO;
 const BODY_W_SIZE: f32 = 4. * RATIO;
-const ARM_H_SIZE: f32 = 12. * RATIO;
+const BODY_H_SIZE: f32 = 12. * RATIO;
 const ARM_W_SIZE: f32 = 4. * RATIO;
-const LEG_H_SIZE: f32 = 12. * RATIO;
+const ARM_H_SIZE: f32 = 12. * RATIO;
 const LEG_W_SIZE: f32 = 4. * RATIO;
+const LEG_H_SIZE: f32 = 12. * RATIO;
+
+const HEAD_OFFSET: f32 = 28.5;
+const ARM_OFFSET: f32 = 28.5;
+const LEG_OFFSET: f32 = -28.5;
 
 // PLUGINS
 
@@ -182,7 +186,10 @@ impl PlayerGraphicsBundle {
             },
             texture: DEFAULT_IMAGE_HANDLE.typed(),
             tag: PlayerGraphics::Head,
-            transform_bundle: TransformBundle::default(),
+            transform_bundle: TransformBundle {
+                local: Transform::from_xyz(0., HEAD_OFFSET, 0.0),
+                ..default()
+            },
             visibility_bunde: VisibilityBundle::default(),
         }
     }
@@ -214,7 +221,10 @@ impl PlayerGraphicsBundle {
             },
             texture: DEFAULT_IMAGE_HANDLE.typed(),
             tag: PlayerGraphics::RightArm,
-            transform_bundle: TransformBundle::default(),
+            transform_bundle: TransformBundle {
+                local: Transform::from_xyz(0., ARM_OFFSET, 0.0),
+                ..default()
+            },
             visibility_bunde: VisibilityBundle::default(),
         }
     }
@@ -230,7 +240,10 @@ impl PlayerGraphicsBundle {
             },
             texture: DEFAULT_IMAGE_HANDLE.typed(),
             tag: PlayerGraphics::LeftArm,
-            transform_bundle: TransformBundle::default(),
+            transform_bundle: TransformBundle {
+                local: Transform::from_xyz(0., ARM_OFFSET, 0.0),
+                ..default()
+            },
             visibility_bunde: VisibilityBundle::default(),
         }
     }
@@ -246,7 +259,10 @@ impl PlayerGraphicsBundle {
             },
             texture: DEFAULT_IMAGE_HANDLE.typed(),
             tag: PlayerGraphics::RightLeg,
-            transform_bundle: TransformBundle::default(),
+            transform_bundle: TransformBundle {
+                local: Transform::from_xyz(0., LEG_OFFSET, 0.0),
+                ..default()
+            },
             visibility_bunde: VisibilityBundle::default(),
         }
     }
@@ -262,7 +278,10 @@ impl PlayerGraphicsBundle {
             },
             texture: DEFAULT_IMAGE_HANDLE.typed(),
             tag: PlayerGraphics::LeftLeg,
-            transform_bundle: TransformBundle::default(),
+            transform_bundle: TransformBundle {
+                local: Transform::from_xyz(0., LEG_OFFSET, 0.0),
+                ..default()
+            },
             visibility_bunde: VisibilityBundle::default(),
         }
     }
