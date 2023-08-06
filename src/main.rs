@@ -1,8 +1,10 @@
 use bevy::prelude::*;
 use bevy_rapier2d::prelude::*;
 use player::PlayerPlugin;
+use world::WorldPlugin;
 
 mod player;
+mod world;
 
 fn main() {
     App::new()
@@ -11,31 +13,16 @@ fn main() {
             RapierPhysicsPlugin::<NoUserData>::pixels_per_meter(100.0),
             RapierDebugRenderPlugin::default(),
             PlayerPlugin,
+            WorldPlugin,
         ))
         .insert_resource(RapierConfiguration {
             gravity: Vec2::new(0., -1000.),
             ..default()
         })
-        .add_systems(Startup, (setup_graphics, setup_physics))
+        .add_systems(Startup, setup_graphics)
         .run();
 }
 
 fn setup_graphics(mut commands: Commands) {
     commands.spawn(Camera2dBundle::default());
-}
-
-fn setup_physics(mut commands: Commands) {
-    commands.spawn((
-        SpriteBundle {
-            sprite: Sprite {
-                color: Color::WHITE,
-                custom_size: Some(Vec2::new(1000., 50.)),
-                ..default()
-            },
-            transform: Transform::from_xyz(0., -300., 0.),
-            ..default()
-        },
-        RigidBody::Fixed,
-        Collider::cuboid(500., 25.),
-    ));
 }
