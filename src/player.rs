@@ -1,6 +1,17 @@
 use bevy::{prelude::*, render::texture::DEFAULT_IMAGE_HANDLE, sprite::Anchor};
 use bevy_rapier2d::prelude::*;
 
+// CONSTANTS
+
+const RATIO: f32 = 4.75;
+const HEAD_SIZE: f32 = 8. * RATIO;
+const BODY_H_SIZE: f32 = 12. * RATIO;
+const BODY_W_SIZE: f32 = 4. * RATIO;
+const ARM_H_SIZE: f32 = 12. * RATIO;
+const ARM_W_SIZE: f32 = 4. * RATIO;
+const LEG_H_SIZE: f32 = 12. * RATIO;
+const LEG_W_SIZE: f32 = 4. * RATIO;
+
 // PLUGINS
 
 pub struct PlayerPlugin;
@@ -164,7 +175,7 @@ impl PlayerGraphicsBundle {
         Self {
             sprite: Sprite {
                 color: Color::BLUE,
-                custom_size: Some(Vec2::splat(38.)),
+                custom_size: Some(Vec2::splat(HEAD_SIZE)),
                 anchor: Anchor::BottomCenter,
                 // rect: Some(Rect::new(, , , )),
                 ..default()
@@ -180,7 +191,7 @@ impl PlayerGraphicsBundle {
         Self {
             sprite: Sprite {
                 color: Color::SEA_GREEN,
-                custom_size: Some(Vec2::new(19., 57.)),
+                custom_size: Some(Vec2::new(BODY_W_SIZE, BODY_H_SIZE)),
                 anchor: Anchor::Center,
                 // rect: Some(Rect::new(, , , )),
                 ..default()
@@ -196,7 +207,7 @@ impl PlayerGraphicsBundle {
         Self {
             sprite: Sprite {
                 color: Color::RED,
-                custom_size: Some(Vec2::new(19., 57.)),
+                custom_size: Some(Vec2::new(ARM_W_SIZE, ARM_H_SIZE)),
                 anchor: Anchor::TopCenter,
                 // rect: Some(Rect::new(, , , )),
                 ..default()
@@ -212,7 +223,7 @@ impl PlayerGraphicsBundle {
         Self {
             sprite: Sprite {
                 color: Color::YELLOW,
-                custom_size: Some(Vec2::new(19., 57.)),
+                custom_size: Some(Vec2::new(ARM_W_SIZE, ARM_H_SIZE)),
                 anchor: Anchor::TopCenter,
                 // rect: Some(Rect::new(, , , )),
                 ..default()
@@ -228,7 +239,7 @@ impl PlayerGraphicsBundle {
         Self {
             sprite: Sprite {
                 color: Color::ORANGE_RED,
-                custom_size: Some(Vec2::new(19., 57.)),
+                custom_size: Some(Vec2::new(LEG_W_SIZE, LEG_H_SIZE)),
                 anchor: Anchor::BottomCenter,
                 // rect: Some(Rect::new(, , , )),
                 ..default()
@@ -244,7 +255,7 @@ impl PlayerGraphicsBundle {
         Self {
             sprite: Sprite {
                 color: Color::GREEN,
-                custom_size: Some(Vec2::new(19., 57.)),
+                custom_size: Some(Vec2::new(LEG_W_SIZE, LEG_H_SIZE)),
                 anchor: Anchor::BottomCenter,
                 // rect: Some(Rect::new(, , , )),
                 ..default()
