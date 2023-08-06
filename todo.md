@@ -1,6 +1,7 @@
 # Minecraft 2D Todo List
 
 - [ ] Player
+  - [x] Basic player controlls
   - [ ] Player controlls
   - [ ] Player graphics
   - [ ] Swimming
