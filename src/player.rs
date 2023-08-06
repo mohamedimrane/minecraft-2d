@@ -8,11 +8,17 @@ pub struct PlayerPlugin;
 impl Plugin for PlayerPlugin {
     fn build(&self, app: &mut App) {
         app.add_systems(Startup, spawn_player)
-            .add_systems(Update, player_controller_movement);
+            .add_systems(Update, (player_controller_movement, animate_player));
     }
 }
 
 // COMPONENTS
+
+#[derive(Component)]
+struct Player;
+
+#[derive(Component)]
+struct PlayerGraphics;
 
 #[derive(Component)]
 struct Speed(f32);
@@ -23,7 +29,19 @@ struct Jump(f32);
 // SYSTEMS
 
 fn spawn_player(mut commands: Commands) {
-    commands.spawn(PlayerBundle::default());
+    commands.spawn(PlayerBundle::default()).with_children(|cb| {
+        cb.spawn((
+            PlayerGraphics,
+            SpriteBundle {
+                sprite: Sprite {
+                    color: Color::WHITE,
+                    custom_size: Some(Vec2::splat(100.)),
+                    ..default()
+                },
+                ..default()
+            },
+        ));
+    });
 }
 
 fn player_controller_movement(
@@ -45,6 +63,8 @@ fn player_controller_movement(
     }
 }
 
+fn animate_player(mut player_query: Query<(), With<Player>>) {}
+
 // BUNDLES
 
 #[derive(Bundle)]
@@ -57,8 +77,11 @@ struct PlayerBundle {
     collider: Collider,
 
     // rendering
-    sprite: Sprite,
-    texture: Handle<Image>,
+    // sprite: Sprite,
+    // texture: Handle<Image>,
+
+    // tags
+    player: Player,
 
     // physics required
     rigid_body: RigidBody,
@@ -84,8 +107,9 @@ impl PlayerBundle {
             speed: Speed(speed),
             jump: Jump(jump_force),
             collider,
-            sprite,
-            texture,
+            // sprite,
+            // texture,
+            player: Player,
             rigid_body: RigidBody::Dynamic,
             friction: Friction {
                 coefficient: 0.,
@@ -106,12 +130,13 @@ impl Default for PlayerBundle {
             speed: Speed(300.),
             jump: Jump(100.),
             collider: Collider::cuboid(50., 50.),
-            sprite: Sprite {
-                color: Color::WHITE,
-                custom_size: Some(Vec2::splat(100.)),
-                ..default()
-            },
-            texture: DEFAULT_IMAGE_HANDLE.typed(),
+            // sprite: Sprite {
+            //     color: Color::WHITE,
+            //     custom_size: Some(Vec2::splat(100.)),
+            //     ..default()
+            // },
+            // texture: DEFAULT_IMAGE_HANDLE.typed(),
+            player: Player,
             rigid_body: RigidBody::Dynamic,
             friction: Friction {
                 coefficient: 0.0,
