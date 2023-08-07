@@ -98,7 +98,7 @@ fn load_player_graphics(
     player_graphics.body = Rect::new(8., 0., 11., 11.);
     player_graphics.right_arm = Rect::new(12., 0., 15., 11.);
     player_graphics.left_arm = Rect::new(16., 0., 19., 11.);
-    player_graphics.right_leg = Rect::new(20., 23., 0., 11.);
+    player_graphics.right_leg = Rect::new(20., 0., 23., 11.);
     player_graphics.left_leg = Rect::new(24., 0., 27., 11.);
 }
 
