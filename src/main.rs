@@ -23,10 +23,10 @@ fn main() {
             gravity: Vec2::new(0., -1000.),
             ..default()
         })
-        .add_systems(Startup, setup_graphics)
+        .add_systems(Startup, setup_camera)
         .run();
 }
 
-fn setup_graphics(mut commands: Commands) {
+fn setup_camera(mut commands: Commands) {
     commands.spawn(Camera2dBundle::default());
 }
