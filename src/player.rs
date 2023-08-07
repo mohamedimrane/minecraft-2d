@@ -16,6 +16,13 @@ const HEAD_OFFSET: f32 = 28.5;
 const ARM_OFFSET: f32 = 28.5;
 const LEG_OFFSET: f32 = -28.5;
 
+const HEAD_Z_INDEX: f32 = 1.;
+const BODY_Z_INDEX: f32 = 0.;
+const FRONT_ARM_Z_INDEX: f32 = 2.;
+const BACK_ARM_Z_INDEX: f32 = -1.;
+const FRONT_LEG_Z_INDEX: f32 = 2.;
+const BACK_LEG_Z_INDEX: f32 = -1.;
+
 // PLUGINS
 
 pub struct PlayerPlugin;
@@ -245,7 +252,7 @@ impl PlayerGraphicsPartBundle {
             texture: gr.tex.clone(),
             tag: PlayerGraphicsPart::Head,
             transform_bundle: TransformBundle {
-                local: Transform::from_xyz(0., HEAD_OFFSET, 0.0),
+                local: Transform::from_xyz(0., HEAD_OFFSET, HEAD_Z_INDEX),
                 ..default()
             },
             visibility_bunde: VisibilityBundle::default(),
@@ -262,7 +269,10 @@ impl PlayerGraphicsPartBundle {
             },
             texture: gr.tex.clone(),
             tag: PlayerGraphicsPart::Body,
-            transform_bundle: TransformBundle::default(),
+            transform_bundle: TransformBundle {
+                local: Transform::from_xyz(0., 0., BODY_Z_INDEX),
+                ..default()
+            },
             visibility_bunde: VisibilityBundle::default(),
         }
     }
@@ -278,7 +288,7 @@ impl PlayerGraphicsPartBundle {
             texture: gr.tex.clone(),
             tag: PlayerGraphicsPart::RightArm,
             transform_bundle: TransformBundle {
-                local: Transform::from_xyz(0., ARM_OFFSET, 0.0),
+                local: Transform::from_xyz(0., ARM_OFFSET, FRONT_ARM_Z_INDEX),
                 ..default()
             },
             visibility_bunde: VisibilityBundle::default(),
@@ -296,7 +306,7 @@ impl PlayerGraphicsPartBundle {
             texture: gr.tex.clone(),
             tag: PlayerGraphicsPart::LeftArm,
             transform_bundle: TransformBundle {
-                local: Transform::from_xyz(0., ARM_OFFSET, 0.0),
+                local: Transform::from_xyz(0., ARM_OFFSET, BACK_ARM_Z_INDEX),
                 ..default()
             },
             visibility_bunde: VisibilityBundle::default(),
@@ -314,7 +324,7 @@ impl PlayerGraphicsPartBundle {
             texture: gr.tex.clone(),
             tag: PlayerGraphicsPart::RightLeg,
             transform_bundle: TransformBundle {
-                local: Transform::from_xyz(0., LEG_OFFSET, 0.0),
+                local: Transform::from_xyz(0., LEG_OFFSET, FRONT_LEG_Z_INDEX),
                 ..default()
             },
             visibility_bunde: VisibilityBundle::default(),
@@ -332,7 +342,7 @@ impl PlayerGraphicsPartBundle {
             texture: gr.tex.clone(),
             tag: PlayerGraphicsPart::LeftLeg,
             transform_bundle: TransformBundle {
-                local: Transform::from_xyz(0., LEG_OFFSET, 0.0),
+                local: Transform::from_xyz(0., LEG_OFFSET, BACK_LEG_Z_INDEX),
                 ..default()
             },
             visibility_bunde: VisibilityBundle::default(),
