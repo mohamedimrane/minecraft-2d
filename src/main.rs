@@ -10,9 +10,17 @@ mod world;
 fn main() {
     App::new()
         .add_plugins((
-            DefaultPlugins.set(
-                ImagePlugin::default_nearest(), // Pixel perfect camera
-            ),
+            DefaultPlugins
+                .set(
+                    ImagePlugin::default_nearest(), // Pixel perfect camera
+                )
+                .set(WindowPlugin {
+                    primary_window: Some(Window {
+                        present_mode: bevy::window::PresentMode::AutoVsync,
+                        ..default()
+                    }),
+                    ..default()
+                }),
             RapierPhysicsPlugin::<NoUserData>::pixels_per_meter(100.0),
             RapierDebugRenderPlugin::default(),
             WorldInspectorPlugin::new(),
