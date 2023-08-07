@@ -53,12 +53,12 @@ impl Default for PlayerGraphics {
     fn default() -> Self {
         Self {
             tex: DEFAULT_IMAGE_HANDLE.typed(),
-            head: Rect::new(0., 0., 7., 7.),
-            body: Rect::new(8., 0., 11., 11.),
-            right_arm: Rect::new(12., 0., 15., 11.),
-            left_arm: Rect::new(16., 0., 19., 11.),
-            right_leg: Rect::new(20., 23., 0., 11.),
-            left_leg: Rect::new(24., 0., 27., 11.),
+            head: Rect::new(0., 0., 8., 8.),
+            body: Rect::new(8., 0., 12., 12.),
+            right_arm: Rect::new(12., 0., 16., 12.),
+            left_arm: Rect::new(16., 0., 20., 12.),
+            right_leg: Rect::new(20., 0., 24., 12.),
+            left_leg: Rect::new(24., 0., 28., 12.),
         }
     }
 }
@@ -93,13 +93,15 @@ fn load_player_graphics(
     asset_server: Res<AssetServer>,
     mut player_graphics: ResMut<PlayerGraphics>,
 ) {
-    player_graphics.tex = asset_server.load("player.png");
-    player_graphics.head = Rect::new(0., 0., 7., 7.);
-    player_graphics.body = Rect::new(8., 0., 11., 11.);
-    player_graphics.right_arm = Rect::new(12., 0., 15., 11.);
-    player_graphics.left_arm = Rect::new(16., 0., 19., 11.);
-    player_graphics.right_leg = Rect::new(20., 0., 23., 11.);
-    player_graphics.left_leg = Rect::new(24., 0., 27., 11.);
+    *player_graphics = PlayerGraphics {
+        tex: asset_server.load("player.png"),
+        head: Rect::new(0., 0., 8., 8.),
+        body: Rect::new(8., 0., 12., 12.),
+        right_arm: Rect::new(12., 0., 16., 12.),
+        left_arm: Rect::new(16., 0., 20., 12.),
+        right_leg: Rect::new(20., 0., 24., 12.),
+        left_leg: Rect::new(24., 0., 28., 12.),
+    }
 }
 
 fn spawn_player(mut commands: Commands, graphics: Res<PlayerGraphics>) {
