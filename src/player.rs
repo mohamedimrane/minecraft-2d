@@ -22,12 +22,44 @@ pub struct PlayerPlugin;
 
 impl Plugin for PlayerPlugin {
     fn build(&self, app: &mut App) {
-        app.add_systems(Startup, spawn_player)
+        app
+            // Resources
+            .insert_resource(PlayerGraphics::default())
+            // Systems
+            .add_systems(PreStartup, load_player_graphics)
+            .add_systems(Startup, spawn_player)
             .add_systems(Update, (player_controller_movement, animate_player))
             // Reflection
             .register_type::<PlayerGraphicsPart>()
             .register_type::<Speed>()
             .register_type::<Jump>();
+    }
+}
+
+// RESOURCES
+
+#[derive(Resource)]
+struct PlayerGraphics {
+    tex: Handle<Image>,
+    head: Rect,
+    body: Rect,
+    right_arm: Rect,
+    left_arm: Rect,
+    right_leg: Rect,
+    left_leg: Rect,
+}
+
+impl Default for PlayerGraphics {
+    fn default() -> Self {
+        Self {
+            tex: DEFAULT_IMAGE_HANDLE.typed(),
+            head: Rect::new(0., 0., 7., 7.),
+            body: Rect::new(8., 0., 11., 11.),
+            right_arm: Rect::new(12., 0., 15., 11.),
+            left_arm: Rect::new(16., 0., 19., 11.),
+            right_leg: Rect::new(20., 23., 0., 11.),
+            left_leg: Rect::new(24., 0., 27., 11.),
+        }
     }
 }
 
@@ -57,7 +89,20 @@ struct Jump(f32);
 
 // SYSTEMS
 
-fn spawn_player(mut commands: Commands) {
+fn load_player_graphics(
+    asset_server: Res<AssetServer>,
+    mut player_graphics: ResMut<PlayerGraphics>,
+) {
+    player_graphics.tex = asset_server.load("player.png");
+    player_graphics.head = Rect::new(0., 0., 7., 7.);
+    player_graphics.body = Rect::new(8., 0., 11., 11.);
+    player_graphics.right_arm = Rect::new(12., 0., 15., 11.);
+    player_graphics.left_arm = Rect::new(16., 0., 19., 11.);
+    player_graphics.right_leg = Rect::new(20., 23., 0., 11.);
+    player_graphics.left_leg = Rect::new(24., 0., 27., 11.);
+}
+
+fn spawn_player(mut commands: Commands, graphics: Res<PlayerGraphics>) {
     commands
         .spawn((PlayerBundle::default(), Name::new("Player")))
         .with_children(|cb| {
@@ -66,22 +111,28 @@ fn spawn_player(mut commands: Commands) {
                 Name::new("Graphics Holder"),
             ))
             .with_children(|cb| {
-                cb.spawn((PlayerGraphicsPartBundle::new_head(), Name::new("Head")));
-                cb.spawn((PlayerGraphicsPartBundle::new_body(), Name::new("Body")));
                 cb.spawn((
-                    PlayerGraphicsPartBundle::new_right_arm(),
+                    PlayerGraphicsPartBundle::new_head(&graphics),
+                    Name::new("Head"),
+                ));
+                cb.spawn((
+                    PlayerGraphicsPartBundle::new_body(&graphics),
+                    Name::new("Body"),
+                ));
+                cb.spawn((
+                    PlayerGraphicsPartBundle::new_right_arm(&graphics),
                     Name::new("Right Arm"),
                 ));
                 cb.spawn((
-                    PlayerGraphicsPartBundle::new_left_arm(),
+                    PlayerGraphicsPartBundle::new_left_arm(&graphics),
                     Name::new("Left Arm"),
                 ));
                 cb.spawn((
-                    PlayerGraphicsPartBundle::new_right_leg(),
+                    PlayerGraphicsPartBundle::new_right_leg(&graphics),
                     Name::new("Right Leg"),
                 ));
                 cb.spawn((
-                    PlayerGraphicsPartBundle::new_left_leg(),
+                    PlayerGraphicsPartBundle::new_left_leg(&graphics),
                     Name::new("Left Leg"),
                 ));
             });
@@ -181,16 +232,15 @@ impl PlayerBundle {
 }
 
 impl PlayerGraphicsPartBundle {
-    fn new_head() -> Self {
+    fn new_head(gr: &PlayerGraphics) -> Self {
         Self {
             sprite: Sprite {
-                color: Color::BLUE,
                 custom_size: Some(Vec2::splat(HEAD_SIZE)),
                 anchor: Anchor::BottomCenter,
-                // rect: Some(Rect::new(, , , )),
+                rect: Some(gr.head),
                 ..default()
             },
-            texture: DEFAULT_IMAGE_HANDLE.typed(),
+            texture: gr.tex.clone(),
             tag: PlayerGraphicsPart::Head,
             transform_bundle: TransformBundle {
                 local: Transform::from_xyz(0., HEAD_OFFSET, 0.0),
@@ -200,32 +250,30 @@ impl PlayerGraphicsPartBundle {
         }
     }
 
-    fn new_body() -> Self {
+    fn new_body(gr: &PlayerGraphics) -> Self {
         Self {
             sprite: Sprite {
-                color: Color::SEA_GREEN,
                 custom_size: Some(Vec2::new(BODY_W_SIZE, BODY_H_SIZE)),
                 anchor: Anchor::Center,
-                // rect: Some(Rect::new(, , , )),
+                rect: Some(gr.body),
                 ..default()
             },
-            texture: DEFAULT_IMAGE_HANDLE.typed(),
+            texture: gr.tex.clone(),
             tag: PlayerGraphicsPart::Body,
             transform_bundle: TransformBundle::default(),
             visibility_bunde: VisibilityBundle::default(),
         }
     }
 
-    fn new_right_arm() -> Self {
+    fn new_right_arm(gr: &PlayerGraphics) -> Self {
         Self {
             sprite: Sprite {
-                color: Color::RED,
                 custom_size: Some(Vec2::new(ARM_W_SIZE, ARM_H_SIZE)),
                 anchor: Anchor::TopCenter,
-                // rect: Some(Rect::new(, , , )),
+                rect: Some(gr.right_arm),
                 ..default()
             },
-            texture: DEFAULT_IMAGE_HANDLE.typed(),
+            texture: gr.tex.clone(),
             tag: PlayerGraphicsPart::RightArm,
             transform_bundle: TransformBundle {
                 local: Transform::from_xyz(0., ARM_OFFSET, 0.0),
@@ -235,16 +283,15 @@ impl PlayerGraphicsPartBundle {
         }
     }
 
-    fn new_left_arm() -> Self {
+    fn new_left_arm(gr: &PlayerGraphics) -> Self {
         Self {
             sprite: Sprite {
-                color: Color::YELLOW,
                 custom_size: Some(Vec2::new(ARM_W_SIZE, ARM_H_SIZE)),
                 anchor: Anchor::TopCenter,
-                // rect: Some(Rect::new(, , , )),
+                rect: Some(gr.left_arm),
                 ..default()
             },
-            texture: DEFAULT_IMAGE_HANDLE.typed(),
+            texture: gr.tex.clone(),
             tag: PlayerGraphicsPart::LeftArm,
             transform_bundle: TransformBundle {
                 local: Transform::from_xyz(0., ARM_OFFSET, 0.0),
@@ -254,16 +301,15 @@ impl PlayerGraphicsPartBundle {
         }
     }
 
-    fn new_right_leg() -> Self {
+    fn new_right_leg(gr: &PlayerGraphics) -> Self {
         Self {
             sprite: Sprite {
-                color: Color::ORANGE_RED,
                 custom_size: Some(Vec2::new(LEG_W_SIZE, LEG_H_SIZE)),
                 anchor: Anchor::TopCenter,
-                // rect: Some(Rect::new(, , , )),
+                rect: Some(gr.right_leg),
                 ..default()
             },
-            texture: DEFAULT_IMAGE_HANDLE.typed(),
+            texture: gr.tex.clone(),
             tag: PlayerGraphicsPart::RightLeg,
             transform_bundle: TransformBundle {
                 local: Transform::from_xyz(0., LEG_OFFSET, 0.0),
@@ -273,16 +319,15 @@ impl PlayerGraphicsPartBundle {
         }
     }
 
-    fn new_left_leg() -> Self {
+    fn new_left_leg(gr: &PlayerGraphics) -> Self {
         Self {
             sprite: Sprite {
-                color: Color::GREEN,
                 custom_size: Some(Vec2::new(LEG_W_SIZE, LEG_H_SIZE)),
                 anchor: Anchor::TopCenter,
-                // rect: Some(Rect::new(, , , )),
+                rect: Some(gr.left_leg),
                 ..default()
             },
-            texture: DEFAULT_IMAGE_HANDLE.typed(),
+            texture: gr.tex.clone(),
             tag: PlayerGraphicsPart::LeftLeg,
             transform_bundle: TransformBundle {
                 local: Transform::from_xyz(0., LEG_OFFSET, 0.0),
