@@ -10,7 +10,9 @@ mod world;
 fn main() {
     App::new()
         .add_plugins((
-            DefaultPlugins,
+            DefaultPlugins.set(
+                ImagePlugin::default_nearest(), // Pixel perfect camera
+            ),
             RapierPhysicsPlugin::<NoUserData>::pixels_per_meter(100.0),
             RapierDebugRenderPlugin::default(),
             WorldInspectorPlugin::new(),
