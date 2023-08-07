@@ -345,7 +345,7 @@ impl Default for PlayerBundle {
         Self {
             speed: Speed(300.),
             jump: Jump(100.),
-            collider: Collider::cuboid(50., 50.),
+            collider: Collider::cuboid(10., 76.),
             player: Player,
             rigid_body: RigidBody::Dynamic,
             friction: Friction {
@@ -365,7 +365,10 @@ impl Default for PlayerGraphicsHolderBundle {
     fn default() -> Self {
         Self {
             tag: PlayerGraphicsHolder,
-            transform_bundle: TransformBundle::default(),
+            transform_bundle: TransformBundle {
+                local: Transform::from_xyz(0., 9.5, 0.),
+                ..default()
+            },
             visibility_bundle: VisibilityBundle::default(),
         }
     }
