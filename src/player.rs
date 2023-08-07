@@ -16,12 +16,12 @@ const HEAD_OFFSET: f32 = 28.5;
 const ARM_OFFSET: f32 = 28.5;
 const LEG_OFFSET: f32 = -28.5;
 
-const HEAD_Z_INDEX: f32 = 1.;
-const BODY_Z_INDEX: f32 = 0.;
-const FRONT_ARM_Z_INDEX: f32 = 2.;
-const BACK_ARM_Z_INDEX: f32 = -1.;
-const FRONT_LEG_Z_INDEX: f32 = 2.;
-const BACK_LEG_Z_INDEX: f32 = -1.;
+const HEAD_Z_INDEX: f32 = 2.;
+const BODY_Z_INDEX: f32 = 1.;
+const FRONT_ARM_Z_INDEX: f32 = 3.;
+const BACK_ARM_Z_INDEX: f32 = 0.;
+const FRONT_LEG_Z_INDEX: f32 = 3.;
+const BACK_LEG_Z_INDEX: f32 = 0.;
 
 // PLUGINS
 
