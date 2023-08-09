@@ -226,6 +226,7 @@ fn animate_head(
 
 fn animate_arms(
     mut graphics_parts: Query<(&mut Transform, &mut Sprite, &mut PlayerGraphicsPart)>,
+    time: Res<Time>,
     keys: Res<Input<KeyCode>>,
 ) {
     let mut right_arm = None;
@@ -244,23 +245,56 @@ fn animate_arms(
         }
     }
 
-    if let Some((mut _right_arm_tr, mut _right_arm_sprite, mut right_arm_grpart)) = right_arm {
+    if let Some((mut right_arm_tr, mut _right_arm_sprite, mut right_arm_grpart)) = right_arm {
         match *right_arm_grpart {
             PlayerGraphicsPart::RightArm(ref mut wave_index) => {
-                // Handle right arm animation
-                println!("{}", wave_index);
-                *wave_index += 1.;
+                // Handle animation
+                let step = 4.5 * time.delta_seconds();
+                if keys.any_pressed([KeyCode::A, KeyCode::D, KeyCode::Left, KeyCode::Right]) {
+                    let sin = wave_index.sin();
+                    let theta =
+                        (sin - (-1.)) / (1. - (-1.)) * (5. * PI / 3. - 4. * PI / 3.) + 4. * PI / 3.;
+
+                    println!("{}", theta);
+
+                    right_arm_tr.rotation = Quat::from_rotation_z(theta + PI / 2.);
+
+                    *wave_index += step;
+                    if *wave_index > 360. {
+                        *wave_index = 0.;
+                    }
+                }
+                // else {
+                //     let angle = right_arm_tr.rotation.to_euler(EulerRot::ZYX).0;
+                //     if angle > 3. * PI / 2. || angle < PI / 2. {
+                //         right_arm_tr.rotation = Quat::from_rotation_z(angle - step);
+                //     } else if angle < 3. * PI / 2. || angle > PI / 2. {
+                //         right_arm_tr.rotation = Quat::from_rotation_z(angle + step);
+                //     }
+                // }
             }
             _ => (),
         }
     }
 
-    if let Some((mut _left_arm_tr, mut _left_arm_sprite, mut left_arm_grpart)) = left_arm {
+    if let Some((mut left_arm_tr, mut _left_arm_sprite, mut left_arm_grpart)) = left_arm {
         match *left_arm_grpart {
             PlayerGraphicsPart::LeftArm(ref mut wave_index) => {
-                // Handle left arm animation
-                println!("{}", wave_index);
-                *wave_index += 1.;
+                if keys.any_pressed([KeyCode::A, KeyCode::D, KeyCode::Left, KeyCode::Right]) {
+                    // Handle animation
+                    let sin = wave_index.sin();
+                    let theta =
+                        (sin - (-1.)) / (1. - (-1.)) * (5. * PI / 3. - 4. * PI / 3.) + 4. * PI / 3.;
+
+                    println!("{}", theta);
+
+                    left_arm_tr.rotation = Quat::from_rotation_z(-(theta + PI / 2.));
+
+                    *wave_index += 4.5 * time.delta_seconds();
+                    if *wave_index > 360. {
+                        *wave_index = 0.;
+                    }
+                }
             }
             _ => (),
         }
@@ -291,8 +325,8 @@ fn animate_legs(
         match *right_leg_grpart {
             PlayerGraphicsPart::RightLeg(ref mut wave_index) => {
                 // Handle right leg animation
-                println!("{}", wave_index);
-                *wave_index += 1.;
+                // println!("{}", wave_index);
+                // *wave_index += 1.;
             }
             _ => (),
         }
@@ -302,8 +336,8 @@ fn animate_legs(
         match *left_leg_grpart {
             PlayerGraphicsPart::LeftLeg(ref mut wave_index) => {
                 // Handle left leg animation
-                println!("{}", wave_index);
-                *wave_index += 1.;
+                // println!("{}", wave_index);
+                // *wave_index += 1.;
             }
             _ => (),
         }
