@@ -396,6 +396,38 @@ fn animate_legs(
                     if *wave_index > 360. {
                         *wave_index = 0.;
                     }
+                } else {
+                    let angle = right_leg_tr.rotation.to_euler(EulerRot::ZYX).0;
+
+                    if angle + 3. * PI / 2. < 5. * PI / 3. && angle + 3. * PI / 2. > 3. * PI / 2. {
+                        // condition 1
+                        let angle = angle - step;
+
+                        right_leg_tr.rotation = Quat::from_rotation_z(angle);
+
+                        if angle + 3. * PI / 2. > 4. * PI / 3.
+                            && angle + 3. * PI / 2. < 3. * PI / 2.
+                        // condition 2
+                        {
+                            right_leg_tr.rotation = Quat::from_rotation_z(2. * PI);
+                            *wave_index = 0.;
+                        }
+                    } else if angle + 3. * PI / 2. > 4. * PI / 3.
+                        && angle + 3. * PI / 2. < 3. * PI / 2.
+                    // condition 2
+                    {
+                        let angle = angle + step;
+
+                        right_leg_tr.rotation = Quat::from_rotation_z(angle);
+
+                        if angle + 3. * PI / 2. < 5. * PI / 3.
+                            && angle + 3. * PI / 2. > 3. * PI / 2.
+                        // condition 1
+                        {
+                            right_leg_tr.rotation = Quat::from_rotation_z(2. * PI);
+                            *wave_index = 0.;
+                        }
+                    }
                 }
             }
             _ => (),
@@ -418,6 +450,38 @@ fn animate_legs(
                     *wave_index += step;
                     if *wave_index > 360. {
                         *wave_index = 0.;
+                    }
+                } else {
+                    let angle = left_leg_tr.rotation.to_euler(EulerRot::ZYX).0;
+
+                    if angle + 3. * PI / 2. < 5. * PI / 3. && angle + 3. * PI / 2. > 3. * PI / 2. {
+                        // condition 1
+                        let angle = angle - step;
+
+                        left_leg_tr.rotation = Quat::from_rotation_z(angle);
+
+                        if angle + 3. * PI / 2. > 4. * PI / 3.
+                            && angle + 3. * PI / 2. < 3. * PI / 2.
+                        // condition 2
+                        {
+                            left_leg_tr.rotation = Quat::from_rotation_z(2. * PI);
+                            *wave_index = 0.;
+                        }
+                    } else if angle + 3. * PI / 2. > 4. * PI / 3.
+                        && angle + 3. * PI / 2. < 3. * PI / 2.
+                    // condition 2
+                    {
+                        let angle = angle + step;
+
+                        left_leg_tr.rotation = Quat::from_rotation_z(angle);
+
+                        if angle + 3. * PI / 2. < 5. * PI / 3.
+                            && angle + 3. * PI / 2. > 3. * PI / 2.
+                        // condition 1
+                        {
+                            left_leg_tr.rotation = Quat::from_rotation_z(2. * PI);
+                            *wave_index = 0.;
+                        }
                     }
                 }
             }
