@@ -3,6 +3,7 @@ use bevy::{
     window::PrimaryWindow,
 };
 use bevy_rapier2d::prelude::*;
+use std::f32::consts::PI;
 
 // CONSTANTS
 
@@ -171,7 +172,12 @@ fn player_controller_movement(
 }
 
 fn animate_head(
-    mut graphics_parts: Query<(&GlobalTransform, &mut Transform, &PlayerGraphicsPart)>,
+    mut graphics_parts: Query<(
+        &GlobalTransform,
+        &mut Transform,
+        &mut Sprite,
+        &PlayerGraphicsPart,
+    )>,
     window: Query<&Window, With<PrimaryWindow>>,
     camera: Query<(&Camera, &GlobalTransform), With<crate::MainCamera>>,
 ) {
@@ -189,19 +195,27 @@ fn animate_head(
 
     let mut head = None;
     for p in graphics_parts.iter_mut() {
-        if let PlayerGraphicsPart::Head = p.2 {
-            head = Some((p.0, p.1));
+        if let PlayerGraphicsPart::Head = p.3 {
+            head = Some((p.0, p.1, p.2));
             break;
         }
     }
 
-    if let Some((head_gtr, mut head_tr)) = head {
+    if let Some((head_gtr, mut head_tr, mut head_sprite)) = head {
         let cursor_vec = vec2(
             cursor_position.x - head_gtr.translation().x,
             cursor_position.y - head_gtr.translation().y,
         );
+
         let theta = f32::atan2(cursor_vec.y, cursor_vec.x);
-        head_tr.rotation = Quat::from_rotation_z(theta)
+
+        if (theta > PI / 2. && theta < PI) || (theta < -PI / 2. && theta > -PI) {
+            head_tr.rotation = Quat::from_rotation_z(theta + std::f32::consts::PI);
+            head_sprite.flip_x = true;
+        } else {
+            head_tr.rotation = Quat::from_rotation_z(theta);
+            head_sprite.flip_x = false;
+        }
     }
 }
 
