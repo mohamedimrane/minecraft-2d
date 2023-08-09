@@ -39,7 +39,10 @@ impl Plugin for PlayerPlugin {
             // Systems
             .add_systems(PreStartup, load_player_graphics)
             .add_systems(Startup, spawn_player)
-            .add_systems(Update, (player_controller_movement, animate_head))
+            .add_systems(
+                Update,
+                (player_controller_movement, animate_head, animate_arms),
+            )
             // Reflection
             .register_type::<PlayerGraphicsPart>()
             .register_type::<Speed>()
@@ -86,8 +89,8 @@ struct PlayerGraphicsHolder;
 enum PlayerGraphicsPart {
     Head,
     Body,
-    RightArm,
-    LeftArm,
+    RightArm(f32),
+    LeftArm(f32),
     RightLeg,
     LeftLeg,
 }
@@ -219,6 +222,49 @@ fn animate_head(
     }
 }
 
+fn animate_arms(
+    mut graphics_parts: Query<(&mut Transform, &mut Sprite, &mut PlayerGraphicsPart)>,
+    keys: Res<Input<KeyCode>>,
+) {
+    let mut right_arm = None;
+    let mut left_arm = None;
+    for p in graphics_parts.iter_mut() {
+        match *p.2 {
+            PlayerGraphicsPart::RightArm(_) => {
+                right_arm = Some((p.0, p.1, p.2));
+                continue;
+            }
+            PlayerGraphicsPart::LeftArm(_) => {
+                left_arm = Some((p.0, p.1, p.2));
+                continue;
+            }
+            _ => (),
+        }
+    }
+
+    if let Some((mut _right_arm_tr, mut _right_arm_sprite, mut right_arm_grpart)) = right_arm {
+        match *right_arm_grpart {
+            PlayerGraphicsPart::RightArm(ref mut wave_index) => {
+                // Handle right arm animation
+                println!("{}", wave_index);
+                *wave_index += 1.;
+            }
+            _ => (),
+        }
+    }
+
+    if let Some((mut _left_arm_tr, mut _left_arm_sprite, mut left_arm_grpart)) = left_arm {
+        match *left_arm_grpart {
+            PlayerGraphicsPart::LeftArm(ref mut wave_index) => {
+                // Handle left arm animation
+                println!("{}", wave_index);
+                *wave_index += 1.;
+            }
+            _ => (),
+        }
+    }
+}
+
 // BUNDLES
 
 #[derive(Bundle)]
@@ -336,7 +382,7 @@ impl PlayerGraphicsPartBundle {
                 ..default()
             },
             texture: gr.tex.clone(),
-            tag: PlayerGraphicsPart::RightArm,
+            tag: PlayerGraphicsPart::RightArm(0.),
             transform_bundle: TransformBundle {
                 local: Transform::from_xyz(0., ARM_OFFSET, FRONT_ARM_Z_INDEX),
                 ..default()
@@ -354,7 +400,7 @@ impl PlayerGraphicsPartBundle {
                 ..default()
             },
             texture: gr.tex.clone(),
-            tag: PlayerGraphicsPart::LeftArm,
+            tag: PlayerGraphicsPart::LeftArm(0.),
             transform_bundle: TransformBundle {
                 local: Transform::from_xyz(0., ARM_OFFSET, BACK_ARM_Z_INDEX),
                 ..default()
