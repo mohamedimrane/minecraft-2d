@@ -41,7 +41,12 @@ impl Plugin for PlayerPlugin {
             .add_systems(Startup, spawn_player)
             .add_systems(
                 Update,
-                (player_controller_movement, animate_head, animate_arms),
+                (
+                    player_controller_movement,
+                    animate_head,
+                    animate_arms,
+                    animate_legs,
+                ),
             )
             // Reflection
             .register_type::<PlayerGraphicsPart>()
@@ -91,8 +96,8 @@ enum PlayerGraphicsPart {
     Body,
     RightArm(f32),
     LeftArm(f32),
-    RightLeg,
-    LeftLeg,
+    RightLeg(f32),
+    LeftLeg(f32),
 }
 
 #[derive(Component, Reflect)]
@@ -262,6 +267,49 @@ fn animate_arms(
     }
 }
 
+fn animate_legs(
+    mut graphics_parts: Query<(&mut Transform, &mut Sprite, &mut PlayerGraphicsPart)>,
+    keys: Res<Input<KeyCode>>,
+) {
+    let mut right_leg = None;
+    let mut left_leg = None;
+    for p in graphics_parts.iter_mut() {
+        match *p.2 {
+            PlayerGraphicsPart::RightLeg(_) => {
+                right_leg = Some((p.0, p.1, p.2));
+                continue;
+            }
+            PlayerGraphicsPart::LeftLeg(_) => {
+                left_leg = Some((p.0, p.1, p.2));
+                continue;
+            }
+            _ => (),
+        }
+    }
+
+    if let Some((mut _right_leg_tr, mut _right_leg_sprite, mut right_leg_grpart)) = right_leg {
+        match *right_leg_grpart {
+            PlayerGraphicsPart::RightLeg(ref mut wave_index) => {
+                // Handle right leg animation
+                println!("{}", wave_index);
+                *wave_index += 1.;
+            }
+            _ => (),
+        }
+    }
+
+    if let Some((mut _left_leg_tr, mut _left_leg_sprite, mut left_leg_grpart)) = left_leg {
+        match *left_leg_grpart {
+            PlayerGraphicsPart::LeftLeg(ref mut wave_index) => {
+                // Handle left leg animation
+                println!("{}", wave_index);
+                *wave_index += 1.;
+            }
+            _ => (),
+        }
+    }
+}
+
 // BUNDLES
 
 #[derive(Bundle)]
@@ -415,7 +463,7 @@ impl PlayerGraphicsPartBundle {
                 ..default()
             },
             texture: gr.tex.clone(),
-            tag: PlayerGraphicsPart::RightLeg,
+            tag: PlayerGraphicsPart::RightLeg(0.),
             transform_bundle: TransformBundle {
                 local: Transform::from_xyz(0., LEG_OFFSET, FRONT_LEG_Z_INDEX),
                 ..default()
@@ -433,7 +481,7 @@ impl PlayerGraphicsPartBundle {
                 ..default()
             },
             texture: gr.tex.clone(),
-            tag: PlayerGraphicsPart::LeftLeg,
+            tag: PlayerGraphicsPart::LeftLeg(0.),
             transform_bundle: TransformBundle {
                 local: Transform::from_xyz(0., LEG_OFFSET, BACK_LEG_Z_INDEX),
                 ..default()
