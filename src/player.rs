@@ -160,13 +160,10 @@ fn player_controller_movement(
     keys: Res<Input<KeyCode>>,
 ) {
     for (speed, mut rb_vel) in player_query.iter_mut() {
-        // let up = keys.any_pressed([KeyCode::W, KeyCode::Up]);
-        // let down = keys.any_pressed([KeyCode::S, KeyCode::Down]);
         let left = keys.any_pressed([KeyCode::A, KeyCode::Left]);
         let right = keys.any_pressed([KeyCode::D, KeyCode::Right]);
 
         let x_axis = -(left as i8) + right as i8;
-        // let y_axis = -(down as i8) + up as i8;
 
         let move_delta_x = x_axis as f32;
 
