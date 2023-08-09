@@ -5,6 +5,7 @@ use player::PlayerPlugin;
 use world::WorldPlugin;
 
 mod player;
+mod utils;
 mod world;
 
 #[derive(Component)]
