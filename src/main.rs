@@ -7,6 +7,9 @@ use world::WorldPlugin;
 mod player;
 mod world;
 
+#[derive(Component)]
+pub struct MainCamera;
+
 fn main() {
     App::new()
         .add_plugins((
@@ -36,5 +39,5 @@ fn main() {
 }
 
 fn setup_camera(mut commands: Commands) {
-    commands.spawn(Camera2dBundle::default());
+    commands.spawn((Camera2dBundle::default(), MainCamera));
 }

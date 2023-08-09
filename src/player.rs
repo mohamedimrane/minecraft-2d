@@ -1,4 +1,7 @@
-use bevy::{prelude::*, render::texture::DEFAULT_IMAGE_HANDLE, sprite::Anchor};
+use bevy::{
+    math::vec2, prelude::*, render::texture::DEFAULT_IMAGE_HANDLE, sprite::Anchor,
+    window::PrimaryWindow,
+};
 use bevy_rapier2d::prelude::*;
 
 // CONSTANTS
@@ -35,7 +38,7 @@ impl Plugin for PlayerPlugin {
             // Systems
             .add_systems(PreStartup, load_player_graphics)
             .add_systems(Startup, spawn_player)
-            .add_systems(Update, (player_controller_movement, animate_player))
+            .add_systems(Update, (player_controller_movement, animate_head))
             // Reflection
             .register_type::<PlayerGraphicsPart>()
             .register_type::<Speed>()
@@ -167,7 +170,40 @@ fn player_controller_movement(
     }
 }
 
-fn animate_player(mut player_query: Query<(), With<Player>>) {}
+fn animate_head(
+    mut graphics_parts: Query<(&GlobalTransform, &mut Transform, &PlayerGraphicsPart)>,
+    window: Query<&Window, With<PrimaryWindow>>,
+    camera: Query<(&Camera, &GlobalTransform), With<crate::MainCamera>>,
+) {
+    let window = window.single();
+    let (camera, camera_transform) = camera.single();
+
+    let mut cursor_position = vec2(0., 0.);
+
+    if let Some(world_position) = window
+        .cursor_position()
+        .and_then(|cursor| camera.viewport_to_world_2d(camera_transform, cursor))
+    {
+        cursor_position = world_position
+    }
+
+    let mut head = None;
+    for p in graphics_parts.iter_mut() {
+        if let PlayerGraphicsPart::Head = p.2 {
+            head = Some((p.0, p.1));
+            break;
+        }
+    }
+
+    if let Some((head_gtr, mut head_tr)) = head {
+        let cursor_vec = vec2(
+            cursor_position.x - head_gtr.translation().x,
+            cursor_position.y - head_gtr.translation().y,
+        );
+        let theta = f32::atan2(cursor_vec.y, cursor_vec.x);
+        head_tr.rotation = Quat::from_rotation_z(theta)
+    }
+}
 
 // BUNDLES
 
