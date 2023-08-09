@@ -303,6 +303,7 @@ fn animate_arms(
 
 fn animate_legs(
     mut graphics_parts: Query<(&mut Transform, &mut Sprite, &mut PlayerGraphicsPart)>,
+    time: Res<Time>,
     keys: Res<Input<KeyCode>>,
 ) {
     let mut right_leg = None;
@@ -321,23 +322,49 @@ fn animate_legs(
         }
     }
 
-    if let Some((mut _right_leg_tr, mut _right_leg_sprite, mut right_leg_grpart)) = right_leg {
+    if let Some((mut right_leg_tr, mut _right_leg_sprite, mut right_leg_grpart)) = right_leg {
         match *right_leg_grpart {
             PlayerGraphicsPart::RightLeg(ref mut wave_index) => {
-                // Handle right leg animation
-                // println!("{}", wave_index);
-                // *wave_index += 1.;
+                // Handle animation
+                let step = 4.5 * time.delta_seconds();
+                if keys.any_pressed([KeyCode::A, KeyCode::D, KeyCode::Left, KeyCode::Right]) {
+                    let sin = wave_index.sin();
+                    let theta =
+                        (sin - (-1.)) / (1. - (-1.)) * (5. * PI / 3. - 4. * PI / 3.) + 4. * PI / 3.;
+
+                    println!("{}", theta);
+
+                    right_leg_tr.rotation = Quat::from_rotation_z(-(theta + PI / 2.));
+
+                    *wave_index += step;
+                    if *wave_index > 360. {
+                        *wave_index = 0.;
+                    }
+                }
             }
             _ => (),
         }
     }
 
-    if let Some((mut _left_leg_tr, mut _left_leg_sprite, mut left_leg_grpart)) = left_leg {
+    if let Some((mut left_leg_tr, mut _left_leg_sprite, mut left_leg_grpart)) = left_leg {
         match *left_leg_grpart {
             PlayerGraphicsPart::LeftLeg(ref mut wave_index) => {
-                // Handle left leg animation
-                // println!("{}", wave_index);
-                // *wave_index += 1.;
+                // Handle animation
+                let step = 4.5 * time.delta_seconds();
+                if keys.any_pressed([KeyCode::A, KeyCode::D, KeyCode::Left, KeyCode::Right]) {
+                    let sin = wave_index.sin();
+                    let theta =
+                        (sin - (-1.)) / (1. - (-1.)) * (5. * PI / 3. - 4. * PI / 3.) + 4. * PI / 3.;
+
+                    println!("{}", theta);
+
+                    left_leg_tr.rotation = Quat::from_rotation_z(theta + PI / 2.);
+
+                    *wave_index += step;
+                    if *wave_index > 360. {
+                        *wave_index = 0.;
+                    }
+                }
             }
             _ => (),
         }
