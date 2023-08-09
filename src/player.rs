@@ -229,6 +229,7 @@ fn animate_arms(
     time: Res<Time>,
     keys: Res<Input<KeyCode>>,
 ) {
+    // Get graphics parts
     let mut right_arm = None;
     let mut left_arm = None;
     for p in graphics_parts.iter_mut() {
@@ -245,6 +246,7 @@ fn animate_arms(
         }
     }
 
+    // Extract right arm
     if let Some((mut right_arm_tr, mut _right_arm_sprite, mut right_arm_grpart)) = right_arm {
         match *right_arm_grpart {
             PlayerGraphicsPart::RightArm(ref mut wave_index) => {
@@ -277,6 +279,7 @@ fn animate_arms(
         }
     }
 
+    // Extract left arm
     if let Some((mut left_arm_tr, mut _left_arm_sprite, mut left_arm_grpart)) = left_arm {
         match *left_arm_grpart {
             PlayerGraphicsPart::LeftArm(ref mut wave_index) => {
@@ -306,6 +309,7 @@ fn animate_legs(
     time: Res<Time>,
     keys: Res<Input<KeyCode>>,
 ) {
+    // Get graphics parts
     let mut right_leg = None;
     let mut left_leg = None;
     for p in graphics_parts.iter_mut() {
@@ -322,6 +326,7 @@ fn animate_legs(
         }
     }
 
+    // Extract right leg
     if let Some((mut right_leg_tr, mut _right_leg_sprite, mut right_leg_grpart)) = right_leg {
         match *right_leg_grpart {
             PlayerGraphicsPart::RightLeg(ref mut wave_index) => {
@@ -346,6 +351,7 @@ fn animate_legs(
         }
     }
 
+    // Extract left leg
     if let Some((mut left_leg_tr, mut _left_leg_sprite, mut left_leg_grpart)) = left_leg {
         match *left_leg_grpart {
             PlayerGraphicsPart::LeftLeg(ref mut wave_index) => {
