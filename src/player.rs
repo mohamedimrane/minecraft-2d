@@ -500,6 +500,7 @@ struct PlayerBundle {
 
     // colliders
     collider: Collider,
+    collider_mass: ColliderMassProperties,
 
     // tags
     player: Player,
@@ -541,11 +542,12 @@ struct PlayerGraphicsPartBundle {
 }
 
 impl PlayerBundle {
-    fn new(speed: f32, jump_force: f32, collider: Collider) -> Self {
+    fn new(speed: f32, jump_force: f32, collider: Collider, mass: f32) -> Self {
         Self {
             speed: Speed(speed),
             jump: Jump(jump_force),
             collider,
+            collider_mass: ColliderMassProperties::Mass(mass),
             player: Player,
             rigid_body: RigidBody::Dynamic,
             friction: Friction {
@@ -677,6 +679,7 @@ impl Default for PlayerBundle {
             speed: Speed(300.),
             jump: Jump(100.),
             collider: Collider::cuboid(10., 76.),
+            collider_mass: ColliderMassProperties::Mass(91.),
             player: Player,
             rigid_body: RigidBody::Dynamic,
             friction: Friction {
