@@ -257,23 +257,45 @@ fn animate_arms(
                     let theta =
                         (sin - (-1.)) / (1. - (-1.)) * (5. * PI / 3. - 4. * PI / 3.) + 4. * PI / 3.;
 
-                    println!("{}", theta);
-
                     right_arm_tr.rotation = Quat::from_rotation_z(theta + PI / 2.);
 
                     *wave_index += step;
                     if *wave_index > 360. {
                         *wave_index = 0.;
                     }
+                } else {
+                    let angle = right_arm_tr.rotation.to_euler(EulerRot::ZYX).0;
+
+                    if angle + 3. * PI / 2. < 5. * PI / 3. && angle + 3. * PI / 2. > 3. * PI / 2. {
+                        // condition 1
+                        let angle = angle - step;
+
+                        right_arm_tr.rotation = Quat::from_rotation_z(angle);
+
+                        if angle + 3. * PI / 2. > 4. * PI / 3.
+                            && angle + 3. * PI / 2. < 3. * PI / 2.
+                        // condition 2
+                        {
+                            right_arm_tr.rotation = Quat::from_rotation_z(2. * PI);
+                            *wave_index = 0.;
+                        }
+                    } else if angle + 3. * PI / 2. > 4. * PI / 3.
+                        && angle + 3. * PI / 2. < 3. * PI / 2.
+                    // condition 2
+                    {
+                        let angle = angle + step;
+
+                        right_arm_tr.rotation = Quat::from_rotation_z(angle);
+
+                        if angle + 3. * PI / 2. < 5. * PI / 3.
+                            && angle + 3. * PI / 2. > 3. * PI / 2.
+                        // condition 1
+                        {
+                            right_arm_tr.rotation = Quat::from_rotation_z(2. * PI);
+                            *wave_index = 0.;
+                        }
+                    }
                 }
-                // else {
-                //     let angle = right_arm_tr.rotation.to_euler(EulerRot::ZYX).0;
-                //     if angle > 3. * PI / 2. || angle < PI / 2. {
-                //         right_arm_tr.rotation = Quat::from_rotation_z(angle - step);
-                //     } else if angle < 3. * PI / 2. || angle > PI / 2. {
-                //         right_arm_tr.rotation = Quat::from_rotation_z(angle + step);
-                //     }
-                // }
             }
             _ => (),
         }
@@ -283,19 +305,50 @@ fn animate_arms(
     if let Some((mut left_arm_tr, mut _left_arm_sprite, mut left_arm_grpart)) = left_arm {
         match *left_arm_grpart {
             PlayerGraphicsPart::LeftArm(ref mut wave_index) => {
+                let step = 4.5 * time.delta_seconds();
                 if keys.any_pressed([KeyCode::A, KeyCode::D, KeyCode::Left, KeyCode::Right]) {
                     // Handle animation
                     let sin = wave_index.sin();
                     let theta =
                         (sin - (-1.)) / (1. - (-1.)) * (5. * PI / 3. - 4. * PI / 3.) + 4. * PI / 3.;
 
-                    println!("{}", theta);
-
                     left_arm_tr.rotation = Quat::from_rotation_z(-(theta + PI / 2.));
 
                     *wave_index += 4.5 * time.delta_seconds();
                     if *wave_index > 360. {
                         *wave_index = 0.;
+                    }
+                } else {
+                    let angle = left_arm_tr.rotation.to_euler(EulerRot::ZYX).0;
+
+                    if angle + 3. * PI / 2. < 5. * PI / 3. && angle + 3. * PI / 2. > 3. * PI / 2. {
+                        // condition 1
+                        let angle = angle - step;
+
+                        left_arm_tr.rotation = Quat::from_rotation_z(angle);
+
+                        if angle + 3. * PI / 2. > 4. * PI / 3.
+                            && angle + 3. * PI / 2. < 3. * PI / 2.
+                        // condition 2
+                        {
+                            left_arm_tr.rotation = Quat::from_rotation_z(2. * PI);
+                            *wave_index = 0.;
+                        }
+                    } else if angle + 3. * PI / 2. > 4. * PI / 3.
+                        && angle + 3. * PI / 2. < 3. * PI / 2.
+                    // condition 2
+                    {
+                        let angle = angle + step;
+
+                        left_arm_tr.rotation = Quat::from_rotation_z(angle);
+
+                        if angle + 3. * PI / 2. < 5. * PI / 3.
+                            && angle + 3. * PI / 2. > 3. * PI / 2.
+                        // condition 1
+                        {
+                            left_arm_tr.rotation = Quat::from_rotation_z(2. * PI);
+                            *wave_index = 0.;
+                        }
                     }
                 }
             }
@@ -337,8 +390,6 @@ fn animate_legs(
                     let theta =
                         (sin - (-1.)) / (1. - (-1.)) * (5. * PI / 3. - 4. * PI / 3.) + 4. * PI / 3.;
 
-                    println!("{}", theta);
-
                     right_leg_tr.rotation = Quat::from_rotation_z(-(theta + PI / 2.));
 
                     *wave_index += step;
@@ -361,8 +412,6 @@ fn animate_legs(
                     let sin = wave_index.sin();
                     let theta =
                         (sin - (-1.)) / (1. - (-1.)) * (5. * PI / 3. - 4. * PI / 3.) + 4. * PI / 3.;
-
-                    println!("{}", theta);
 
                     left_leg_tr.rotation = Quat::from_rotation_z(theta + PI / 2.);
 
