@@ -1,9 +1,11 @@
 use bevy::prelude::*;
 use bevy_inspector_egui::quick::WorldInspectorPlugin;
 use bevy_rapier2d::prelude::*;
+use block::BlockPlugin;
 use player::PlayerPlugin;
 use world::WorldPlugin;
 
+mod block;
 mod player;
 mod utils;
 mod world;
@@ -30,6 +32,7 @@ fn main() {
             WorldInspectorPlugin::new(),
             PlayerPlugin,
             WorldPlugin,
+            BlockPlugin,
         ))
         .insert_resource(RapierConfiguration {
             gravity: Vec2::new(0., -1000.),
