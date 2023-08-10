@@ -53,9 +53,19 @@ impl Plugin for PlayerPlugin {
                 ),
             )
             // Reflection
+            .register_type::<Player>()
+            .register_type::<PlayerGraphicsHolder>()
             .register_type::<PlayerGraphicsPart>()
+            .register_type::<PlayerGraphicsPartHead>()
+            .register_type::<PlayerGraphicsPartBody>()
+            .register_type::<PlayerGraphicsPartRightArm>()
+            .register_type::<PlayerGraphicsPartLeftArm>()
+            .register_type::<PlayerGraphicsPartRightLeg>()
+            .register_type::<PlayerGraphicsPartLeftLeg>()
             .register_type::<Speed>()
-            .register_type::<Jump>();
+            .register_type::<Jump>()
+            .register_type::<Direction>()
+            .register_type::<WaveIndex>();
     }
 }
 
@@ -98,10 +108,10 @@ impl Default for PlayerGraphics {
 
 // COMPONENTS
 
-#[derive(Component)]
+#[derive(Component, Reflect)]
 struct Player;
 
-#[derive(Component)]
+#[derive(Component, Reflect)]
 struct PlayerGraphicsHolder;
 
 #[derive(Component, Reflect)]
