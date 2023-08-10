@@ -249,14 +249,14 @@ fn animate_head(
 
 fn animate_arms(
     mut right_arm: Query<
-        (&mut Transform, &mut Sprite, &mut WaveIndex),
+        (&mut Transform, &mut WaveIndex),
         (
             With<PlayerGraphicsPartRightArm>,
             Without<PlayerGraphicsPartLeftArm>,
         ),
     >,
     mut left_arm: Query<
-        (&mut Transform, &mut Sprite, &mut WaveIndex),
+        (&mut Transform, &mut WaveIndex),
         (
             With<PlayerGraphicsPartLeftArm>,
             Without<PlayerGraphicsPartRightArm>,
@@ -274,7 +274,7 @@ fn animate_arms(
     let arm_leans_to_left = |a| a < 5. * PI / 3. && a > 3. * PI / 2.;
     let arm_leans_to_right = |a| a > 4. * PI / 3. && a < 3. * PI / 2.;
 
-    let (mut tr, mut _spr, mut wave_index) = right_arm;
+    let (mut tr, mut wave_index) = right_arm;
 
     // Handle animation
     if keys.any_pressed([KeyCode::A, KeyCode::D, KeyCode::Left, KeyCode::Right]) {
@@ -312,7 +312,7 @@ fn animate_arms(
         }
     }
 
-    let (mut tr, mut _spr, mut wave_index) = left_arm;
+    let (mut tr, mut wave_index) = left_arm;
 
     // Handle animation
     if keys.any_pressed([KeyCode::A, KeyCode::D, KeyCode::Left, KeyCode::Right]) {
@@ -353,14 +353,14 @@ fn animate_arms(
 
 fn animate_legs(
     mut right_leg: Query<
-        (&mut Transform, &mut Sprite, &mut WaveIndex),
+        (&mut Transform, &mut WaveIndex),
         (
             With<PlayerGraphicsPartRightLeg>,
             Without<PlayerGraphicsPartLeftLeg>,
         ),
     >,
     mut left_leg: Query<
-        (&mut Transform, &mut Sprite, &mut WaveIndex),
+        (&mut Transform, &mut WaveIndex),
         (
             With<PlayerGraphicsPartLeftLeg>,
             Without<PlayerGraphicsPartRightLeg>,
@@ -379,7 +379,7 @@ fn animate_legs(
     let leg_leans_to_right = |a| a > 4. * PI / 3. && a < 3. * PI / 2.;
 
     // Extract right leg
-    let (mut tr, mut _spr, mut wave_index) = right_leg;
+    let (mut tr, mut wave_index) = right_leg;
 
     // Handle animation
     if keys.any_pressed([KeyCode::A, KeyCode::D, KeyCode::Left, KeyCode::Right]) {
@@ -418,14 +418,14 @@ fn animate_legs(
     }
 
     // Extract left leg
-    let (mut left_leg_tr, mut _left_leg_sprite, mut wave_index) = left_leg;
+    let (mut tr, mut wave_index) = left_leg;
 
     // Handle animation
     if keys.any_pressed([KeyCode::A, KeyCode::D, KeyCode::Left, KeyCode::Right]) {
         let sin = wave_index.0.sin();
         let theta = map(sin, -1., 1., 4. * PI / 3., 5. * PI / 3.) + PI / 2.;
 
-        left_leg_tr.rotation = Quat::from_rotation_z(theta);
+        tr.rotation = Quat::from_rotation_z(theta);
 
         wave_index.0 += step;
         if wave_index.0 > 360. {
@@ -433,24 +433,24 @@ fn animate_legs(
         }
     } else {
         // Put leg back in place after stopping movement
-        let angle = left_leg_tr.rotation.to_euler(EulerRot::ZYX).0;
+        let angle = tr.rotation.to_euler(EulerRot::ZYX).0;
 
         if leg_leans_to_left(angle + 3. * PI / 2.) {
             let angle = angle - step;
 
-            left_leg_tr.rotation = Quat::from_rotation_z(angle);
+            tr.rotation = Quat::from_rotation_z(angle);
 
             if leg_leans_to_right(angle + 3. * PI / 2.) {
-                left_leg_tr.rotation = Quat::from_rotation_z(2. * PI);
+                tr.rotation = Quat::from_rotation_z(2. * PI);
                 wave_index.0 = 0.;
             }
         } else if leg_leans_to_right(angle + 3. * PI / 2.) {
             let angle = angle + step;
 
-            left_leg_tr.rotation = Quat::from_rotation_z(angle);
+            tr.rotation = Quat::from_rotation_z(angle);
 
             if leg_leans_to_left(angle + 3. * PI / 2.) {
-                left_leg_tr.rotation = Quat::from_rotation_z(2. * PI);
+                tr.rotation = Quat::from_rotation_z(2. * PI);
                 wave_index.0 = 0.;
             }
         }
