@@ -171,36 +171,26 @@ fn spawn_player(mut commands: Commands, graphics: Res<PlayerGraphics>) {
             .with_children(|cb| {
                 cb.spawn((
                     PlayerGraphicsPartBundle::new_head(&graphics),
-                    PlayerGraphicsPartHead,
                     Name::new("Head"),
                 ));
                 cb.spawn((
                     PlayerGraphicsPartBundle::new_body(&graphics),
-                    PlayerGraphicsPartBody,
                     Name::new("Body"),
                 ));
                 cb.spawn((
                     PlayerGraphicsPartBundle::new_right_arm(&graphics),
-                    PlayerGraphicsPartRightArm,
-                    WaveIndex(0.),
                     Name::new("Right Arm"),
                 ));
                 cb.spawn((
                     PlayerGraphicsPartBundle::new_left_arm(&graphics),
-                    PlayerGraphicsPartLeftArm,
-                    WaveIndex(0.),
                     Name::new("Left Arm"),
                 ));
                 cb.spawn((
                     PlayerGraphicsPartBundle::new_right_leg(&graphics),
-                    PlayerGraphicsPartRightLeg,
-                    WaveIndex(0.),
                     Name::new("Right Leg"),
                 ));
                 cb.spawn((
                     PlayerGraphicsPartBundle::new_left_leg(&graphics),
-                    PlayerGraphicsPartLeftLeg,
-                    WaveIndex(0.),
                     Name::new("Left Leg"),
                 ));
             });
@@ -601,6 +591,7 @@ struct PlayerGraphicsHolderBundle {
     visibility_bundle: VisibilityBundle,
 }
 
+/// Need to insert tags manually (as well as WaveIndex if needed)
 #[derive(Bundle)]
 struct PlayerGraphicsPartBundle {
     // rendering
@@ -616,6 +607,7 @@ struct PlayerGraphicsPartBundle {
 }
 
 impl PlayerBundle {
+    /// Need to insert tags manually (as well as WaveIndex if needed)
     fn new(speed: f32, jump_force: f32, collider: Collider, mass: f32) -> Self {
         Self {
             speed: Speed(speed),
@@ -639,112 +631,134 @@ impl PlayerBundle {
 }
 
 impl PlayerGraphicsPartBundle {
-    fn new_head(gr: &PlayerGraphics) -> Self {
-        Self {
-            sprite: Sprite {
-                custom_size: Some(Vec2::splat(HEAD_SIZE)),
-                anchor: Anchor::BottomCenter,
-                rect: Some(gr.head),
-                ..default()
+    fn new_head(gr: &PlayerGraphics) -> (Self, PlayerGraphicsPartHead) {
+        (
+            Self {
+                sprite: Sprite {
+                    custom_size: Some(Vec2::splat(HEAD_SIZE)),
+                    anchor: Anchor::BottomCenter,
+                    rect: Some(gr.head),
+                    ..default()
+                },
+                texture: gr.tex.clone(),
+                tag: PlayerGraphicsPart::Head,
+                transform_bundle: TransformBundle {
+                    local: Transform::from_xyz(0., HEAD_OFFSET, HEAD_Z_INDEX),
+                    ..default()
+                },
+                visibility_bunde: VisibilityBundle::default(),
             },
-            texture: gr.tex.clone(),
-            tag: PlayerGraphicsPart::Head,
-            transform_bundle: TransformBundle {
-                local: Transform::from_xyz(0., HEAD_OFFSET, HEAD_Z_INDEX),
-                ..default()
-            },
-            visibility_bunde: VisibilityBundle::default(),
-        }
+            PlayerGraphicsPartHead,
+        )
     }
 
-    fn new_body(gr: &PlayerGraphics) -> Self {
-        Self {
-            sprite: Sprite {
-                custom_size: Some(Vec2::new(BODY_W_SIZE, BODY_H_SIZE)),
-                anchor: Anchor::Center,
-                rect: Some(gr.body_front),
-                ..default()
+    fn new_body(gr: &PlayerGraphics) -> (Self, PlayerGraphicsPartBody) {
+        (
+            Self {
+                sprite: Sprite {
+                    custom_size: Some(Vec2::new(BODY_W_SIZE, BODY_H_SIZE)),
+                    anchor: Anchor::Center,
+                    rect: Some(gr.body_front),
+                    ..default()
+                },
+                texture: gr.tex.clone(),
+                tag: PlayerGraphicsPart::Body,
+                transform_bundle: TransformBundle {
+                    local: Transform::from_xyz(0., 0., BODY_Z_INDEX),
+                    ..default()
+                },
+                visibility_bunde: VisibilityBundle::default(),
             },
-            texture: gr.tex.clone(),
-            tag: PlayerGraphicsPart::Body,
-            transform_bundle: TransformBundle {
-                local: Transform::from_xyz(0., 0., BODY_Z_INDEX),
-                ..default()
-            },
-            visibility_bunde: VisibilityBundle::default(),
-        }
+            PlayerGraphicsPartBody,
+        )
     }
 
-    fn new_right_arm(gr: &PlayerGraphics) -> Self {
-        Self {
-            sprite: Sprite {
-                custom_size: Some(Vec2::new(ARM_W_SIZE, ARM_H_SIZE)),
-                anchor: Anchor::TopCenter,
-                rect: Some(gr.right_arm_front),
-                ..default()
+    fn new_right_arm(gr: &PlayerGraphics) -> (Self, PlayerGraphicsPartRightArm, WaveIndex) {
+        (
+            Self {
+                sprite: Sprite {
+                    custom_size: Some(Vec2::new(ARM_W_SIZE, ARM_H_SIZE)),
+                    anchor: Anchor::TopCenter,
+                    rect: Some(gr.right_arm_front),
+                    ..default()
+                },
+                texture: gr.tex.clone(),
+                tag: PlayerGraphicsPart::RightArm(0.),
+                transform_bundle: TransformBundle {
+                    local: Transform::from_xyz(0., ARM_OFFSET, FRONT_ARM_Z_INDEX),
+                    ..default()
+                },
+                visibility_bunde: VisibilityBundle::default(),
             },
-            texture: gr.tex.clone(),
-            tag: PlayerGraphicsPart::RightArm(0.),
-            transform_bundle: TransformBundle {
-                local: Transform::from_xyz(0., ARM_OFFSET, FRONT_ARM_Z_INDEX),
-                ..default()
-            },
-            visibility_bunde: VisibilityBundle::default(),
-        }
+            PlayerGraphicsPartRightArm,
+            WaveIndex(0.),
+        )
     }
 
-    fn new_left_arm(gr: &PlayerGraphics) -> Self {
-        Self {
-            sprite: Sprite {
-                custom_size: Some(Vec2::new(ARM_W_SIZE, ARM_H_SIZE)),
-                anchor: Anchor::TopCenter,
-                rect: Some(gr.left_arm_front),
-                ..default()
+    fn new_left_arm(gr: &PlayerGraphics) -> (Self, PlayerGraphicsPartLeftArm, WaveIndex) {
+        (
+            Self {
+                sprite: Sprite {
+                    custom_size: Some(Vec2::new(ARM_W_SIZE, ARM_H_SIZE)),
+                    anchor: Anchor::TopCenter,
+                    rect: Some(gr.left_arm_front),
+                    ..default()
+                },
+                texture: gr.tex.clone(),
+                tag: PlayerGraphicsPart::LeftArm(0.),
+                transform_bundle: TransformBundle {
+                    local: Transform::from_xyz(0., ARM_OFFSET, BACK_ARM_Z_INDEX),
+                    ..default()
+                },
+                visibility_bunde: VisibilityBundle::default(),
             },
-            texture: gr.tex.clone(),
-            tag: PlayerGraphicsPart::LeftArm(0.),
-            transform_bundle: TransformBundle {
-                local: Transform::from_xyz(0., ARM_OFFSET, BACK_ARM_Z_INDEX),
-                ..default()
-            },
-            visibility_bunde: VisibilityBundle::default(),
-        }
+            PlayerGraphicsPartLeftArm,
+            WaveIndex(0.),
+        )
     }
 
-    fn new_right_leg(gr: &PlayerGraphics) -> Self {
-        Self {
-            sprite: Sprite {
-                custom_size: Some(Vec2::new(LEG_W_SIZE, LEG_H_SIZE)),
-                anchor: Anchor::TopCenter,
-                rect: Some(gr.right_leg_front),
-                ..default()
+    fn new_right_leg(gr: &PlayerGraphics) -> (Self, PlayerGraphicsPartRightLeg, WaveIndex) {
+        (
+            Self {
+                sprite: Sprite {
+                    custom_size: Some(Vec2::new(LEG_W_SIZE, LEG_H_SIZE)),
+                    anchor: Anchor::TopCenter,
+                    rect: Some(gr.right_leg_front),
+                    ..default()
+                },
+                texture: gr.tex.clone(),
+                tag: PlayerGraphicsPart::RightLeg(0.),
+                transform_bundle: TransformBundle {
+                    local: Transform::from_xyz(0., LEG_OFFSET, FRONT_LEG_Z_INDEX),
+                    ..default()
+                },
+                visibility_bunde: VisibilityBundle::default(),
             },
-            texture: gr.tex.clone(),
-            tag: PlayerGraphicsPart::RightLeg(0.),
-            transform_bundle: TransformBundle {
-                local: Transform::from_xyz(0., LEG_OFFSET, FRONT_LEG_Z_INDEX),
-                ..default()
-            },
-            visibility_bunde: VisibilityBundle::default(),
-        }
+            PlayerGraphicsPartRightLeg,
+            WaveIndex(0.),
+        )
     }
 
-    fn new_left_leg(gr: &PlayerGraphics) -> Self {
-        Self {
-            sprite: Sprite {
-                custom_size: Some(Vec2::new(LEG_W_SIZE, LEG_H_SIZE)),
-                anchor: Anchor::TopCenter,
-                rect: Some(gr.left_leg_front),
-                ..default()
+    fn new_left_leg(gr: &PlayerGraphics) -> (Self, PlayerGraphicsPartLeftLeg, WaveIndex) {
+        (
+            Self {
+                sprite: Sprite {
+                    custom_size: Some(Vec2::new(LEG_W_SIZE, LEG_H_SIZE)),
+                    anchor: Anchor::TopCenter,
+                    rect: Some(gr.left_leg_front),
+                    ..default()
+                },
+                texture: gr.tex.clone(),
+                tag: PlayerGraphicsPart::LeftLeg(0.),
+                transform_bundle: TransformBundle {
+                    local: Transform::from_xyz(0., LEG_OFFSET, BACK_LEG_Z_INDEX),
+                    ..default()
+                },
+                visibility_bunde: VisibilityBundle::default(),
             },
-            texture: gr.tex.clone(),
-            tag: PlayerGraphicsPart::LeftLeg(0.),
-            transform_bundle: TransformBundle {
-                local: Transform::from_xyz(0., LEG_OFFSET, BACK_LEG_Z_INDEX),
-                ..default()
-            },
-            visibility_bunde: VisibilityBundle::default(),
-        }
+            PlayerGraphicsPartLeftLeg,
+            WaveIndex(0.),
+        )
     }
 }
 
