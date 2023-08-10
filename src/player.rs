@@ -49,7 +49,7 @@ impl Plugin for PlayerPlugin {
                     animate_arms,
                     animate_legs,
                     change_direction,
-                    change_sprites_with_direction,
+                    change_graphics_with_direction,
                 ),
             )
             // Reflection
@@ -490,8 +490,8 @@ fn change_direction(mut direction: Query<&mut Direction, With<Player>>, keys: Re
     }
 }
 
-fn change_sprites_with_direction(
-    mut graphics_parts: Query<(&mut Sprite, &PlayerGraphicsPart)>,
+fn change_graphics_with_direction(
+    mut graphics_parts: Query<(&mut Sprite, &mut Transform, &PlayerGraphicsPart)>,
     player_graphics: Res<PlayerGraphics>,
     direction: Query<&Direction, (With<Player>, Changed<Direction>)>,
 ) {
@@ -503,26 +503,50 @@ fn change_sprites_with_direction(
     match *direction {
         Direction::Right => {
             use PlayerGraphicsPart::*;
-            for (mut grp_sprite, grp) in graphics_parts.iter_mut() {
+            for (mut grp_sprite, mut grp_tr, grp) in graphics_parts.iter_mut() {
                 match *grp {
                     Body => grp_sprite.rect = Some(player_graphics.body_front),
-                    RightArm(_) => grp_sprite.rect = Some(player_graphics.right_arm_front),
-                    LeftArm(_) => grp_sprite.rect = Some(player_graphics.left_arm_front),
-                    RightLeg(_) => grp_sprite.rect = Some(player_graphics.right_leg_front),
-                    LeftLeg(_) => grp_sprite.rect = Some(player_graphics.left_leg_front),
+                    RightArm(_) => {
+                        grp_sprite.rect = Some(player_graphics.right_arm_front);
+                        grp_tr.translation.z = FRONT_ARM_Z_INDEX;
+                    }
+                    LeftArm(_) => {
+                        grp_sprite.rect = Some(player_graphics.left_arm_back);
+                        grp_tr.translation.z = BACK_ARM_Z_INDEX;
+                    }
+                    RightLeg(_) => {
+                        grp_sprite.rect = Some(player_graphics.right_leg_front);
+                        grp_tr.translation.z = FRONT_LEG_Z_INDEX;
+                    }
+                    LeftLeg(_) => {
+                        grp_sprite.rect = Some(player_graphics.left_leg_back);
+                        grp_tr.translation.z = BACK_LEG_Z_INDEX;
+                    }
                     _ => (),
                 }
             }
         }
         Direction::Left => {
             use PlayerGraphicsPart::*;
-            for (mut grp_sprite, grp) in graphics_parts.iter_mut() {
+            for (mut grp_sprite, mut grp_tr, grp) in graphics_parts.iter_mut() {
                 match *grp {
                     Body => grp_sprite.rect = Some(player_graphics.body_back),
-                    RightArm(_) => grp_sprite.rect = Some(player_graphics.right_arm_back),
-                    LeftArm(_) => grp_sprite.rect = Some(player_graphics.left_arm_back),
-                    RightLeg(_) => grp_sprite.rect = Some(player_graphics.right_leg_back),
-                    LeftLeg(_) => grp_sprite.rect = Some(player_graphics.left_leg_back),
+                    RightArm(_) => {
+                        grp_sprite.rect = Some(player_graphics.right_arm_back);
+                        grp_tr.translation.z = BACK_ARM_Z_INDEX;
+                    }
+                    LeftArm(_) => {
+                        grp_sprite.rect = Some(player_graphics.left_arm_front);
+                        grp_tr.translation.z = FRONT_ARM_Z_INDEX;
+                    }
+                    RightLeg(_) => {
+                        grp_sprite.rect = Some(player_graphics.right_leg_back);
+                        grp_tr.translation.z = BACK_LEG_Z_INDEX;
+                    }
+                    LeftLeg(_) => {
+                        grp_sprite.rect = Some(player_graphics.left_leg_front);
+                        grp_tr.translation.z = FRONT_LEG_Z_INDEX;
+                    }
                     _ => (),
                 }
             }
