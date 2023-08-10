@@ -5,10 +5,10 @@ A minecraft 2d clone built with rust and the bevy game engine.
 
 - [ ] Player
   - [x] Basic player controlls
-  - [ ] Player controlls
+  - [x] Player controlls
   - [x] Player graphics
   - [x] Basic player animations
-  - [ ] Player animations
+  - [x] Player animations
   - [ ] Swimming
   - [ ] Game modes
   - [ ] Food
