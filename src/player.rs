@@ -198,18 +198,32 @@ fn spawn_player(mut commands: Commands, graphics: Res<PlayerGraphics>) {
 }
 
 fn player_controller_movement(
-    mut player_query: Query<(&Speed, &mut Velocity)>,
+    mut player_query: Query<(&Speed, &mut Velocity, &GlobalTransform)>,
     keys: Res<Input<KeyCode>>,
+    rapier_context: Res<RapierContext>,
 ) {
-    for (speed, mut rb_vel) in player_query.iter_mut() {
+    for (speed, mut rb_vel, gtr) in player_query.iter_mut() {
         let left = keys.any_pressed([KeyCode::A, KeyCode::Left]);
         let right = keys.any_pressed([KeyCode::D, KeyCode::Right]);
+        let jump = keys.just_pressed(KeyCode::Space);
 
         let x_axis = -(left as i8) + right as i8;
 
         let move_delta_x = x_axis as f32;
 
         rb_vel.linvel.x = move_delta_x * speed.0;
+
+        if jump {
+            let ray_pos = vec2(gtr.translation().x, gtr.translation().y - 78.);
+            let ray_dir = Vec2::new(0., 1.);
+            let max_toi = 1.;
+            let solid = true;
+            let filter = QueryFilter::default();
+
+            if let Some(_) = rapier_context.cast_ray(ray_pos, ray_dir, max_toi, solid, filter) {
+                rb_vel.linvel.y = 400.;
+            }
+        }
     }
 }
 
