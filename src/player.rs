@@ -48,6 +48,8 @@ impl Plugin for PlayerPlugin {
                     animate_head,
                     animate_arms,
                     animate_legs,
+                    change_direction,
+                    change_sprites_with_direction,
                 ),
             )
             // Reflection
@@ -63,11 +65,16 @@ impl Plugin for PlayerPlugin {
 struct PlayerGraphics {
     tex: Handle<Image>,
     head: Rect,
-    body: Rect,
-    right_arm: Rect,
-    left_arm: Rect,
-    right_leg: Rect,
-    left_leg: Rect,
+    body_front: Rect,
+    body_back: Rect,
+    right_arm_front: Rect,
+    right_arm_back: Rect,
+    left_arm_front: Rect,
+    left_arm_back: Rect,
+    right_leg_front: Rect,
+    right_leg_back: Rect,
+    left_leg_front: Rect,
+    left_leg_back: Rect,
 }
 
 impl Default for PlayerGraphics {
@@ -75,11 +82,16 @@ impl Default for PlayerGraphics {
         Self {
             tex: DEFAULT_IMAGE_HANDLE.typed(),
             head: Rect::new(0., 0., 8., 8.),
-            body: Rect::new(8., 0., 12., 12.),
-            right_arm: Rect::new(12., 0., 16., 12.),
-            left_arm: Rect::new(16., 0., 20., 12.),
-            right_leg: Rect::new(20., 0., 24., 12.),
-            left_leg: Rect::new(24., 0., 28., 12.),
+            body_front: Rect::new(8., 0., 12., 12.),
+            body_back: Rect::new(8., 12., 12., 24.),
+            right_arm_front: Rect::new(12., 0., 16., 12.),
+            right_arm_back: Rect::new(12., 12., 16., 24.),
+            left_arm_front: Rect::new(16., 0., 20., 12.),
+            left_arm_back: Rect::new(16., 12., 20., 23.),
+            right_leg_front: Rect::new(20., 0., 24., 12.),
+            right_leg_back: Rect::new(20., 12., 24., 24.),
+            left_leg_front: Rect::new(24., 0., 28., 12.),
+            left_leg_back: Rect::new(24., 12., 28., 24.),
         }
     }
 }
@@ -108,6 +120,18 @@ struct Speed(f32);
 #[derive(Component, Reflect)]
 struct Jump(f32);
 
+#[derive(Component, Reflect)]
+enum Direction {
+    Right,
+    Left,
+}
+
+impl Default for Direction {
+    fn default() -> Self {
+        Direction::Right
+    }
+}
+
 // SYSTEMS
 
 fn load_player_graphics(
@@ -116,12 +140,7 @@ fn load_player_graphics(
 ) {
     *player_graphics = PlayerGraphics {
         tex: asset_server.load("player.png"),
-        head: Rect::new(0., 0., 8., 8.),
-        body: Rect::new(8., 0., 12., 12.),
-        right_arm: Rect::new(12., 0., 16., 12.),
-        left_arm: Rect::new(16., 0., 20., 12.),
-        right_leg: Rect::new(20., 0., 24., 12.),
-        left_leg: Rect::new(24., 0., 28., 12.),
+        ..default()
     }
 }
 
@@ -460,6 +479,57 @@ fn animate_legs(
     }
 }
 
+fn change_direction(mut direction: Query<&mut Direction, With<Player>>, keys: Res<Input<KeyCode>>) {
+    let mut direction = direction.single_mut();
+
+    if keys.any_pressed([KeyCode::D, KeyCode::Right]) {
+        *direction = Direction::Right;
+    }
+    if keys.any_pressed([KeyCode::A, KeyCode::Left]) {
+        *direction = Direction::Left;
+    }
+}
+
+fn change_sprites_with_direction(
+    mut graphics_parts: Query<(&mut Sprite, &PlayerGraphicsPart)>,
+    player_graphics: Res<PlayerGraphics>,
+    direction: Query<&Direction, (With<Player>, Changed<Direction>)>,
+) {
+    let direction = direction.get_single();
+    let direction = match direction {
+        Ok(e) => e,
+        Err(_) => return,
+    };
+    match *direction {
+        Direction::Right => {
+            use PlayerGraphicsPart::*;
+            for (mut grp_sprite, grp) in graphics_parts.iter_mut() {
+                match *grp {
+                    Body => grp_sprite.rect = Some(player_graphics.body_front),
+                    RightArm(_) => grp_sprite.rect = Some(player_graphics.right_arm_front),
+                    LeftArm(_) => grp_sprite.rect = Some(player_graphics.left_arm_front),
+                    RightLeg(_) => grp_sprite.rect = Some(player_graphics.right_leg_front),
+                    LeftLeg(_) => grp_sprite.rect = Some(player_graphics.left_leg_front),
+                    _ => (),
+                }
+            }
+        }
+        Direction::Left => {
+            use PlayerGraphicsPart::*;
+            for (mut grp_sprite, grp) in graphics_parts.iter_mut() {
+                match *grp {
+                    Body => grp_sprite.rect = Some(player_graphics.body_back),
+                    RightArm(_) => grp_sprite.rect = Some(player_graphics.right_arm_back),
+                    LeftArm(_) => grp_sprite.rect = Some(player_graphics.left_arm_back),
+                    RightLeg(_) => grp_sprite.rect = Some(player_graphics.right_leg_back),
+                    LeftLeg(_) => grp_sprite.rect = Some(player_graphics.left_leg_back),
+                    _ => (),
+                }
+            }
+        }
+    }
+}
+
 // BUNDLES
 
 #[derive(Bundle)]
@@ -467,6 +537,7 @@ struct PlayerBundle {
     // gameplay settings
     speed: Speed,
     jump: Jump,
+    direction: Direction,
 
     // colliders
     collider: Collider,
@@ -516,6 +587,7 @@ impl PlayerBundle {
         Self {
             speed: Speed(speed),
             jump: Jump(jump_force),
+            direction: Direction::default(),
             collider,
             collider_mass: ColliderMassProperties::Mass(mass),
             player: Player,
@@ -557,7 +629,7 @@ impl PlayerGraphicsPartBundle {
             sprite: Sprite {
                 custom_size: Some(Vec2::new(BODY_W_SIZE, BODY_H_SIZE)),
                 anchor: Anchor::Center,
-                rect: Some(gr.body),
+                rect: Some(gr.body_front),
                 ..default()
             },
             texture: gr.tex.clone(),
@@ -575,7 +647,7 @@ impl PlayerGraphicsPartBundle {
             sprite: Sprite {
                 custom_size: Some(Vec2::new(ARM_W_SIZE, ARM_H_SIZE)),
                 anchor: Anchor::TopCenter,
-                rect: Some(gr.right_arm),
+                rect: Some(gr.right_arm_front),
                 ..default()
             },
             texture: gr.tex.clone(),
@@ -593,7 +665,7 @@ impl PlayerGraphicsPartBundle {
             sprite: Sprite {
                 custom_size: Some(Vec2::new(ARM_W_SIZE, ARM_H_SIZE)),
                 anchor: Anchor::TopCenter,
-                rect: Some(gr.left_arm),
+                rect: Some(gr.left_arm_front),
                 ..default()
             },
             texture: gr.tex.clone(),
@@ -611,7 +683,7 @@ impl PlayerGraphicsPartBundle {
             sprite: Sprite {
                 custom_size: Some(Vec2::new(LEG_W_SIZE, LEG_H_SIZE)),
                 anchor: Anchor::TopCenter,
-                rect: Some(gr.right_leg),
+                rect: Some(gr.right_leg_front),
                 ..default()
             },
             texture: gr.tex.clone(),
@@ -629,7 +701,7 @@ impl PlayerGraphicsPartBundle {
             sprite: Sprite {
                 custom_size: Some(Vec2::new(LEG_W_SIZE, LEG_H_SIZE)),
                 anchor: Anchor::TopCenter,
-                rect: Some(gr.left_leg),
+                rect: Some(gr.left_leg_front),
                 ..default()
             },
             texture: gr.tex.clone(),
@@ -648,6 +720,7 @@ impl Default for PlayerBundle {
         Self {
             speed: Speed(300.),
             jump: Jump(100.),
+            direction: Direction::default(),
             collider: Collider::cuboid(10., 76.),
             collider_mass: ColliderMassProperties::Mass(91.),
             player: Player,
