@@ -127,8 +127,10 @@ struct PlayerGraphicsPartRightLeg;
 #[derive(Component, Reflect)]
 struct PlayerGraphicsPartLeftLeg;
 
+/// [`0`] is the walking speed
+/// [`1`] is the runnign speed
 #[derive(Component, Reflect)]
-struct Speed(f32);
+struct Speed(f32, f32);
 
 #[derive(Component, Reflect)]
 struct Jump(f32);
@@ -206,12 +208,13 @@ fn player_controller_movement(
         let left = keys.any_pressed([KeyCode::A, KeyCode::Left]);
         let right = keys.any_pressed([KeyCode::D, KeyCode::Right]);
         let jump = keys.just_pressed(KeyCode::Space);
+        let running = keys.pressed(KeyCode::ShiftLeft);
 
         let x_axis = -(left as i8) + right as i8;
-
         let move_delta_x = x_axis as f32;
+        let sp = if running { speed.1 } else { speed.0 };
 
-        rb_vel.linvel.x = move_delta_x * speed.0;
+        rb_vel.linvel.x = move_delta_x * sp;
 
         if jump {
             let ray_pos = vec2(gtr.translation().x, gtr.translation().y - 78.);
@@ -622,9 +625,15 @@ struct PlayerGraphicsPartBundle {
 
 impl PlayerBundle {
     /// Need to insert tags manually (as well as WaveIndex if needed)
-    fn new(speed: f32, jump_force: f32, collider: Collider, mass: f32) -> Self {
+    fn new(
+        walking_speed: f32,
+        runnign_speed: f32,
+        jump_force: f32,
+        collider: Collider,
+        mass: f32,
+    ) -> Self {
         Self {
-            speed: Speed(speed),
+            speed: Speed(walking_speed, runnign_speed),
             jump: Jump(jump_force),
             direction: Direction::default(),
             collider,
@@ -779,7 +788,7 @@ impl PlayerGraphicsPartBundle {
 impl Default for PlayerBundle {
     fn default() -> Self {
         Self {
-            speed: Speed(300.),
+            speed: Speed(300., 500.),
             jump: Jump(100.),
             direction: Direction::default(),
             collider: Collider::cuboid(10., 76.),
