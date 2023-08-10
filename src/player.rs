@@ -385,6 +385,9 @@ fn animate_legs(
 
     let step = 4.5 * time.delta_seconds();
 
+    let leg_leans_to_left = |a| a < 5. * PI / 3. && a > 3. * PI / 2.;
+    let leg_leans_to_right = |a| a > 4. * PI / 3. && a < 3. * PI / 2.;
+
     // Extract right leg
     let (mut tr, mut _spr, mut wave_index) = right_leg;
 
@@ -402,8 +405,6 @@ fn animate_legs(
     } else {
         // Put leg back in place after stopping movement
         let angle = tr.rotation.to_euler(EulerRot::ZYX).0;
-        let leg_leans_to_left = |a| a < 5. * PI / 3. && a > 3. * PI / 2.;
-        let leg_leans_to_right = |a| a > 4. * PI / 3. && a < 3. * PI / 2.;
 
         if leg_leans_to_left(angle + 3. * PI / 2.) {
             let angle = angle - step;
@@ -443,8 +444,6 @@ fn animate_legs(
     } else {
         // Put leg back in place after stopping movement
         let angle = left_leg_tr.rotation.to_euler(EulerRot::ZYX).0;
-        let leg_leans_to_left = |a| a < 5. * PI / 3. && a > 3. * PI / 2.;
-        let leg_leans_to_right = |a| a > 4. * PI / 3. && a < 3. * PI / 2.;
 
         if leg_leans_to_left(angle + 3. * PI / 2.) {
             let angle = angle - step;
