@@ -115,6 +115,24 @@ enum PlayerGraphicsPart {
 }
 
 #[derive(Component, Reflect)]
+struct PlayerGraphicsPartHead;
+
+#[derive(Component, Reflect)]
+struct PlayerGraphicsPartBody;
+
+#[derive(Component, Reflect)]
+struct PlayerGraphicsPartRightArm;
+
+#[derive(Component, Reflect)]
+struct PlayerGraphicsPartLeftArm;
+
+#[derive(Component, Reflect)]
+struct PlayerGraphicsPartRightLeg;
+
+#[derive(Component, Reflect)]
+struct PlayerGraphicsPartLeftLeg;
+
+#[derive(Component, Reflect)]
 struct Speed(f32);
 
 #[derive(Component, Reflect)]
@@ -155,26 +173,32 @@ fn spawn_player(mut commands: Commands, graphics: Res<PlayerGraphics>) {
             .with_children(|cb| {
                 cb.spawn((
                     PlayerGraphicsPartBundle::new_head(&graphics),
+                    PlayerGraphicsPartHead,
                     Name::new("Head"),
                 ));
                 cb.spawn((
                     PlayerGraphicsPartBundle::new_body(&graphics),
+                    PlayerGraphicsPartBody,
                     Name::new("Body"),
                 ));
                 cb.spawn((
                     PlayerGraphicsPartBundle::new_right_arm(&graphics),
+                    PlayerGraphicsPartRightArm,
                     Name::new("Right Arm"),
                 ));
                 cb.spawn((
                     PlayerGraphicsPartBundle::new_left_arm(&graphics),
+                    PlayerGraphicsPartLeftArm,
                     Name::new("Left Arm"),
                 ));
                 cb.spawn((
                     PlayerGraphicsPartBundle::new_right_leg(&graphics),
+                    PlayerGraphicsPartRightLeg,
                     Name::new("Right Leg"),
                 ));
                 cb.spawn((
                     PlayerGraphicsPartBundle::new_left_leg(&graphics),
+                    PlayerGraphicsPartLeftLeg,
                     Name::new("Left Leg"),
                 ));
             });
@@ -198,36 +222,22 @@ fn player_controller_movement(
 }
 
 fn animate_head(
-    mut graphics_parts: Query<(
-        &GlobalTransform,
-        &mut Transform,
-        &mut Sprite,
-        &PlayerGraphicsPart,
-    )>,
+    mut head: Query<
+        (&GlobalTransform, &mut Transform, &mut Sprite),
+        (With<PlayerGraphicsPart>, With<PlayerGraphicsPartHead>),
+    >,
     window: Query<&Window, With<PrimaryWindow>>,
     camera: Query<(&Camera, &GlobalTransform), With<crate::MainCamera>>,
 ) {
     let window = window.single();
     let (camera, camera_transform) = camera.single();
 
-    let mut cursor_position = vec2(0., 0.);
+    let (head_gtr, mut head_tr, mut head_sprite) = head.single_mut();
 
-    if let Some(world_position) = window
+    if let Some(cursor_position) = window
         .cursor_position()
         .and_then(|cursor| camera.viewport_to_world_2d(camera_transform, cursor))
     {
-        cursor_position = world_position
-    }
-
-    let mut head = None;
-    for p in graphics_parts.iter_mut() {
-        if let PlayerGraphicsPart::Head = p.3 {
-            head = Some((p.0, p.1, p.2));
-            break;
-        }
-    }
-
-    if let Some((head_gtr, mut head_tr, mut head_sprite)) = head {
         let cursor_vec = vec2(
             cursor_position.x - head_gtr.translation().x,
             cursor_position.y - head_gtr.translation().y,
@@ -481,50 +491,34 @@ fn animate_legs(
 
 fn change_direction(
     mut direction: Query<&mut Direction, With<Player>>,
-    mut graphics_parts: Query<(&GlobalTransform, &PlayerGraphicsPart)>,
-    // keys: Res<Input<KeyCode>>,
+    head_gtr: Query<&GlobalTransform, (With<PlayerGraphicsPart>, With<PlayerGraphicsPartHead>)>,
     window: Query<&Window, With<PrimaryWindow>>,
     camera: Query<(&Camera, &GlobalTransform), With<crate::MainCamera>>,
 ) {
     let window = window.single();
     let (camera, camera_transform) = camera.single();
 
-    let mut direction = direction.single_mut();
+    let head_gtr = head_gtr.single();
 
-    let mut head_gtr = None;
-    for p in graphics_parts.iter_mut() {
-        if let PlayerGraphicsPart::Head = p.1 {
-            head_gtr = Some(p.0);
-            break;
-        }
-    }
+    let mut direction = direction.single_mut();
 
     if let Some(cursor_position) = window
         .cursor_position()
         .and_then(|cursor| camera.viewport_to_world_2d(camera_transform, cursor))
     {
-        if let Some(head_gtr) = head_gtr {
-            let cursor_vec = vec2(
-                cursor_position.x - head_gtr.translation().x,
-                cursor_position.y - head_gtr.translation().y,
-            );
+        let cursor_vec = vec2(
+            cursor_position.x - head_gtr.translation().x,
+            cursor_position.y - head_gtr.translation().y,
+        );
 
-            let theta = f32::atan2(cursor_vec.y, cursor_vec.x);
+        let theta = f32::atan2(cursor_vec.y, cursor_vec.x);
 
-            if (theta > PI / 2. && theta < PI) || (theta < -PI / 2. && theta > -PI) {
-                *direction = Direction::Left;
-            } else {
-                *direction = Direction::Right;
-            }
+        if (theta > PI / 2. && theta < PI) || (theta < -PI / 2. && theta > -PI) {
+            *direction = Direction::Left;
+        } else {
+            *direction = Direction::Right;
         }
     }
-
-    // if keys.any_pressed([KeyCode::D, KeyCode::Right]) {
-    //     *direction = Direction::Right;
-    // }
-    // if keys.any_pressed([KeyCode::A, KeyCode::Left]) {
-    //     *direction = Direction::Left;
-    // }
 }
 
 fn change_graphics_with_direction(
