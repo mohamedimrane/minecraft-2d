@@ -41,10 +41,10 @@ impl Plugin for PlayerPlugin {
             // Systems
             .add_systems(PreStartup, load_player_graphics)
             .add_systems(Startup, spawn_player)
+            .add_systems(FixedUpdate, player_controller_movement)
             .add_systems(
                 Update,
                 (
-                    player_controller_movement,
                     animate_head,
                     animate_arms,
                     animate_legs,
