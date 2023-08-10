@@ -479,15 +479,52 @@ fn animate_legs(
     }
 }
 
-fn change_direction(mut direction: Query<&mut Direction, With<Player>>, keys: Res<Input<KeyCode>>) {
+fn change_direction(
+    mut direction: Query<&mut Direction, With<Player>>,
+    mut graphics_parts: Query<(&GlobalTransform, &PlayerGraphicsPart)>,
+    // keys: Res<Input<KeyCode>>,
+    window: Query<&Window, With<PrimaryWindow>>,
+    camera: Query<(&Camera, &GlobalTransform), With<crate::MainCamera>>,
+) {
+    let window = window.single();
+    let (camera, camera_transform) = camera.single();
+
     let mut direction = direction.single_mut();
 
-    if keys.any_pressed([KeyCode::D, KeyCode::Right]) {
-        *direction = Direction::Right;
+    let mut head_gtr = None;
+    for p in graphics_parts.iter_mut() {
+        if let PlayerGraphicsPart::Head = p.1 {
+            head_gtr = Some(p.0);
+            break;
+        }
     }
-    if keys.any_pressed([KeyCode::A, KeyCode::Left]) {
-        *direction = Direction::Left;
+
+    if let Some(cursor_position) = window
+        .cursor_position()
+        .and_then(|cursor| camera.viewport_to_world_2d(camera_transform, cursor))
+    {
+        if let Some(head_gtr) = head_gtr {
+            let cursor_vec = vec2(
+                cursor_position.x - head_gtr.translation().x,
+                cursor_position.y - head_gtr.translation().y,
+            );
+
+            let theta = f32::atan2(cursor_vec.y, cursor_vec.x);
+
+            if (theta > PI / 2. && theta < PI) || (theta < -PI / 2. && theta > -PI) {
+                *direction = Direction::Left;
+            } else {
+                *direction = Direction::Right;
+            }
+        }
     }
+
+    // if keys.any_pressed([KeyCode::D, KeyCode::Right]) {
+    //     *direction = Direction::Right;
+    // }
+    // if keys.any_pressed([KeyCode::A, KeyCode::Left]) {
+    //     *direction = Direction::Left;
+    // }
 }
 
 fn change_graphics_with_direction(
