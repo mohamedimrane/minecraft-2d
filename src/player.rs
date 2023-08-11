@@ -145,20 +145,15 @@ struct Speed(f32, f32);
 #[derive(Component, Reflect)]
 struct Jump(f32);
 
-#[derive(Component, Reflect)]
+#[derive(Component, Default, Reflect)]
 enum Direction {
+    #[default]
     Right,
     Left,
 }
 
 #[derive(Component, Reflect)]
 struct WaveIndex(f32);
-
-impl Default for Direction {
-    fn default() -> Self {
-        Direction::Right
-    }
-}
 
 // SYSTEMS
 
