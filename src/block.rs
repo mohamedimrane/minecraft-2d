@@ -19,7 +19,8 @@ impl Plugin for BlockPlugin {
             // Systems
             .add_systems(PreStartup, load_block_graphics)
             // Reflection
-            ;
+            .register_type::<Block>()
+            .register_type::<BlockKind>();
     }
 }
 
