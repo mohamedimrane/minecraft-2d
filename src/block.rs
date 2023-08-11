@@ -49,9 +49,20 @@ pub enum BlockKind {
     #[default]
     Dirt,
     Grass,
+    Stone,
     Cobblestone,
-    // Stone,
-    // WoodenLog,
+    Deepslate,
+    CobbledDeepslate,
+    Bedrock,
+    HayBale,
+    OakLog,
+    OakPlank,
+    Leaves,
+    OakSapling,
+    CraftingTable,
+    Furnace,
+    FurnaceBurning,
+    RedTulip,
 }
 
 impl BlockKind {
@@ -60,8 +71,20 @@ impl BlockKind {
         match *self {
             Dirt => 0,
             Grass => 1,
-            Cobblestone => 2,
-            Stone => 3,
+            Stone => 2,
+            Cobblestone => 3,
+            Deepslate => 4,
+            CobbledDeepslate => 5,
+            Bedrock => 6,
+            HayBale => 7,
+            OakLog => 8,
+            OakPlank => 9,
+            Leaves => 10,
+            OakSapling => 11,
+            CraftingTable => 12,
+            Furnace => 13,
+            FurnaceBurning => 14,
+            RedTulip => 20,
             _ => 0,
         }
     }
@@ -75,8 +98,14 @@ fn load_block_graphics(
     mut block_graphics: ResMut<BlockGraphics>,
 ) {
     block_graphics.tex = asset_server.load("blocks.png");
-    let atlas =
-        TextureAtlas::from_grid(block_graphics.tex.clone(), vec2(16., 16.), 4, 1, None, None);
+    let atlas = TextureAtlas::from_grid(
+        block_graphics.tex.clone(),
+        vec2(16., 16.),
+        11,
+        2,
+        None,
+        None,
+    );
     let atlas_handle = texture_atlases.add(atlas);
     block_graphics.atlas_handle = atlas_handle;
 }
