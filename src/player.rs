@@ -222,8 +222,8 @@ fn player_controller_movement(
         rb_vel.linvel.x = move_delta_x * sp;
 
         if jump {
-            let ray_pos = vec2(gtr.translation().x, gtr.translation().y - 78.);
-            let ray_dir = Vec2::new(0., 1.);
+            let ray_pos = vec2(gtr.translation().x, gtr.translation().y - 79.);
+            let ray_dir = Vec2::new(0., -20.);
             let max_toi = 1.;
             let solid = true;
             let filter = QueryFilter::default();
