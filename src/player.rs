@@ -50,13 +50,11 @@ impl Plugin for PlayerPlugin {
             .add_systems(
                 Update,
                 (
-                    // Animation
                     animate_head,
                     animate_arms,
                     animate_legs,
                     change_direction,
                     change_graphics_with_direction,
-                    // Block placement
                     select_block,
                 ),
             )
