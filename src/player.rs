@@ -7,6 +7,7 @@ use std::f32::consts::PI;
 
 use crate::{
     block::{Block, BLOCK_SIZE},
+    camera::MainCamera,
     utils::{leans_to_left, leans_to_right, map},
 };
 
@@ -272,7 +273,7 @@ fn animate_head(
         (With<PlayerGraphicsPart>, With<PlayerGraphicsPartHead>),
     >,
     window: Query<&Window, With<PrimaryWindow>>,
-    camera: Query<(&Camera, &GlobalTransform), With<crate::MainCamera>>,
+    camera: Query<(&Camera, &GlobalTransform), With<MainCamera>>,
 ) {
     let window = window.single();
     let (camera, camera_transform) = camera.single();
@@ -526,7 +527,7 @@ fn change_direction(
     mut direction: Query<&mut Direction, With<Player>>,
     head_gtr: Query<&GlobalTransform, (With<PlayerGraphicsPart>, With<PlayerGraphicsPartHead>)>,
     window: Query<&Window, With<PrimaryWindow>>,
-    camera: Query<(&Camera, &GlobalTransform), With<crate::MainCamera>>,
+    camera: Query<(&Camera, &GlobalTransform), With<MainCamera>>,
 ) {
     let window = window.single();
     let (camera, camera_transform) = camera.single();
@@ -620,7 +621,7 @@ fn change_graphics_with_direction(
 
 fn select_block(
     window: Query<&Window, With<PrimaryWindow>>,
-    camera: Query<(&Camera, &GlobalTransform), With<crate::MainCamera>>,
+    camera: Query<(&Camera, &GlobalTransform), With<MainCamera>>,
     mut block_selector: Query<&mut Transform, (With<BlockSelector>, Without<Block>)>,
     mut selected_block: ResMut<SelectedBlock>,
     mut last_cur_pos: ResMut<LastCursorPosition>,

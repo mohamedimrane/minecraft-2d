@@ -1,17 +1,16 @@
-use bevy::prelude::*;
+use bevy::{prelude::*, render::camera::CameraPlugin};
 use bevy_inspector_egui::quick::WorldInspectorPlugin;
 use bevy_rapier2d::prelude::*;
 use block::BlockPlugin;
+use camera::CamPlugin;
 use player::PlayerPlugin;
 use world::WorldPlugin;
 
 mod block;
+mod camera;
 mod player;
 mod utils;
 mod world;
-
-#[derive(Component)]
-pub struct MainCamera;
 
 fn main() {
     App::new()
@@ -28,20 +27,16 @@ fn main() {
                     ..default()
                 }),
             RapierPhysicsPlugin::<NoUserData>::pixels_per_meter(100.0),
-            RapierDebugRenderPlugin::default(),
+            // RapierDebugRenderPlugin::default(),
             WorldInspectorPlugin::new(),
             PlayerPlugin,
             WorldPlugin,
             BlockPlugin,
+            CamPlugin,
         ))
         .insert_resource(RapierConfiguration {
             gravity: Vec2::new(0., -1000.),
             ..default()
         })
-        .add_systems(Startup, setup_camera)
         .run();
-}
-
-fn setup_camera(mut commands: Commands) {
-    commands.spawn((Camera2dBundle::default(), MainCamera));
 }
