@@ -32,8 +32,9 @@ A minecraft 2d clone built with rust and the bevy game engine.
   - [ ] Crafting graphics
 
 - [ ] Building
-  - [ ] Placing blocks
-  - [ ] Breaking blocks
+  - [x] Placing blocks
+  - [x] Breaking blocks
+  - [ ] Switching blocks
   - [ ] Picking up blocks
 
 - [ ] Blocks
