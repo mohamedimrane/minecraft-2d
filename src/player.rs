@@ -235,6 +235,7 @@ fn spawn_block_selector(mut commands: Commands, asset_server: Res<AssetServer>) 
             ..default()
         },
         BlockSelector,
+        Name::new("Block Selector"),
     ));
 }
 
