@@ -5,7 +5,10 @@ use bevy::{
 use bevy_rapier2d::prelude::*;
 use std::f32::consts::PI;
 
-use crate::utils::{leans_to_left, leans_to_right, map};
+use crate::{
+    block::BLOCK_SIZE,
+    utils::{leans_to_left, leans_to_right, map},
+};
 
 // CONSTANTS
 
@@ -40,16 +43,19 @@ impl Plugin for PlayerPlugin {
             .insert_resource(PlayerGraphics::default())
             // Systems
             .add_systems(PreStartup, load_player_graphics)
-            .add_systems(Startup, spawn_player)
+            .add_systems(Startup, (spawn_player, spawn_block_selector))
             .add_systems(FixedUpdate, player_controller_movement)
             .add_systems(
                 Update,
                 (
+                    // Animation
                     animate_head,
                     animate_arms,
                     animate_legs,
                     change_direction,
                     change_graphics_with_direction,
+                    // Block placement
+                    select_block,
                 ),
             )
             // Reflection
@@ -65,7 +71,8 @@ impl Plugin for PlayerPlugin {
             .register_type::<Speed>()
             .register_type::<Jump>()
             .register_type::<Direction>()
-            .register_type::<WaveIndex>();
+            .register_type::<WaveIndex>()
+            .register_type::<BlockSelector>();
     }
 }
 
@@ -155,6 +162,9 @@ enum Direction {
 #[derive(Component, Reflect)]
 struct WaveIndex(f32);
 
+#[derive(Component, Reflect)]
+struct BlockSelector;
+
 // SYSTEMS
 
 fn load_player_graphics(
@@ -202,6 +212,21 @@ fn spawn_player(mut commands: Commands, graphics: Res<PlayerGraphics>) {
                 ));
             });
         });
+}
+
+fn spawn_block_selector(mut commands: Commands, asset_server: Res<AssetServer>) {
+    commands.spawn((
+        SpriteBundle {
+            sprite: Sprite {
+                color: Color::WHITE,
+                custom_size: Some(Vec2::splat(BLOCK_SIZE)),
+                ..default()
+            },
+            texture: asset_server.load("block_selector.png"),
+            ..default()
+        },
+        BlockSelector,
+    ));
 }
 
 fn player_controller_movement(
@@ -584,6 +609,28 @@ fn change_graphics_with_direction(
                 }
             }
         }
+    }
+}
+
+fn select_block(
+    window: Query<&Window, With<PrimaryWindow>>,
+    camera: Query<(&Camera, &GlobalTransform), With<crate::MainCamera>>,
+    mut block_selector: Query<&mut Transform, With<BlockSelector>>,
+) {
+    let window = window.single();
+    let (camera, camera_transform) = camera.single();
+    let mut block_selector = block_selector.single_mut();
+
+    if let Some(cursor_position) = window
+        .cursor_position()
+        .and_then(|cursor| camera.viewport_to_world_2d(camera_transform, cursor))
+    {
+        let pos = vec2(
+            (cursor_position.x / BLOCK_SIZE).round() * BLOCK_SIZE,
+            (cursor_position.y / BLOCK_SIZE).round() * BLOCK_SIZE,
+        );
+
+        block_selector.translation = pos.extend(10.);
     }
 }
 

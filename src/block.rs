@@ -2,7 +2,7 @@ use bevy::{math::vec2, prelude::*, render::texture::DEFAULT_IMAGE_HANDLE};
 use bevy_rapier2d::prelude::*;
 
 // CONSTANTS
-const BLOCK_SPRITE_SIZE: f32 = 60.;
+pub const BLOCK_SIZE: f32 = 60.;
 const BLOCK_COLLIDER_SIZE: f32 = 30.;
 
 const BLOCK_Z_INDEX: f32 = 0.;
@@ -138,7 +138,7 @@ impl BlockBundle {
             kind,
             sprite: TextureAtlasSprite {
                 index: kind.to_index(),
-                custom_size: Some(Vec2::splat(BLOCK_SPRITE_SIZE)),
+                custom_size: Some(Vec2::splat(BLOCK_SIZE)),
                 ..default()
             },
             texture_atlas: blocks_graphics.atlas_handle.clone(),
