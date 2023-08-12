@@ -6,9 +6,10 @@ use bevy_rapier2d::prelude::*;
 use std::f32::consts::PI;
 
 use crate::{
-    block::{Block, BLOCK_SIZE},
+    block::{Block, BlockBundle, BlockGraphics, BlockKind, BLOCK_SIZE},
     camera::MainCamera,
     utils::{leans_to_left, leans_to_right, map},
+    world::World,
 };
 
 // CONSTANTS
@@ -63,6 +64,7 @@ impl Plugin for PlayerPlugin {
                     change_graphics_with_direction,
                     select_block,
                     highlight_selected_block,
+                    place_block,
                 ),
             )
             // Reflection
@@ -692,6 +694,43 @@ fn highlight_selected_block(
             *block_selector.1 = Visibility::Visible;
         }
         None => *block_selector.1 = Visibility::Hidden,
+    }
+}
+
+fn place_block(
+    mut commands: Commands,
+    window: Query<&Window, With<PrimaryWindow>>,
+    camera: Query<(&Camera, &GlobalTransform), With<MainCamera>>,
+    blocks_graphics: Res<BlockGraphics>,
+    world: Query<Entity, With<World>>,
+    blocks: Query<&Transform, With<Block>>,
+    mouse: Res<Input<MouseButton>>,
+) {
+    let window = window.single();
+    let (camera, camera_transform) = camera.single();
+
+    if let Some(cursor_position) = window
+        .cursor_position()
+        .and_then(|cursor| camera.viewport_to_world_2d(camera_transform, cursor))
+    {
+        if mouse.just_pressed(MouseButton::Right) {
+            let spawn_pos = (cursor_position / BLOCK_SIZE).round() * BLOCK_SIZE;
+            if blocks
+                .iter()
+                .any(|&b| b.translation.x == spawn_pos.x && b.translation.y == spawn_pos.y)
+            {
+                return;
+            }
+
+            let chent = commands
+                .spawn(BlockBundle::new(
+                    BlockKind::Dirt,
+                    spawn_pos,
+                    &blocks_graphics,
+                ))
+                .id();
+            commands.entity(world.single()).add_child(chent);
+        }
     }
 }
 

@@ -14,7 +14,7 @@ impl Plugin for WorldPlugin {
 
 // COMPONENTS
 #[derive(Component)]
-struct World;
+pub struct World;
 
 // SYSTEMS
 
