@@ -33,6 +33,8 @@ const BACK_ARM_Z_INDEX: f32 = 0.;
 const FRONT_LEG_Z_INDEX: f32 = 3.;
 const BACK_LEG_Z_INDEX: f32 = 0.;
 
+const PLAYER_REACH: f32 = 3.;
+
 // PLUGINS
 
 pub struct PlayerPlugin;
@@ -628,6 +630,7 @@ fn select_block(
     mut selected_block: ResMut<SelectedBlock>,
     mut last_cur_pos: ResMut<LastCursorPosition>,
     blocks: Query<(&Transform, Entity), (With<Block>, Without<BlockSelector>)>,
+    player: Query<&Transform, With<Player>>,
 ) {
     let window = window.single();
     let (camera, camera_transform) = camera.single();
@@ -645,14 +648,21 @@ fn select_block(
             return;
         }
 
+        let player_tr = player.single().translation;
+
         last_cur_pos.0 = pos;
 
         selected_block.0 = None;
-
-        for (btr, bent) in blocks.iter() {
-            if btr.translation.x == pos.x && btr.translation.y == pos.y {
-                selected_block.0 = Some(bent);
-                break;
+        if player_tr.x < pos.x + PLAYER_REACH * BLOCK_SIZE
+            && player_tr.x > pos.x - PLAYER_REACH * BLOCK_SIZE
+            && player_tr.y < pos.y + PLAYER_REACH * BLOCK_SIZE
+            && player_tr.y > pos.y - PLAYER_REACH * BLOCK_SIZE
+        {
+            for (btr, bent) in blocks.iter() {
+                if btr.translation.x == pos.x && btr.translation.y == pos.y {
+                    selected_block.0 = Some(bent);
+                    break;
+                }
             }
         }
     }
