@@ -43,7 +43,7 @@ impl Default for BlockGraphics {
 
 // COMPONENTS
 #[derive(Component, Reflect)]
-struct Block;
+pub struct Block;
 
 #[derive(Component, Default, Clone, Copy, Reflect)]
 pub enum BlockKind {

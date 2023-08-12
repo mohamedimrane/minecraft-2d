@@ -6,7 +6,7 @@ use bevy_rapier2d::prelude::*;
 use std::f32::consts::PI;
 
 use crate::{
-    block::BLOCK_SIZE,
+    block::{Block, BLOCK_SIZE},
     utils::{leans_to_left, leans_to_right, map},
 };
 
@@ -41,6 +41,8 @@ impl Plugin for PlayerPlugin {
         app
             // Resources
             .insert_resource(PlayerGraphics::default())
+            .insert_resource(SelectedBlock::default())
+            .insert_resource(LastCursorPosition::default())
             // Systems
             .add_systems(PreStartup, load_player_graphics)
             .add_systems(Startup, (spawn_player, spawn_block_selector))
@@ -93,6 +95,12 @@ struct PlayerGraphics {
     left_leg_front: Rect,
     left_leg_back: Rect,
 }
+
+#[derive(Resource, Default)]
+struct SelectedBlock(Option<Entity>);
+
+#[derive(Resource, Default)]
+struct LastCursorPosition(Vec2);
 
 impl Default for PlayerGraphics {
     fn default() -> Self {
@@ -615,7 +623,10 @@ fn change_graphics_with_direction(
 fn select_block(
     window: Query<&Window, With<PrimaryWindow>>,
     camera: Query<(&Camera, &GlobalTransform), With<crate::MainCamera>>,
-    mut block_selector: Query<&mut Transform, With<BlockSelector>>,
+    mut block_selector: Query<&mut Transform, (With<BlockSelector>, Without<Block>)>,
+    mut selected_block: ResMut<SelectedBlock>,
+    mut last_cur_pos: ResMut<LastCursorPosition>,
+    blocks: Query<(&Transform, Entity), (With<Block>, Without<BlockSelector>)>,
 ) {
     let window = window.single();
     let (camera, camera_transform) = camera.single();
@@ -629,6 +640,21 @@ fn select_block(
             (cursor_position.x / BLOCK_SIZE).round() * BLOCK_SIZE,
             (cursor_position.y / BLOCK_SIZE).round() * BLOCK_SIZE,
         );
+
+        if last_cur_pos.0 == pos {
+            return;
+        }
+
+        last_cur_pos.0 = pos;
+
+        selected_block.0 = None;
+
+        for (btr, bent) in blocks.iter() {
+            if btr.translation.x == pos.x && btr.translation.y == pos.y {
+                selected_block.0 = Some(bent);
+                break;
+            }
+        }
 
         block_selector.translation = pos.extend(10.);
     }
