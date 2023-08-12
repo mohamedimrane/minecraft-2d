@@ -65,6 +65,7 @@ impl Plugin for PlayerPlugin {
                     select_block,
                     highlight_selected_block,
                     place_block,
+                    break_block,
                 ),
             )
             // Reflection
@@ -730,6 +731,33 @@ fn place_block(
                 ))
                 .id();
             commands.entity(world.single()).add_child(chent);
+        }
+    }
+}
+
+fn break_block(
+    mut commands: Commands,
+    window: Query<&Window, With<PrimaryWindow>>,
+    camera: Query<(&Camera, &GlobalTransform), With<MainCamera>>,
+    blocks: Query<(&Transform, Entity), With<Block>>,
+    mouse: Res<Input<MouseButton>>,
+) {
+    let window = window.single();
+    let (camera, camera_transform) = camera.single();
+
+    if let Some(cursor_position) = window
+        .cursor_position()
+        .and_then(|cursor| camera.viewport_to_world_2d(camera_transform, cursor))
+    {
+        if mouse.just_pressed(MouseButton::Left) {
+            let block_pos = (cursor_position / BLOCK_SIZE).round() * BLOCK_SIZE;
+
+            for (btr, bent) in blocks.iter() {
+                if btr.translation.x == block_pos.x && btr.translation.y == block_pos.y {
+                    commands.entity(bent).despawn_recursive();
+                    return;
+                }
+            }
         }
     }
 }
