@@ -1,4 +1,4 @@
-use bevy::{prelude::*, render::camera::CameraPlugin};
+use bevy::prelude::*;
 use bevy_inspector_egui::quick::WorldInspectorPlugin;
 use bevy_rapier2d::prelude::*;
 use block::BlockPlugin;
