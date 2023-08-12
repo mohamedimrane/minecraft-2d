@@ -230,6 +230,7 @@ fn spawn_block_selector(mut commands: Commands, asset_server: Res<AssetServer>) 
                 ..default()
             },
             texture: asset_server.load("block_selector.png"),
+            visibility: Visibility::Hidden,
             ..default()
         },
         BlockSelector,
@@ -622,7 +623,10 @@ fn change_graphics_with_direction(
 fn select_block(
     window: Query<&Window, With<PrimaryWindow>>,
     camera: Query<(&Camera, &GlobalTransform), With<MainCamera>>,
-    mut block_selector: Query<&mut Transform, (With<BlockSelector>, Without<Block>)>,
+    mut block_selector: Query<
+        (&mut Transform, &mut Visibility),
+        (With<BlockSelector>, Without<Block>),
+    >,
     mut selected_block: ResMut<SelectedBlock>,
     mut last_cur_pos: ResMut<LastCursorPosition>,
     blocks: Query<(&Transform, Entity), (With<Block>, Without<BlockSelector>)>,
@@ -655,7 +659,13 @@ fn select_block(
             }
         }
 
-        block_selector.translation = pos.extend(10.);
+        match selected_block.0 {
+            Some(_) => {
+                block_selector.0.translation = pos.extend(10.);
+                *block_selector.1 = Visibility::Visible;
+            }
+            None => *block_selector.1 = Visibility::Hidden,
+        }
     }
 }
 
