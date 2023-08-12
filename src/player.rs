@@ -57,6 +57,7 @@ impl Plugin for PlayerPlugin {
                     change_direction,
                     change_graphics_with_direction,
                     select_block,
+                    highlight_selected_block,
                 ),
             )
             // Reflection
@@ -623,17 +624,12 @@ fn change_graphics_with_direction(
 fn select_block(
     window: Query<&Window, With<PrimaryWindow>>,
     camera: Query<(&Camera, &GlobalTransform), With<MainCamera>>,
-    mut block_selector: Query<
-        (&mut Transform, &mut Visibility),
-        (With<BlockSelector>, Without<Block>),
-    >,
     mut selected_block: ResMut<SelectedBlock>,
     mut last_cur_pos: ResMut<LastCursorPosition>,
     blocks: Query<(&Transform, Entity), (With<Block>, Without<BlockSelector>)>,
 ) {
     let window = window.single();
     let (camera, camera_transform) = camera.single();
-    let mut block_selector = block_selector.single_mut();
 
     if let Some(cursor_position) = window
         .cursor_position()
@@ -658,14 +654,25 @@ fn select_block(
                 break;
             }
         }
+    }
+}
 
-        match selected_block.0 {
-            Some(_) => {
-                block_selector.0.translation = pos.extend(10.);
-                *block_selector.1 = Visibility::Visible;
-            }
-            None => *block_selector.1 = Visibility::Hidden,
+fn highlight_selected_block(
+    last_cur_pos: Res<LastCursorPosition>,
+    selected_block: Res<SelectedBlock>,
+    mut block_selector: Query<
+        (&mut Transform, &mut Visibility),
+        (With<BlockSelector>, Without<Block>),
+    >,
+) {
+    let mut block_selector = block_selector.single_mut();
+
+    match selected_block.0 {
+        Some(_) => {
+            block_selector.0.translation = last_cur_pos.0.extend(10.);
+            *block_selector.1 = Visibility::Visible;
         }
+        None => *block_selector.1 = Visibility::Hidden,
     }
 }
 
