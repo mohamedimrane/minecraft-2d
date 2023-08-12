@@ -1,7 +1,8 @@
 use bevy::{math::vec2, prelude::*};
-use bevy_rapier2d::prelude::*;
 
 use crate::block::{BlockBundle, BlockGraphics, BlockKind};
+
+// PLUGINS
 
 pub struct WorldPlugin;
 
@@ -11,19 +12,30 @@ impl Plugin for WorldPlugin {
     }
 }
 
+// COMPONENTS
+#[derive(Component)]
+struct World;
+
+// SYSTEMS
+
 fn spawn_test_platform(mut commands: Commands, block_graphics: Res<BlockGraphics>) {
-    for i in -10..=10 {
-        commands.spawn(BlockBundle::new(
-            BlockKind::Grass,
-            vec2(60. * i as f32, -300.),
-            &block_graphics,
-        ));
-        commands.spawn(BlockBundle::new(
-            BlockKind::Dirt,
-            vec2(60. * i as f32, -360.),
-            &block_graphics,
-        ));
-    }
+    commands
+        .spawn((WorldBundle::default(), Name::new("World")))
+        .with_children(|cb| {
+            for i in -10..=10 {
+                cb.spawn(BlockBundle::new(
+                    BlockKind::Grass,
+                    vec2(60. * i as f32, -300.),
+                    &block_graphics,
+                ));
+
+                cb.spawn(BlockBundle::new(
+                    BlockKind::Dirt,
+                    vec2(60. * i as f32, -360.),
+                    &block_graphics,
+                ));
+            }
+        });
 
     // commands.spawn((
     //     SpriteBundle {
@@ -38,4 +50,26 @@ fn spawn_test_platform(mut commands: Commands, block_graphics: Res<BlockGraphics
     //     RigidBody::Fixed,
     //     Collider::cuboid(500., 25.),
     // ));
+}
+
+// BUNDLES
+
+#[derive(Bundle)]
+struct WorldBundle {
+    // tags
+    tag: World,
+
+    // required
+    transform_bundle: TransformBundle,
+    visibility_bundle: VisibilityBundle,
+}
+
+impl Default for WorldBundle {
+    fn default() -> Self {
+        Self {
+            tag: World,
+            transform_bundle: TransformBundle::default(),
+            visibility_bundle: VisibilityBundle::default(),
+        }
+    }
 }
