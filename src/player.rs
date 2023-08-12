@@ -35,6 +35,8 @@ const BACK_LEG_Z_INDEX: f32 = 0.;
 
 const PLAYER_REACH: f32 = 3.;
 
+const PLAYER_Z_INDEX: f32 = 0.;
+
 // PLUGINS
 
 pub struct PlayerPlugin;
@@ -46,6 +48,7 @@ impl Plugin for PlayerPlugin {
             .insert_resource(PlayerGraphics::default())
             .insert_resource(SelectedBlock::default())
             .insert_resource(LastCursorPosition::default())
+            .insert_resource(LastPlayerPosition::default())
             // Systems
             .add_systems(PreStartup, load_player_graphics)
             .add_systems(Startup, (spawn_player, spawn_block_selector))
@@ -103,6 +106,9 @@ struct SelectedBlock(Option<Entity>);
 
 #[derive(Resource, Default)]
 struct LastCursorPosition(Vec2);
+
+#[derive(Resource, Default)]
+struct LastPlayerPosition(Vec2);
 
 impl Default for PlayerGraphics {
     fn default() -> Self {
@@ -629,6 +635,7 @@ fn select_block(
     camera: Query<(&Camera, &GlobalTransform), With<MainCamera>>,
     mut selected_block: ResMut<SelectedBlock>,
     mut last_cur_pos: ResMut<LastCursorPosition>,
+    mut last_pl_pos: ResMut<LastPlayerPosition>,
     blocks: Query<(&Transform, Entity), (With<Block>, Without<BlockSelector>)>,
     player: Query<&Transform, With<Player>>,
 ) {
@@ -644,13 +651,14 @@ fn select_block(
             (cursor_position.y / BLOCK_SIZE).round() * BLOCK_SIZE,
         );
 
-        if last_cur_pos.0 == pos {
+        let player_tr = player.single().translation;
+
+        if last_cur_pos.0 == pos && last_pl_pos.0.extend(PLAYER_Z_INDEX) == player_tr {
             return;
         }
 
-        let player_tr = player.single().translation;
-
         last_cur_pos.0 = pos;
+        last_pl_pos.0 = vec2(player_tr.x, player_tr.y);
 
         selected_block.0 = None;
         if player_tr.x < pos.x + PLAYER_REACH * BLOCK_SIZE
