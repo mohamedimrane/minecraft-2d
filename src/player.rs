@@ -706,6 +706,7 @@ fn place_block(
     blocks_graphics: Res<BlockGraphics>,
     world: Query<Entity, With<World>>,
     blocks: Query<&Transform, With<Block>>,
+    player_tr: Query<&Transform, With<Player>>,
     mouse: Res<Input<MouseButton>>,
     current_item: Res<CurrentItem>,
 ) {
@@ -716,8 +717,15 @@ fn place_block(
         .cursor_position()
         .and_then(|cursor| camera.viewport_to_world_2d(camera_transform, cursor))
     {
-        if mouse.just_pressed(MouseButton::Right) {
-            let spawn_pos = (cursor_position / BLOCK_SIZE).round() * BLOCK_SIZE;
+        let player_tr = player_tr.single().translation;
+        let spawn_pos = (cursor_position / BLOCK_SIZE).round() * BLOCK_SIZE;
+
+        if mouse.just_pressed(MouseButton::Right)
+            && player_tr.x < spawn_pos.x + PLAYER_REACH * BLOCK_SIZE
+            && player_tr.x > spawn_pos.x - PLAYER_REACH * BLOCK_SIZE
+            && player_tr.y < spawn_pos.y + PLAYER_REACH * BLOCK_SIZE
+            && player_tr.y > spawn_pos.y - PLAYER_REACH * BLOCK_SIZE
+        {
             if blocks
                 .iter()
                 .any(|&b| b.translation.x == spawn_pos.x && b.translation.y == spawn_pos.y)
