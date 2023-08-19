@@ -8,6 +8,7 @@ use std::f32::consts::PI;
 use crate::{
     block::{Block, BlockBundle, BlockGraphics, BlockKind, BLOCK_SIZE},
     camera::MainCamera,
+    inventory::CurrentItem,
     utils::{leans_to_left, leans_to_right, map},
     world::World,
 };
@@ -706,6 +707,7 @@ fn place_block(
     world: Query<Entity, With<World>>,
     blocks: Query<&Transform, With<Block>>,
     mouse: Res<Input<MouseButton>>,
+    current_item: Res<CurrentItem>,
 ) {
     let window = window.single();
     let (camera, camera_transform) = camera.single();
@@ -725,7 +727,7 @@ fn place_block(
 
             let chent = commands
                 .spawn(BlockBundle::new(
-                    BlockKind::Dirt,
+                    current_item.0,
                     spawn_pos,
                     &blocks_graphics,
                 ))
