@@ -3,6 +3,8 @@ use std::{
     ops::{Add, Div, Mul, Sub},
 };
 
+use bevy::prelude::Vec2;
+
 /// Takes [`x`] which falls inclusivly between [`a`] and [`b`] to [`y`] which falls between [`c`] and [`d`]
 pub fn map<T: Add<Output = T> + Sub<Output = T> + Mul<Output = T> + Div<Output = T> + Copy>(
     x: T,
@@ -19,4 +21,11 @@ pub fn leans_to_left(a: f32) -> bool {
 }
 pub fn leans_to_right(a: f32) -> bool {
     a < 3. * PI / 2.
+}
+
+pub fn in_reach(tr1: Vec2, tr2: Vec2, reach: f32, block_size: f32) -> bool {
+    tr1.x < tr2.x + reach * block_size
+        && tr1.x > tr2.x - reach * block_size
+        && tr1.y < tr2.y + reach * block_size
+        && tr1.y > tr2.y - reach * block_size
 }

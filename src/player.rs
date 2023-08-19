@@ -9,7 +9,7 @@ use crate::{
     block::{Block, BlockBundle, BlockGraphics, BlockKind, BLOCK_SIZE},
     camera::MainCamera,
     inventory::CurrentItem,
-    utils::{leans_to_left, leans_to_right, map},
+    utils::{in_reach, leans_to_left, leans_to_right, map},
     world::World,
 };
 
@@ -656,8 +656,9 @@ fn select_block(
         );
 
         let player_tr = player.single().translation;
+        let player_tr = vec2(player_tr.x, player_tr.y);
 
-        if last_cur_pos.0 == pos && last_pl_pos.0.extend(PLAYER_Z_INDEX) == player_tr {
+        if last_cur_pos.0 == pos && last_pl_pos.0 == player_tr {
             return;
         }
 
@@ -665,11 +666,7 @@ fn select_block(
         last_pl_pos.0 = vec2(player_tr.x, player_tr.y);
 
         selected_block.0 = None;
-        if player_tr.x < pos.x + PLAYER_REACH * BLOCK_SIZE
-            && player_tr.x > pos.x - PLAYER_REACH * BLOCK_SIZE
-            && player_tr.y < pos.y + PLAYER_REACH * BLOCK_SIZE
-            && player_tr.y > pos.y - PLAYER_REACH * BLOCK_SIZE
-        {
+        if in_reach(player_tr, pos, PLAYER_REACH, BLOCK_SIZE) {
             for (btr, bent) in blocks.iter() {
                 if btr.translation.x == pos.x && btr.translation.y == pos.y {
                     selected_block.0 = Some(bent);
@@ -718,13 +715,11 @@ fn place_block(
         .and_then(|cursor| camera.viewport_to_world_2d(camera_transform, cursor))
     {
         let player_tr = player_tr.single().translation;
+        let player_tr = vec2(player_tr.x, player_tr.y);
         let spawn_pos = (cursor_position / BLOCK_SIZE).round() * BLOCK_SIZE;
 
         if mouse.just_pressed(MouseButton::Right)
-            && player_tr.x < spawn_pos.x + PLAYER_REACH * BLOCK_SIZE
-            && player_tr.x > spawn_pos.x - PLAYER_REACH * BLOCK_SIZE
-            && player_tr.y < spawn_pos.y + PLAYER_REACH * BLOCK_SIZE
-            && player_tr.y > spawn_pos.y - PLAYER_REACH * BLOCK_SIZE
+            && in_reach(player_tr, spawn_pos, PLAYER_REACH, BLOCK_SIZE)
         {
             if blocks
                 .iter()
