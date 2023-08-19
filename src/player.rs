@@ -144,10 +144,10 @@ struct PlayerGraphicsHolder;
 enum PlayerGraphicsPart {
     Head,
     Body,
-    RightArm(f32),
-    LeftArm(f32),
-    RightLeg(f32),
-    LeftLeg(f32),
+    RightArm,
+    LeftArm,
+    RightLeg,
+    LeftLeg,
 }
 
 #[derive(Component, Reflect)]
@@ -585,19 +585,19 @@ fn change_graphics_with_direction(
             for (mut grp_sprite, mut grp_tr, grp) in graphics_parts.iter_mut() {
                 match *grp {
                     Body => grp_sprite.rect = Some(player_graphics.body_front),
-                    RightArm(_) => {
+                    RightArm => {
                         grp_sprite.rect = Some(player_graphics.right_arm_front);
                         grp_tr.translation.z = FRONT_ARM_Z_INDEX;
                     }
-                    LeftArm(_) => {
+                    LeftArm => {
                         grp_sprite.rect = Some(player_graphics.left_arm_back);
                         grp_tr.translation.z = BACK_ARM_Z_INDEX;
                     }
-                    RightLeg(_) => {
+                    RightLeg => {
                         grp_sprite.rect = Some(player_graphics.right_leg_front);
                         grp_tr.translation.z = FRONT_LEG_Z_INDEX;
                     }
-                    LeftLeg(_) => {
+                    LeftLeg => {
                         grp_sprite.rect = Some(player_graphics.left_leg_back);
                         grp_tr.translation.z = BACK_LEG_Z_INDEX;
                     }
@@ -610,19 +610,19 @@ fn change_graphics_with_direction(
             for (mut grp_sprite, mut grp_tr, grp) in graphics_parts.iter_mut() {
                 match *grp {
                     Body => grp_sprite.rect = Some(player_graphics.body_back),
-                    RightArm(_) => {
+                    RightArm => {
                         grp_sprite.rect = Some(player_graphics.right_arm_back);
                         grp_tr.translation.z = BACK_ARM_Z_INDEX;
                     }
-                    LeftArm(_) => {
+                    LeftArm => {
                         grp_sprite.rect = Some(player_graphics.left_arm_front);
                         grp_tr.translation.z = FRONT_ARM_Z_INDEX;
                     }
-                    RightLeg(_) => {
+                    RightLeg => {
                         grp_sprite.rect = Some(player_graphics.right_leg_back);
                         grp_tr.translation.z = BACK_LEG_Z_INDEX;
                     }
-                    LeftLeg(_) => {
+                    LeftLeg => {
                         grp_sprite.rect = Some(player_graphics.left_leg_front);
                         grp_tr.translation.z = FRONT_LEG_Z_INDEX;
                     }
@@ -898,7 +898,7 @@ impl PlayerGraphicsPartBundle {
                     ..default()
                 },
                 texture: gr.tex.clone(),
-                tag: PlayerGraphicsPart::RightArm(0.),
+                tag: PlayerGraphicsPart::RightArm,
                 transform_bundle: TransformBundle {
                     local: Transform::from_xyz(0., ARM_OFFSET, FRONT_ARM_Z_INDEX),
                     ..default()
@@ -920,7 +920,7 @@ impl PlayerGraphicsPartBundle {
                     ..default()
                 },
                 texture: gr.tex.clone(),
-                tag: PlayerGraphicsPart::LeftArm(0.),
+                tag: PlayerGraphicsPart::LeftArm,
                 transform_bundle: TransformBundle {
                     local: Transform::from_xyz(0., ARM_OFFSET, BACK_ARM_Z_INDEX),
                     ..default()
@@ -942,7 +942,7 @@ impl PlayerGraphicsPartBundle {
                     ..default()
                 },
                 texture: gr.tex.clone(),
-                tag: PlayerGraphicsPart::RightLeg(0.),
+                tag: PlayerGraphicsPart::RightLeg,
                 transform_bundle: TransformBundle {
                     local: Transform::from_xyz(0., LEG_OFFSET, FRONT_LEG_Z_INDEX),
                     ..default()
@@ -964,7 +964,7 @@ impl PlayerGraphicsPartBundle {
                     ..default()
                 },
                 texture: gr.tex.clone(),
-                tag: PlayerGraphicsPart::LeftLeg(0.),
+                tag: PlayerGraphicsPart::LeftLeg,
                 transform_bundle: TransformBundle {
                     local: Transform::from_xyz(0., LEG_OFFSET, BACK_LEG_Z_INDEX),
                     ..default()
