@@ -35,11 +35,11 @@ A minecraft 2d clone built with rust and the bevy game engine.
 - [ ] Building
   - [x] Placing blocks
   - [x] Breaking blocks
+  - [x] Basic switching blocks
   - [ ] Switching blocks
   - [ ] Picking up blocks
 
 - [ ] Blocks
-  - [x] Adding basic block
   - [ ] Adding water
   - [ ] Adding lava
 
