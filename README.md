@@ -24,6 +24,7 @@ A minecraft 2d clone built with rust and the bevy game engine.
   - [ ] Add console for minecraft style commands
   
 - [ ] Inventory
+  - [x] Basic block switching system
   - [ ] Inventory system
   - [ ] Inventory graphics
 
@@ -38,7 +39,7 @@ A minecraft 2d clone built with rust and the bevy game engine.
   - [ ] Picking up blocks
 
 - [ ] Blocks
-  - [ ] Adding basic block
+  - [x] Adding basic block
   - [ ] Adding water
   - [ ] Adding lava
 
