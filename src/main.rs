@@ -3,12 +3,14 @@ use bevy_inspector_egui::quick::WorldInspectorPlugin;
 use bevy_rapier2d::prelude::*;
 use block::BlockPlugin;
 use camera::CamPlugin;
+use gamemode::GameModePlugin;
 use inventory::InventoryPlugin;
 use player::PlayerPlugin;
 use world::WorldPlugin;
 
 mod block;
 mod camera;
+mod gamemode;
 mod inventory;
 mod player;
 mod utils;
@@ -35,6 +37,7 @@ fn main() {
             WorldPlugin,
             BlockPlugin,
             InventoryPlugin,
+            GameModePlugin,
             CamPlugin,
         ))
         .insert_resource(RapierConfiguration {
