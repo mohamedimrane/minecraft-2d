@@ -23,8 +23,9 @@ impl Plugin for WorldPlugin {
                 divider: 150.,
             })
             // Systems
-            // .add_systems(Startup, spawn_test_platform)
-            .add_systems(Startup, generate_world);
+            .add_systems(Startup, spawn_test_platform)
+            // .add_systems(Startup, generate_world)
+        ;
     }
 }
 
@@ -88,39 +89,39 @@ fn generate_world(
         });
 }
 
-// fn spawn_test_platform(mut commands: Commands, block_graphics: Res<BlockGraphics>) {
-//     commands
-//         .spawn((WorldBundle::default(), Name::new("World")))
-//         .with_children(|cb| {
-//             for i in -10..=10 {
-//                 cb.spawn(BlockBundle::new(
-//                     BlockKind::Grass,
-//                     vec2(60. * i as f32, -300.),
-//                     &block_graphics,
-//                 ));
+fn spawn_test_platform(mut commands: Commands, block_graphics: Res<BlockGraphics>) {
+    commands
+        .spawn((WorldBundle::default(), Name::new("World")))
+        .with_children(|cb| {
+            for i in -10..=10 {
+                cb.spawn(BlockBundle::new(
+                    BlockKind::Grass,
+                    vec2(60. * i as f32, -300.),
+                    &block_graphics,
+                ));
 
-//                 cb.spawn(BlockBundle::new(
-//                     BlockKind::Dirt,
-//                     vec2(60. * i as f32, -360.),
-//                     &block_graphics,
-//                 ));
-//             }
-//         });
+                cb.spawn(BlockBundle::new(
+                    BlockKind::Dirt,
+                    vec2(60. * i as f32, -360.),
+                    &block_graphics,
+                ));
+            }
+        });
 
-//     // commands.spawn((
-//     //     SpriteBundle {
-//     //         sprite: Sprite {
-//     //             color: Color::WHITE,
-//     //             custom_size: Some(Vec2::new(1000., 50.)),
-//     //             ..default()
-//     //         },
-//     //         transform: Transform::from_xyz(0., -300., 0.),
-//     //         ..default()
-//     //     },
-//     //     RigidBody::Fixed,
-//     //     Collider::cuboid(500., 25.),
-//     // ));
-// }
+    // commands.spawn((
+    //     SpriteBundle {
+    //         sprite: Sprite {
+    //             color: Color::WHITE,
+    //             custom_size: Some(Vec2::new(1000., 50.)),
+    //             ..default()
+    //         },
+    //         transform: Transform::from_xyz(0., -300., 0.),
+    //         ..default()
+    //     },
+    //     RigidBody::Fixed,
+    //     Collider::cuboid(500., 25.),
+    // ));
+}
 
 // BUNDLES
 
@@ -138,14 +139,15 @@ impl Default for WorldBundle {
     fn default() -> Self {
         Self {
             tag: World,
-            transform_bundle: TransformBundle {
-                local: Transform::from_xyz(
-                    -WIDTH as f32 * BLOCK_SIZE / 2.,
-                    -WIDTH as f32 * BLOCK_SIZE / 8.,
-                    0.,
-                ),
-                ..default()
-            },
+            // transform_bundle: TransformBundle {
+            //     local: Transform::from_xyz(
+            //         -WIDTH as f32 * BLOCK_SIZE / 2.,
+            //         -WIDTH as f32 * BLOCK_SIZE / 8.,
+            //         0.,
+            //     ),
+            //     ..default()
+            // },
+            transform_bundle: TransformBundle::default(),
             visibility_bundle: VisibilityBundle::default(),
         }
     }
