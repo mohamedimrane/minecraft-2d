@@ -335,13 +335,11 @@ fn animate_arms(
     keys: Res<Input<KeyCode>>,
 ) {
     let running = keys.pressed(KeyCode::ShiftLeft);
-    // Get graphics parts
+
     let right_arm = right_arm.single_mut();
     let left_arm = left_arm.single_mut();
 
     let step = if running { 9. } else { 4.5 } * time.delta_seconds();
-
-    let (mut tr, mut wave_index) = right_arm;
 
     let rad_map = if running {
         (5. * PI / 4., 7. * PI / 4.)
@@ -349,79 +347,29 @@ fn animate_arms(
         (4. * PI / 3., 5. * PI / 3.)
     };
 
-    // Handle animation
-    if keys.any_pressed([KeyCode::A, KeyCode::D, KeyCode::Left, KeyCode::Right]) {
-        let sin = wave_index.0.sin();
-        let theta = map(sin, -1., 1., rad_map.0, rad_map.1) + PI / 2.;
+    let moving = keys.any_pressed([KeyCode::A, KeyCode::D, KeyCode::Left, KeyCode::Right]);
 
-        tr.rotation = Quat::from_rotation_z(theta);
+    let (mut tr, mut wave_index) = right_arm;
 
-        wave_index.0 += step;
-        if wave_index.0 > 360. {
-            wave_index.0 = 0.;
-        }
-    } else {
-        // Put arm back in place after stopping movement
-        let angle = tr.rotation.to_euler(EulerRot::ZYX).0;
-
-        if leans_to_left(angle + 3. * PI / 2.) {
-            let angle = angle - step;
-
-            tr.rotation = Quat::from_rotation_z(angle);
-
-            if leans_to_right(angle + 3. * PI / 2.) {
-                tr.rotation = Quat::from_rotation_z(2. * PI);
-                wave_index.0 = 0.;
-            }
-        } else if leans_to_right(angle + 3. * PI / 2.) {
-            let angle = angle + step;
-
-            tr.rotation = Quat::from_rotation_z(angle);
-
-            if leans_to_left(angle + 3. * PI / 2.) {
-                tr.rotation = Quat::from_rotation_z(2. * PI);
-                wave_index.0 = 0.;
-            }
-        }
-    }
+    handle_member_animation(
+        moving,
+        &mut tr,
+        &mut wave_index,
+        Direction::Right,
+        rad_map,
+        step,
+    );
 
     let (mut tr, mut wave_index) = left_arm;
 
-    // Handle animation
-    if keys.any_pressed([KeyCode::A, KeyCode::D, KeyCode::Left, KeyCode::Right]) {
-        let sin = wave_index.0.sin();
-        let theta = map(sin, -1., 1., rad_map.0, rad_map.1) + PI / 2.;
-
-        tr.rotation = Quat::from_rotation_z(-theta);
-
-        wave_index.0 += step;
-        if wave_index.0 > 360. {
-            wave_index.0 = 0.;
-        }
-    } else {
-        // Put arm back in place after stopping movement
-        let angle = tr.rotation.to_euler(EulerRot::ZYX).0;
-
-        if leans_to_left(angle + 3. * PI / 2.) {
-            let angle = angle - step;
-
-            tr.rotation = Quat::from_rotation_z(angle);
-
-            if leans_to_right(angle + 3. * PI / 2.) {
-                tr.rotation = Quat::from_rotation_z(2. * PI);
-                wave_index.0 = 0.;
-            }
-        } else if leans_to_right(angle + 3. * PI / 2.) {
-            let angle = angle + step;
-
-            tr.rotation = Quat::from_rotation_z(angle);
-
-            if leans_to_left(angle + 3. * PI / 2.) {
-                tr.rotation = Quat::from_rotation_z(2. * PI);
-                wave_index.0 = 0.;
-            }
-        }
-    }
+    handle_member_animation(
+        moving,
+        &mut tr,
+        &mut wave_index,
+        Direction::Left,
+        rad_map,
+        step,
+    );
 }
 
 fn animate_legs(
@@ -443,7 +391,7 @@ fn animate_legs(
     keys: Res<Input<KeyCode>>,
 ) {
     let running = keys.pressed(KeyCode::ShiftLeft);
-    // Get graphics parts
+
     let right_leg = right_leg.single_mut();
     let left_leg = left_leg.single_mut();
 
@@ -459,61 +407,53 @@ fn animate_legs(
         (4. * PI / 3., 5. * PI / 3.)
     };
 
-    // Extract right leg
+    let moving = keys.any_pressed([KeyCode::A, KeyCode::D, KeyCode::Left, KeyCode::Right]);
+
     let (mut tr, mut wave_index) = right_leg;
 
-    // Handle animation
-    if keys.any_pressed([KeyCode::A, KeyCode::D, KeyCode::Left, KeyCode::Right]) {
-        let sin = wave_index.0.sin();
-        let theta = map(sin, -1., 1., rad_map.0, rad_map.1) + PI / 2.;
+    handle_member_animation(
+        moving,
+        &mut tr,
+        &mut wave_index,
+        Direction::Left,
+        rad_map,
+        step,
+    );
 
-        tr.rotation = Quat::from_rotation_z(-theta);
-
-        wave_index.0 += step;
-        if wave_index.0 > 360. {
-            wave_index.0 = 0.;
-        }
-    } else {
-        // Put leg back in place after stopping movement
-        let angle = tr.rotation.to_euler(EulerRot::ZYX).0;
-
-        if leans_to_left(angle + 3. * PI / 2.) {
-            let angle = angle - step;
-
-            tr.rotation = Quat::from_rotation_z(angle);
-
-            if leans_to_right(angle + 3. * PI / 2.) {
-                tr.rotation = Quat::from_rotation_z(2. * PI);
-                wave_index.0 = 0.;
-            }
-        } else if leans_to_right(angle + 3. * PI / 2.) {
-            let angle = angle + step;
-
-            tr.rotation = Quat::from_rotation_z(angle);
-
-            if leans_to_left(angle + 3. * PI / 2.) {
-                tr.rotation = Quat::from_rotation_z(2. * PI);
-                wave_index.0 = 0.;
-            }
-        }
-    }
-
-    // Extract left leg
     let (mut tr, mut wave_index) = left_leg;
+    handle_member_animation(
+        moving,
+        &mut tr,
+        &mut wave_index,
+        Direction::Right,
+        rad_map,
+        step,
+    );
+}
 
-    // Handle animation
-    if keys.any_pressed([KeyCode::A, KeyCode::D, KeyCode::Left, KeyCode::Right]) {
+fn handle_member_animation(
+    moving: bool,
+    tr: &mut Transform,
+    wave_index: &mut WaveIndex,
+    direction: Direction,
+    rad_map: (f32, f32),
+    step: f32,
+) {
+    if moving {
         let sin = wave_index.0.sin();
         let theta = map(sin, -1., 1., rad_map.0, rad_map.1) + PI / 2.;
 
-        tr.rotation = Quat::from_rotation_z(theta);
+        tr.rotation = Quat::from_rotation_z(match direction {
+            Direction::Right => theta,
+            Direction::Left => -theta,
+        });
 
         wave_index.0 += step;
         if wave_index.0 > 360. {
             wave_index.0 = 0.;
         }
     } else {
-        // Put leg back in place after stopping movement
+        // Put arm back in place after stopping movement
         let angle = tr.rotation.to_euler(EulerRot::ZYX).0;
 
         if leans_to_left(angle + 3. * PI / 2.) {
