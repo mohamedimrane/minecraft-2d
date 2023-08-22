@@ -127,8 +127,7 @@ pub struct BlockBundle {
     block: Block,
 
     // required
-    transform_bundle: TransformBundle,
-    visibility_bundle: VisibilityBundle,
+    spatial_bundle: SpatialBundle,
 }
 
 impl BlockBundle {
@@ -143,11 +142,10 @@ impl BlockBundle {
             },
             texture_atlas: blocks_graphics.atlas_handle.clone(),
             block: Block,
-            transform_bundle: TransformBundle {
-                local: Transform::from_xyz(translation.x, translation.y, BLOCK_Z_INDEX),
+            spatial_bundle: SpatialBundle {
+                transform: Transform::from_xyz(translation.x, translation.y, BLOCK_Z_INDEX),
                 ..default()
             },
-            visibility_bundle: VisibilityBundle::default(),
         }
     }
 }

@@ -131,8 +131,7 @@ struct WorldBundle {
     tag: World,
 
     // required
-    transform_bundle: TransformBundle,
-    visibility_bundle: VisibilityBundle,
+    spatial_bundle: SpatialBundle,
 }
 
 impl Default for WorldBundle {
@@ -147,8 +146,7 @@ impl Default for WorldBundle {
             //     ),
             //     ..default()
             // },
-            transform_bundle: TransformBundle::default(),
-            visibility_bundle: VisibilityBundle::default(),
+            spatial_bundle: default(),
         }
     }
 }

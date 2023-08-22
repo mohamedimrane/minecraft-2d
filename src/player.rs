@@ -283,10 +283,7 @@ fn player_controller_movement(
 }
 
 fn animate_head(
-    mut head: Query<
-        (&GlobalTransform, &mut Transform, &mut Sprite),
-        (With<PlayerGraphicsPart>, With<PlayerGraphicsPartHead>),
-    >,
+    mut head: Query<(&GlobalTransform, &mut Transform, &mut Sprite), With<PlayerGraphicsPartHead>>,
     window: Query<&Window, With<PrimaryWindow>>,
     camera: Query<(&Camera, &GlobalTransform), With<MainCamera>>,
 ) {
@@ -480,7 +477,7 @@ fn handle_member_animation(
 
 fn change_direction(
     mut direction: Query<&mut Direction, With<Player>>,
-    head_gtr: Query<&GlobalTransform, (With<PlayerGraphicsPart>, With<PlayerGraphicsPartHead>)>,
+    head_gtr: Query<&GlobalTransform, With<PlayerGraphicsPartHead>>,
     window: Query<&Window, With<PrimaryWindow>>,
     camera: Query<(&Camera, &GlobalTransform), With<MainCamera>>,
 ) {
@@ -731,8 +728,7 @@ struct PlayerBundle {
     locked_axes: LockedAxes,
 
     // required
-    transform_bundle: TransformBundle,
-    visibility_bundle: VisibilityBundle,
+    spatial_bundle: SpatialBundle,
 }
 
 #[derive(Bundle)]
@@ -741,8 +737,7 @@ struct PlayerGraphicsHolderBundle {
     tag: PlayerGraphicsHolder,
 
     // required
-    transform_bundle: TransformBundle,
-    visibility_bundle: VisibilityBundle,
+    spatial_bundle: SpatialBundle,
 }
 
 /// Need to insert tags manually (as well as WaveIndex if needed)
@@ -756,8 +751,7 @@ struct PlayerGraphicsPartBundle {
     tag: PlayerGraphicsPart,
 
     // required
-    transform_bundle: TransformBundle,
-    visibility_bunde: VisibilityBundle,
+    spatial_bundle: SpatialBundle,
 }
 
 impl PlayerBundle {
@@ -772,7 +766,7 @@ impl PlayerBundle {
         Self {
             speed: Speed(walking_speed, runnign_speed),
             jump: Jump(jump_force),
-            direction: Direction::default(),
+            direction: default(),
             collider,
             collider_mass: ColliderMassProperties::Mass(mass),
             player: Player,
@@ -781,11 +775,10 @@ impl PlayerBundle {
                 coefficient: 0.,
                 combine_rule: CoefficientCombineRule::Min,
             },
-            velocity: Velocity::default(),
-            ext_impulse: ExternalImpulse::default(),
+            velocity: default(),
+            ext_impulse: default(),
             locked_axes: LockedAxes::ROTATION_LOCKED,
-            transform_bundle: TransformBundle::default(),
-            visibility_bundle: VisibilityBundle::default(),
+            spatial_bundle: default(),
         }
     }
 }
@@ -802,11 +795,10 @@ impl PlayerGraphicsPartBundle {
                 },
                 texture: gr.tex.clone(),
                 tag: PlayerGraphicsPart::Head,
-                transform_bundle: TransformBundle {
-                    local: Transform::from_xyz(0., HEAD_OFFSET, HEAD_Z_INDEX),
+                spatial_bundle: SpatialBundle {
+                    transform: Transform::from_xyz(0., HEAD_OFFSET, HEAD_Z_INDEX),
                     ..default()
                 },
-                visibility_bunde: VisibilityBundle::default(),
             },
             PlayerGraphicsPartHead,
         )
@@ -823,11 +815,10 @@ impl PlayerGraphicsPartBundle {
                 },
                 texture: gr.tex.clone(),
                 tag: PlayerGraphicsPart::Body,
-                transform_bundle: TransformBundle {
-                    local: Transform::from_xyz(0., 0., BODY_Z_INDEX),
+                spatial_bundle: SpatialBundle {
+                    transform: Transform::from_xyz(0., 0., BODY_Z_INDEX),
                     ..default()
                 },
-                visibility_bunde: VisibilityBundle::default(),
             },
             PlayerGraphicsPartBody,
         )
@@ -844,11 +835,10 @@ impl PlayerGraphicsPartBundle {
                 },
                 texture: gr.tex.clone(),
                 tag: PlayerGraphicsPart::RightArm,
-                transform_bundle: TransformBundle {
-                    local: Transform::from_xyz(0., ARM_OFFSET, FRONT_ARM_Z_INDEX),
+                spatial_bundle: SpatialBundle {
+                    transform: Transform::from_xyz(0., ARM_OFFSET, FRONT_ARM_Z_INDEX),
                     ..default()
                 },
-                visibility_bunde: VisibilityBundle::default(),
             },
             PlayerGraphicsPartRightArm,
             WaveIndex(0.),
@@ -866,11 +856,10 @@ impl PlayerGraphicsPartBundle {
                 },
                 texture: gr.tex.clone(),
                 tag: PlayerGraphicsPart::LeftArm,
-                transform_bundle: TransformBundle {
-                    local: Transform::from_xyz(0., ARM_OFFSET, BACK_ARM_Z_INDEX),
+                spatial_bundle: SpatialBundle {
+                    transform: Transform::from_xyz(0., ARM_OFFSET, BACK_ARM_Z_INDEX),
                     ..default()
                 },
-                visibility_bunde: VisibilityBundle::default(),
             },
             PlayerGraphicsPartLeftArm,
             WaveIndex(0.),
@@ -888,11 +877,10 @@ impl PlayerGraphicsPartBundle {
                 },
                 texture: gr.tex.clone(),
                 tag: PlayerGraphicsPart::RightLeg,
-                transform_bundle: TransformBundle {
-                    local: Transform::from_xyz(0., LEG_OFFSET, FRONT_LEG_Z_INDEX),
+                spatial_bundle: SpatialBundle {
+                    transform: Transform::from_xyz(0., LEG_OFFSET, FRONT_LEG_Z_INDEX),
                     ..default()
                 },
-                visibility_bunde: VisibilityBundle::default(),
             },
             PlayerGraphicsPartRightLeg,
             WaveIndex(0.),
@@ -910,11 +898,10 @@ impl PlayerGraphicsPartBundle {
                 },
                 texture: gr.tex.clone(),
                 tag: PlayerGraphicsPart::LeftLeg,
-                transform_bundle: TransformBundle {
-                    local: Transform::from_xyz(0., LEG_OFFSET, BACK_LEG_Z_INDEX),
+                spatial_bundle: SpatialBundle {
+                    transform: Transform::from_xyz(0., LEG_OFFSET, BACK_LEG_Z_INDEX),
                     ..default()
                 },
-                visibility_bunde: VisibilityBundle::default(),
             },
             PlayerGraphicsPartLeftLeg,
             WaveIndex(0.),
@@ -927,10 +914,10 @@ impl Default for PlayerBundle {
         Self {
             speed: Speed(300., 500.),
             jump: Jump(100.),
-            direction: Direction::default(),
+            direction: default(),
+            collider: Collider::capsule_y(70., 8.),
             // collider: Collider::cuboid(10., 76.),
             // collider: Collider::round_cuboid(10., 76., 0.03),
-            collider: Collider::capsule_y(70., 8.),
             collider_mass: ColliderMassProperties::Mass(91.),
             player: Player,
             rigid_body: RigidBody::Dynamic,
@@ -938,11 +925,10 @@ impl Default for PlayerBundle {
                 coefficient: 0.0,
                 combine_rule: CoefficientCombineRule::Min,
             },
-            velocity: Velocity::default(),
-            ext_impulse: ExternalImpulse::default(),
+            velocity: default(),
+            ext_impulse: default(),
             locked_axes: LockedAxes::ROTATION_LOCKED,
-            transform_bundle: default(),
-            visibility_bundle: default(),
+            spatial_bundle: default(),
         }
     }
 }
@@ -951,11 +937,10 @@ impl Default for PlayerGraphicsHolderBundle {
     fn default() -> Self {
         Self {
             tag: PlayerGraphicsHolder,
-            transform_bundle: TransformBundle {
-                local: Transform::from_xyz(0., 9.5, 0.),
+            spatial_bundle: SpatialBundle {
+                transform: Transform::from_xyz(0., 9.5, 0.),
                 ..default()
             },
-            visibility_bundle: VisibilityBundle::default(),
         }
     }
 }
