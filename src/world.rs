@@ -22,6 +22,7 @@ impl Plugin for WorldPlugin {
                 terrain_frequency: 4.,
                 cave_frequency: 3.,
                 air_porbality: 0.26,
+                dirt_layer_height: 3,
                 height_multiplier: 40.,
                 height_addition: 40.,
                 divider: 140.,
@@ -41,6 +42,7 @@ struct WorldSettings {
     terrain_frequency: f32,
     cave_frequency: f32,
     air_porbality: f32,
+    dirt_layer_height: i32,
     height_multiplier: f32,
     height_addition: f32,
     divider: f32,
@@ -80,8 +82,18 @@ fn generate_world(
                     let v = noise.get_noise(x as f32 / stgs.divider, y as f32 / stgs.divider);
 
                     if v < stgs.air_porbality {
+                        let mut kind = BlockKind::Stone;
+
+                        if height as i32 - y <= stgs.dirt_layer_height {
+                            kind = BlockKind::Dirt;
+                        }
+
+                        if y == height as i32 {
+                            kind = BlockKind::Grass
+                        }
+
                         cb.spawn(BlockBundle::new(
-                            BlockKind::Dirt,
+                            kind,
                             vec2(x as f32 * BLOCK_SIZE, y as f32 * BLOCK_SIZE),
                             &block_graphics,
                         ));
