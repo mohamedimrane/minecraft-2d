@@ -15,17 +15,20 @@ impl Plugin for WorldPlugin {
             // Resources
             .insert_resource(WorldSettings {
                 seed: 59900,
-                octaves: 3,
+                // seed: 4332575,
+                // seed: 43325075,
+                octaves: 2,
                 lacunarity: 5.0,
-                frequency: 3.,
+                terrain_frequency: 4.,
+                cave_frequency: 3.,
+                air_porbality: 0.26,
                 height_multiplier: 40.,
                 height_addition: 40.,
-                divider: 150.,
+                divider: 140.,
             })
             // Systems
-            .add_systems(Startup, spawn_test_platform)
-            // .add_systems(Startup, generate_world)
-        ;
+            // .add_systems(Startup, spawn_test_platform)
+            .add_systems(Startup, generate_world);
     }
 }
 
@@ -35,7 +38,9 @@ struct WorldSettings {
     seed: u64,
     octaves: i32,
     lacunarity: f32,
-    frequency: f32,
+    terrain_frequency: f32,
+    cave_frequency: f32,
+    air_porbality: f32,
     height_multiplier: f32,
     height_addition: f32,
     divider: f32,
@@ -49,38 +54,35 @@ pub struct World;
 
 fn generate_world(
     mut commands: Commands,
-    settings: Res<WorldSettings>,
+    stgs: Res<WorldSettings>,
     block_graphics: Res<BlockGraphics>,
 ) {
-    let mut noise = FastNoise::seeded(settings.seed);
-    noise.set_noise_type(NoiseType::Perlin);
-    noise.set_fractal_octaves(settings.octaves);
+    let mut noise = FastNoise::seeded(stgs.seed);
+    noise.set_noise_type(NoiseType::PerlinFractal);
+    noise.set_fractal_octaves(stgs.octaves);
     // noise.set_fractal_gain(0.6);
-    noise.set_fractal_lacunarity(settings.lacunarity);
-    noise.set_frequency(settings.frequency);
+    noise.set_fractal_lacunarity(stgs.lacunarity);
+    // noise.set_frequency(stgs.frequency);
 
     commands
         .spawn((WorldBundle::default(), Name::new("World")))
         .with_children(|cb| {
             for x in 0..WIDTH {
-                let height = noise.get_noise(x as f32 / settings.divider / 2., 0.)
-                    * settings.height_multiplier
-                    + settings.height_addition;
+                noise.set_frequency(stgs.terrain_frequency);
 
-                for y in 0..height as i32 {
-                    let v =
-                        noise.get_noise(x as f32 / settings.divider, y as f32 / settings.divider);
+                let height = noise.get_noise(x as f32 / stgs.divider, 1. * stgs.cave_frequency)
+                    * stgs.height_multiplier
+                    + stgs.height_addition;
 
-                    if v < 40. / settings.divider {
-                        let kind = if y == height as i32 - 1 {
-                            BlockKind::Grass
-                        } else {
-                            BlockKind::Dirt
-                        };
+                for y in 0..=height as i32 {
+                    noise.set_frequency(stgs.cave_frequency);
 
+                    let v = noise.get_noise(x as f32 / stgs.divider, y as f32 / stgs.divider);
+
+                    if v < stgs.air_porbality {
                         cb.spawn(BlockBundle::new(
-                            kind,
-                            vec2(BLOCK_SIZE * x as f32, BLOCK_SIZE * y as f32),
+                            BlockKind::Dirt,
+                            vec2(x as f32 * BLOCK_SIZE, y as f32 * BLOCK_SIZE),
                             &block_graphics,
                         ));
                     }
