@@ -5,7 +5,7 @@ use rand::{Rng, SeedableRng};
 use rand_chacha::ChaCha8Rng;
 
 // CONSTANTS
-const WIDTH: i32 = 200;
+const CHUNK_SIZE: i32 = 16;
 
 // PLUGINS
 
@@ -57,6 +57,9 @@ struct WorldSettings {
 #[derive(Component)]
 pub struct World;
 
+#[derive(Component)]
+pub struct Chunk;
+
 // SYSTEMS
 
 fn generate_world(
@@ -74,42 +77,59 @@ fn generate_world(
     commands
         .spawn((WorldBundle::default(), Name::new("World")))
         .with_children(|cb| {
-            for x in 0..WIDTH {
-                noise.set_frequency(stgs.terrain_frequency);
+            generate_chunk(0, cb, &mut noise, &mut rng, &stgs, &block_graphics);
+        });
+}
 
-                let height = noise.get_noise(x as f32 / stgs.divider, 1. * stgs.cave_frequency)
-                    * stgs.height_multiplier
-                    + stgs.height_addition;
+fn generate_chunk(
+    chunk_x: i32,
+    cb: &mut ChildBuilder,
+    noise: &mut FastNoise,
+    rng: &mut ChaCha8Rng,
+    stgs: &Res<WorldSettings>,
+    block_graphics: &Res<BlockGraphics>,
+) {
+    cb.spawn((
+        ChunkBundle::default(),
+        Name::new(format!("Chunk x{}", chunk_x)),
+    ))
+    .with_children(|cb| {
+        for x in (CHUNK_SIZE * chunk_x) + 1..=(CHUNK_SIZE * (chunk_x) + CHUNK_SIZE) {
+            noise.set_frequency(stgs.terrain_frequency);
 
-                for y in 0..=height as i32 {
-                    noise.set_frequency(stgs.cave_frequency);
+            let height = noise.get_noise(x as f32 / stgs.divider, 1. * stgs.cave_frequency)
+                * stgs.height_multiplier
+                + stgs.height_addition;
 
-                    let v = noise.get_noise(x as f32 / stgs.divider, y as f32 / stgs.divider);
+            for y in 0..=height as i32 {
+                noise.set_frequency(stgs.cave_frequency);
 
-                    if v < stgs.air_porbality {
-                        let mut kind = BlockKind::Stone;
+                let v = noise.get_noise(x as f32 / stgs.divider, y as f32 / stgs.divider);
 
-                        if height as i32 - y <= stgs.dirt_layer_height {
-                            kind = BlockKind::Dirt;
-                        }
+                if v < stgs.air_porbality {
+                    let mut kind = BlockKind::Stone;
 
-                        if y == height as i32 {
-                            kind = BlockKind::Grass;
-
-                            if rng.gen_bool(1. / stgs.tree_chance as f64) {
-                                spawn_tree(x as f32, y as f32 + 1., cb, &block_graphics);
-                            }
-                        }
-
-                        cb.spawn(BlockBundle::new(
-                            kind,
-                            vec2(x as f32 * BLOCK_SIZE, y as f32 * BLOCK_SIZE),
-                            &block_graphics,
-                        ));
+                    if height as i32 - y <= stgs.dirt_layer_height {
+                        kind = BlockKind::Dirt;
                     }
+
+                    if y == height as i32 {
+                        kind = BlockKind::Grass;
+
+                        if rng.gen_bool(1. / stgs.tree_chance as f64) {
+                            spawn_tree(x as f32, y as f32 + 1., cb, &block_graphics);
+                        }
+                    }
+
+                    cb.spawn(BlockBundle::new(
+                        kind,
+                        vec2(x as f32 * BLOCK_SIZE, y as f32 * BLOCK_SIZE),
+                        &block_graphics,
+                    ));
                 }
             }
-        });
+        }
+    });
 }
 
 fn spawn_tree(x: f32, y: f32, commands: &mut ChildBuilder, block_graphics: &Res<BlockGraphics>) {
@@ -198,18 +218,35 @@ struct WorldBundle {
     spatial_bundle: SpatialBundle,
 }
 
+#[derive(Bundle)]
+struct ChunkBundle {
+    // tags
+    tag: Chunk,
+
+    // required
+    spatial_bundle: SpatialBundle,
+}
+
 impl Default for WorldBundle {
     fn default() -> Self {
         Self {
             tag: World,
-            // transform_bundle: TransformBundle {
-            //     local: Transform::from_xyz(
-            //         -WIDTH as f32 * BLOCK_SIZE / 2.,
-            //         -WIDTH as f32 * BLOCK_SIZE / 8.,
-            //         0.,
-            //     ),
-            //     ..default()
-            // },
+            spatial_bundle: SpatialBundle {
+                transform: Transform::from_xyz(
+                    BLOCK_SIZE * -CHUNK_SIZE as f32 / 2.,
+                    -BLOCK_SIZE * 40.,
+                    0.,
+                ),
+                ..default()
+            },
+        }
+    }
+}
+
+impl Default for ChunkBundle {
+    fn default() -> Self {
+        Self {
+            tag: Chunk,
             spatial_bundle: default(),
         }
     }
