@@ -14,3 +14,4 @@ bevy-inspector-egui = "0.19.0"
 bevy_editor_pls = { git = "https://github.com/jakobhellermann/bevy_editor_pls.git", branch = "main" }
 bevy_rapier2d = "0.22.0"
 bracket-noise = "0.8.2"
+rand = "0.8.5"
