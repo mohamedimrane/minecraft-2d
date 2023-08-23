@@ -1,6 +1,8 @@
 use crate::block::{BlockBundle, BlockGraphics, BlockKind, BLOCK_SIZE};
 use bevy::{math::vec2, prelude::*};
 use bracket_noise::prelude::*;
+use rand::{Rng, SeedableRng};
+use rand_chacha::ChaCha8Rng;
 
 // CONSTANTS
 const WIDTH: i32 = 200;
@@ -23,6 +25,7 @@ impl Plugin for WorldPlugin {
                 cave_frequency: 3.,
                 air_porbality: 0.26,
                 dirt_layer_height: 3,
+                tree_chance: 8,
                 height_multiplier: 40.,
                 height_addition: 40.,
                 divider: 140.,
@@ -43,6 +46,8 @@ struct WorldSettings {
     cave_frequency: f32,
     air_porbality: f32,
     dirt_layer_height: i32,
+    /// The greater the rarer
+    tree_chance: i32,
     height_multiplier: f32,
     height_addition: f32,
     divider: f32,
@@ -59,12 +64,12 @@ fn generate_world(
     stgs: Res<WorldSettings>,
     block_graphics: Res<BlockGraphics>,
 ) {
+    let mut rng = ChaCha8Rng::seed_from_u64(stgs.seed);
+
     let mut noise = FastNoise::seeded(stgs.seed);
     noise.set_noise_type(NoiseType::PerlinFractal);
     noise.set_fractal_octaves(stgs.octaves);
-    // noise.set_fractal_gain(0.6);
     noise.set_fractal_lacunarity(stgs.lacunarity);
-    // noise.set_frequency(stgs.frequency);
 
     commands
         .spawn((WorldBundle::default(), Name::new("World")))
@@ -89,7 +94,11 @@ fn generate_world(
                         }
 
                         if y == height as i32 {
-                            kind = BlockKind::Grass
+                            kind = BlockKind::Grass;
+
+                            if rng.gen_bool(1. / stgs.tree_chance as f64) {
+                                spawn_tree(x as f32, y as f32 + 1., cb, &block_graphics);
+                            }
                         }
 
                         cb.spawn(BlockBundle::new(
@@ -101,6 +110,47 @@ fn generate_world(
                 }
             }
         });
+}
+
+fn spawn_tree(x: f32, y: f32, commands: &mut ChildBuilder, block_graphics: &Res<BlockGraphics>) {
+    for i in 0..=5 {
+        let kind = if i >= 3 {
+            BlockKind::LeafedOakLog
+        } else {
+            BlockKind::OakLog
+        };
+
+        commands.spawn(BlockBundle::new(
+            kind,
+            vec2(x * BLOCK_SIZE, (y + i as f32) * BLOCK_SIZE),
+            block_graphics,
+        ));
+    }
+
+    for i in -2..=2 {
+        for j in 0..=3 {
+            if i == 0 {
+                continue;
+            }
+
+            commands.spawn(BlockBundle::new(
+                BlockKind::Leaves,
+                vec2(
+                    (x + i as f32) * BLOCK_SIZE,
+                    (y + j as f32 + 2.) * BLOCK_SIZE,
+                ),
+                block_graphics,
+            ));
+        }
+    }
+
+    for i in -1..=1 {
+        commands.spawn(BlockBundle::new(
+            BlockKind::Leaves,
+            vec2((x + i as f32) * BLOCK_SIZE, (y + 6.) * BLOCK_SIZE),
+            block_graphics,
+        ));
+    }
 }
 
 fn spawn_test_platform(mut commands: Commands, block_graphics: Res<BlockGraphics>) {
