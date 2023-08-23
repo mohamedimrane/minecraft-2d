@@ -2,7 +2,7 @@ use crate::block::{BlockBundle, BlockGraphics, BlockKind, BLOCK_SIZE};
 use bevy::{math::vec2, prelude::*};
 use bracket_noise::prelude::*;
 
-// CONSTANTNS
+// CONSTANTS
 const WIDTH: i32 = 200;
 
 // PLUGINS
