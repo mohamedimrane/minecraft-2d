@@ -35,11 +35,11 @@ fn main() {
             // RapierDebugRenderPlugin::default(),
             // WorldInspectorPlugin::new(),
             EditorPlugin::default(),
-            // PlayerPlugin,
+            PlayerPlugin,
             WorldPlugin,
             BlockPlugin,
-            // InventoryPlugin,
-            // GameModePlugin,
+            InventoryPlugin,
+            GameModePlugin,
             CamPlugin,
         ))
         .insert_resource(RapierConfiguration {

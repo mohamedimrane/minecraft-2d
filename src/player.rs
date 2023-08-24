@@ -6,7 +6,7 @@ use bevy_rapier2d::prelude::*;
 use std::f32::consts::PI;
 
 use crate::{
-    block::{Block, BlockBundle, BlockGraphics, BlockKind, BLOCK_SIZE},
+    block::{self, Block, BlockBundle, BlockGraphics, BlockKind, BLOCK_SIZE},
     camera::MainCamera,
     inventory::CurrentItem,
     utils::{in_reach, leans_to_left, leans_to_right, map},
@@ -136,7 +136,7 @@ impl Default for PlayerGraphics {
 // COMPONENTS
 
 #[derive(Component, Reflect)]
-struct Player;
+pub struct Player;
 
 #[derive(Component, Reflect)]
 struct PlayerGraphicsHolder;
@@ -577,8 +577,8 @@ fn select_block(
     mut selected_block: ResMut<SelectedBlock>,
     mut last_cur_pos: ResMut<LastCursorPosition>,
     mut last_pl_pos: ResMut<LastPlayerPosition>,
-    blocks: Query<(&Transform, Entity), (With<Block>, Without<BlockSelector>)>,
-    player: Query<&Transform, With<Player>>,
+    blocks: Query<(&GlobalTransform, Entity), (With<Block>, Without<BlockSelector>)>,
+    player: Query<&GlobalTransform, With<Player>>,
 ) {
     let window = window.single();
     let (camera, camera_transform) = camera.single();
@@ -592,7 +592,7 @@ fn select_block(
             (cursor_position.y / BLOCK_SIZE).round() * BLOCK_SIZE,
         );
 
-        let player_tr = player.single().translation;
+        let player_tr = player.single().translation();
         let player_tr = vec2(player_tr.x, player_tr.y);
 
         if last_cur_pos.0 == pos && last_pl_pos.0 == player_tr {
@@ -605,7 +605,7 @@ fn select_block(
         selected_block.0 = None;
         if in_reach(player_tr, pos, PLAYER_REACH, BLOCK_SIZE) {
             for (btr, bent) in blocks.iter() {
-                if btr.translation.x == pos.x && btr.translation.y == pos.y {
+                if btr.translation().x == pos.x && btr.translation().y == pos.y {
                     selected_block.0 = Some(bent);
                     break;
                 }
@@ -639,8 +639,8 @@ fn place_block(
     camera: Query<(&Camera, &GlobalTransform), With<MainCamera>>,
     blocks_graphics: Res<BlockGraphics>,
     world: Query<Entity, With<World>>,
-    blocks: Query<&Transform, With<Block>>,
-    player_tr: Query<&Transform, With<Player>>,
+    blocks: Query<&GlobalTransform, With<Block>>,
+    player_tr: Query<&GlobalTransform, With<Player>>,
     mouse: Res<Input<MouseButton>>,
     current_item: Res<CurrentItem>,
 ) {
@@ -651,7 +651,7 @@ fn place_block(
         .cursor_position()
         .and_then(|cursor| camera.viewport_to_world_2d(camera_transform, cursor))
     {
-        let player_tr = player_tr.single().translation;
+        let player_tr = player_tr.single().translation();
         let player_tr = vec2(player_tr.x, player_tr.y);
         let spawn_pos = (cursor_position / BLOCK_SIZE).round() * BLOCK_SIZE;
 
@@ -660,7 +660,7 @@ fn place_block(
         {
             if blocks
                 .iter()
-                .any(|&b| b.translation.x == spawn_pos.x && b.translation.y == spawn_pos.y)
+                .any(|&b| b.translation().x == spawn_pos.x && b.translation().y == spawn_pos.y)
             {
                 return;
             }
@@ -681,11 +681,14 @@ fn break_block(
     mut commands: Commands,
     window: Query<&Window, With<PrimaryWindow>>,
     camera: Query<(&Camera, &GlobalTransform), With<MainCamera>>,
-    blocks: Query<(&Transform, Entity), With<Block>>,
+    blocks: Query<(&GlobalTransform, Entity), With<Block>>,
+    player_tr: Query<&GlobalTransform, With<Player>>,
     mouse: Res<Input<MouseButton>>,
 ) {
     let window = window.single();
     let (camera, camera_transform) = camera.single();
+
+    let player_tr = player_tr.single().translation();
 
     if let Some(cursor_position) = window
         .cursor_position()
@@ -695,7 +698,15 @@ fn break_block(
             let block_pos = (cursor_position / BLOCK_SIZE).round() * BLOCK_SIZE;
 
             for (btr, bent) in blocks.iter() {
-                if btr.translation.x == block_pos.x && btr.translation.y == block_pos.y {
+                if btr.translation().x == block_pos.x
+                    && btr.translation().y == block_pos.y
+                    && in_reach(
+                        vec2(player_tr.x, player_tr.y),
+                        block_pos,
+                        PLAYER_REACH,
+                        BLOCK_SIZE,
+                    )
+                {
                     commands.entity(bent).despawn_recursive();
                     return;
                 }
@@ -928,7 +939,10 @@ impl Default for PlayerBundle {
             velocity: default(),
             ext_impulse: default(),
             locked_axes: LockedAxes::ROTATION_LOCKED,
-            spatial_bundle: default(),
+            spatial_bundle: SpatialBundle {
+                transform: Transform::from_xyz(BLOCK_SIZE, 0., PLAYER_Z_INDEX),
+                ..default()
+            },
         }
     }
 }

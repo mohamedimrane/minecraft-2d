@@ -232,11 +232,7 @@ impl Default for WorldBundle {
         Self {
             tag: World,
             spatial_bundle: SpatialBundle {
-                transform: Transform::from_xyz(
-                    BLOCK_SIZE * -CHUNK_SIZE as f32 / 2.,
-                    -BLOCK_SIZE * 40.,
-                    0.,
-                ),
+                transform: Transform::from_xyz(0., -BLOCK_SIZE * 40., 0.),
                 ..default()
             },
         }
