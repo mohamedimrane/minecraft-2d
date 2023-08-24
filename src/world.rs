@@ -65,7 +65,7 @@ impl Plugin for WorldPlugin {
                 height_multiplier: 40.,
                 height_addition: 40.,
             })
-            .insert_resource(LastPlayerChunkPosition(0))
+            .insert_resource(PlayerChunkPosition(0))
             // Systems
             // .add_systems(Startup, spawn_test_platform)
             .add_systems(Startup, spawn_world)
@@ -131,7 +131,7 @@ struct WorldSettings {
 }
 
 #[derive(Resource)]
-struct LastPlayerChunkPosition(i32);
+struct PlayerChunkPosition(i32);
 
 // COMPONENTS
 
@@ -155,7 +155,7 @@ fn spawn_world(mut commands: Commands) {
 
 fn update_last_player_chunk_pos(
     player_tr: Query<&GlobalTransform, With<Player>>,
-    mut last_pl_ch_pos: ResMut<LastPlayerChunkPosition>,
+    mut last_pl_ch_pos: ResMut<PlayerChunkPosition>,
 ) {
     let player_tr = player_tr.single().translation();
 
@@ -169,7 +169,7 @@ fn refresh_world(
     mut commands: Commands,
     world: Query<Entity, With<World>>,
     chunks_pos: Query<(Entity, &ChunkPosition), With<Chunk>>,
-    last_pl_ch_pos: Res<LastPlayerChunkPosition>,
+    last_pl_ch_pos: Res<PlayerChunkPosition>,
     stgs: Res<WorldSettings>,
     block_graphics: Res<BlockGraphics>,
 ) {
