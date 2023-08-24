@@ -26,13 +26,20 @@ impl Plugin for WorldPlugin {
                 octaves: 2,
                 lacunarity: 5.0,
                 terrain_frequency: 4.,
-                cave_frequency: 3.,
-                air_porbality: 0.26,
+                terrain_divider: 140.,
+                // cave_frequency: 3.,
+                cave_frequency: 3.5,
+                // cave_divider: 50.,
+                cave_divider: 140.,
+                // air_porbality: 0.26,
+                air_porbality: 0.18,
                 dirt_layer_height: 3,
                 tree_chance: 8,
+                coal_rarity: 1.,
+                coal_size: -0.18,
+                coal_divider: 3.,
                 height_multiplier: 40.,
                 height_addition: 40.,
-                divider: 140.,
             })
             .insert_resource(LastPlayerChunkPosition(0))
             // Systems
@@ -50,14 +57,18 @@ struct WorldSettings {
     octaves: i32,
     lacunarity: f32,
     terrain_frequency: f32,
+    terrain_divider: f32,
     cave_frequency: f32,
+    cave_divider: f32,
     air_porbality: f32,
     dirt_layer_height: i32,
     /// The greater the rarer
     tree_chance: i32,
+    coal_rarity: f32,
+    coal_size: f32,
+    coal_divider: f32,
     height_multiplier: f32,
     height_addition: f32,
-    divider: f32,
 }
 
 #[derive(Resource)]
@@ -153,21 +164,29 @@ fn generate_chunk(
         for x in (CHUNK_SIZE * chunk_x) + 1..=(CHUNK_SIZE * (chunk_x) + CHUNK_SIZE) {
             noise.set_frequency(stgs.terrain_frequency);
 
-            let height = noise.get_noise(x as f32 / stgs.divider, 1. * stgs.cave_frequency)
+            let height = noise.get_noise(x as f32 / stgs.terrain_divider, 1. * stgs.cave_frequency)
                 * stgs.height_multiplier
                 + stgs.height_addition;
 
             for y in 0..=height as i32 {
                 noise.set_frequency(stgs.cave_frequency);
 
-                let v = noise.get_noise(x as f32 / stgs.divider, y as f32 / stgs.divider);
+                let v = noise.get_noise(x as f32 / stgs.cave_divider, y as f32 / stgs.cave_divider);
 
                 if v < stgs.air_porbality
                     && !blocks.iter().any(|&b| b.x == x as f32 && b.y == y as f32)
                 {
+                    let name = Name::new(format!("Block {}:{}", x, y));
+
                     let mut kind = BlockKind::Stone;
 
-                    let name = Name::new(format!("Block {}:{}", x, y));
+                    noise.set_frequency(stgs.coal_rarity);
+                    let coal_v =
+                        noise.get_noise(x as f32 / stgs.coal_divider, y as f32 / stgs.coal_divider);
+
+                    if coal_v < stgs.coal_size {
+                        kind = BlockKind::CoalOre;
+                    }
 
                     if height as i32 - y <= stgs.dirt_layer_height {
                         kind = BlockKind::Dirt;
