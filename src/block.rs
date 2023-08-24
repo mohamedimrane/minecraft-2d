@@ -48,6 +48,7 @@ pub struct Block;
 #[derive(Component, Default, Clone, Copy, Reflect)]
 pub enum BlockKind {
     #[default]
+    // row 1
     Dirt,
     Grass,
     Stone,
@@ -64,13 +65,32 @@ pub enum BlockKind {
     CraftingTable,
     Furnace,
     FurnaceBurning,
+    // row 2
     RedTulip,
+    // row 3
+    CoalOre,
+    CoalOreDeepslate,
+    CopperOre,
+    CopperOreDeepslate,
+    IronOre,
+    IronOreDeepslate,
+    GoldOre,
+    GoldOreDeepslate,
+    LapisOre,
+    LapisOreDeepslate,
+    RedstoneOre,
+    RedstoneOreDeepslate,
+    EmraldOre,
+    EmraldOreDeepslate,
+    DiamondOre,
+    DiamondOreDeepslate,
 }
 
 impl BlockKind {
     fn to_index(&self) -> usize {
         use BlockKind::*;
         match *self {
+            // row 1
             Dirt => 0,
             Grass => 1,
             Stone => 2,
@@ -87,7 +107,25 @@ impl BlockKind {
             CraftingTable => 13,
             Furnace => 14,
             FurnaceBurning => 15,
+            // row 2
             RedTulip => 20,
+            // row 3
+            CoalOre => 32,
+            CoalOreDeepslate => 33,
+            CopperOre => 34,
+            CopperOreDeepslate => 35,
+            IronOre => 36,
+            IronOreDeepslate => 37,
+            GoldOre => 38,
+            GoldOreDeepslate => 39,
+            LapisOre => 40,
+            LapisOreDeepslate => 41,
+            RedstoneOre => 42,
+            RedstoneOreDeepslate => 43,
+            EmraldOre => 44,
+            EmraldOreDeepslate => 45,
+            DiamondOre => 46,
+            DiamondOreDeepslate => 47,
             _ => 0,
         }
     }
@@ -104,8 +142,8 @@ fn load_block_graphics(
     let atlas = TextureAtlas::from_grid(
         block_graphics.tex.clone(),
         vec2(16., 16.),
-        11,
-        2,
+        16,
+        5,
         None,
         None,
     );
