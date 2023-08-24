@@ -59,7 +59,7 @@ A minecraft 2d clone built with rust and the bevy game engine.
 
 - [ ] World generation
   - [x] Basic plain generation
-  - [ ] Chunking
+  - [x] Chunking
   - [ ] World saving
   - [x] Add caves
   - [ ] Add blobs of various stone types

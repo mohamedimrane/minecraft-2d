@@ -1,4 +1,7 @@
-use crate::block::{BlockBundle, BlockGraphics, BlockKind, BLOCK_SIZE};
+use crate::{
+    block::{BlockBundle, BlockGraphics, BlockKind, BLOCK_SIZE},
+    player::Player,
+};
 use bevy::{math::vec2, prelude::*};
 use bracket_noise::prelude::*;
 use rand::{Rng, SeedableRng};
@@ -6,6 +9,7 @@ use rand_chacha::ChaCha8Rng;
 
 // CONSTANTS
 const CHUNK_SIZE: i32 = 16;
+const CHUNK_RENDER_DISTANCE: i32 = 3;
 
 // PLUGINS
 
@@ -30,13 +34,16 @@ impl Plugin for WorldPlugin {
                 height_addition: 40.,
                 divider: 140.,
             })
+            .insert_resource(LastPlayerChunkPosition(0))
             // Systems
             // .add_systems(Startup, spawn_test_platform)
-            .add_systems(Startup, generate_world);
+            .add_systems(Startup, spawn_world)
+            .add_systems(Update, (update_last_player_chunk_pos, refresh_world));
     }
 }
 
 // RESOURCES
+
 #[derive(Resource)]
 struct WorldSettings {
     seed: u64,
@@ -53,20 +60,52 @@ struct WorldSettings {
     divider: f32,
 }
 
+#[derive(Resource)]
+struct LastPlayerChunkPosition(i32);
+
 // COMPONENTS
+
 #[derive(Component)]
 pub struct World;
 
 #[derive(Component)]
 pub struct Chunk;
 
+#[derive(Component)]
+pub struct ChunkPosition(i32);
+
 // SYSTEMS
 
-fn generate_world(
+fn spawn_world(mut commands: Commands) {
+    commands.spawn((WorldBundle::default(), Name::new("World")));
+}
+
+fn update_last_player_chunk_pos(
+    player_tr: Query<&GlobalTransform, With<Player>>,
+    mut last_pl_ch_pos: ResMut<LastPlayerChunkPosition>,
+) {
+    let player_tr = player_tr.single().translation();
+
+    let chunk_x = (player_tr.x / (CHUNK_SIZE as f32 * BLOCK_SIZE)).round();
+    if chunk_x != last_pl_ch_pos.0 as f32 {
+        last_pl_ch_pos.0 = chunk_x as i32;
+    }
+}
+
+fn refresh_world(
     mut commands: Commands,
+    world: Query<Entity, With<World>>,
+    chunks_pos: Query<(Entity, &ChunkPosition), With<Chunk>>,
+    last_pl_ch_pos: Res<LastPlayerChunkPosition>,
     stgs: Res<WorldSettings>,
     block_graphics: Res<BlockGraphics>,
 ) {
+    if !last_pl_ch_pos.is_changed() {
+        return;
+    }
+
+    let world_ent = world.single();
+
     let mut rng = ChaCha8Rng::seed_from_u64(stgs.seed);
 
     let mut noise = FastNoise::seeded(stgs.seed);
@@ -74,11 +113,23 @@ fn generate_world(
     noise.set_fractal_octaves(stgs.octaves);
     noise.set_fractal_lacunarity(stgs.lacunarity);
 
-    commands
-        .spawn((WorldBundle::default(), Name::new("World")))
-        .with_children(|cb| {
-            generate_chunk(0, cb, &mut noise, &mut rng, &stgs, &block_graphics);
-        });
+    for ch in chunks_pos.iter() {
+        if last_pl_ch_pos.0 < ch.1 .0 - CHUNK_RENDER_DISTANCE
+            || last_pl_ch_pos.0 > ch.1 .0 + CHUNK_RENDER_DISTANCE
+        {
+            commands.entity(ch.0).despawn_recursive();
+        }
+    }
+
+    commands.entity(world_ent).with_children(|cb| {
+        for i in
+            (last_pl_ch_pos.0 - CHUNK_RENDER_DISTANCE)..=(last_pl_ch_pos.0 + CHUNK_RENDER_DISTANCE)
+        {
+            if !chunks_pos.iter().any(|x| i == x.1 .0) {
+                generate_chunk(i, cb, &mut noise, &mut rng, &stgs, &block_graphics);
+            }
+        }
+    });
 }
 
 fn generate_chunk(
@@ -90,7 +141,7 @@ fn generate_chunk(
     block_graphics: &Res<BlockGraphics>,
 ) {
     cb.spawn((
-        ChunkBundle::default(),
+        ChunkBundle::new(chunk_x),
         Name::new(format!("Chunk x{}", chunk_x)),
     ))
     .with_children(|cb| {
@@ -220,6 +271,9 @@ struct WorldBundle {
 
 #[derive(Bundle)]
 struct ChunkBundle {
+    // game related
+    chunk_position: ChunkPosition,
+
     // tags
     tag: Chunk,
 
@@ -239,9 +293,20 @@ impl Default for WorldBundle {
     }
 }
 
+impl ChunkBundle {
+    fn new(x: i32) -> Self {
+        Self {
+            chunk_position: ChunkPosition(x),
+            tag: Chunk,
+            spatial_bundle: default(),
+        }
+    }
+}
+
 impl Default for ChunkBundle {
     fn default() -> Self {
         Self {
+            chunk_position: ChunkPosition(0),
             tag: Chunk,
             spatial_bundle: default(),
         }
