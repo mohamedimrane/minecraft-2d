@@ -2,8 +2,8 @@ use bevy::{math::vec2, prelude::*, render::texture::DEFAULT_IMAGE_HANDLE};
 use bevy_rapier2d::prelude::*;
 
 // CONSTANTS
-pub const BLOCK_SIZE: f32 = 60.;
-const BLOCK_COLLIDER_SIZE: f32 = 30.;
+pub const BLOCK_SIZE: f32 = 70.;
+const BLOCK_COLLIDER_SIZE: f32 = 35.;
 
 const BLOCK_Z_INDEX: f32 = 0.;
 

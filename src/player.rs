@@ -923,7 +923,7 @@ impl Default for PlayerBundle {
             speed: Speed(300., 500.),
             jump: Jump(100.),
             direction: default(),
-            collider: Collider::capsule_y(70., 8.),
+            collider: Collider::capsule_y(60., 8.),
             // collider: Collider::cuboid(10., 76.),
             // collider: Collider::round_cuboid(10., 76., 0.03),
             collider_mass: ColliderMassProperties::Mass(91.),
