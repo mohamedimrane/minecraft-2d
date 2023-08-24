@@ -292,24 +292,23 @@ fn animate_head(
 
     let (head_gtr, mut head_tr, mut head_sprite) = head.single_mut();
 
-    if let Some(cursor_position) = window
-        .cursor_position()
-        .and_then(|cursor| camera.viewport_to_world_2d(camera_transform, cursor))
-    {
-        let cursor_vec = vec2(
-            cursor_position.x - head_gtr.translation().x,
-            cursor_position.y - head_gtr.translation().y,
-        );
+    let Some(cursor_position) = window
+            .cursor_position()
+            .and_then(|cursor| camera.viewport_to_world_2d(camera_transform, cursor)) else { return };
 
-        let theta = f32::atan2(cursor_vec.y, cursor_vec.x);
+    let cursor_vec = vec2(
+        cursor_position.x - head_gtr.translation().x,
+        cursor_position.y - head_gtr.translation().y,
+    );
 
-        if (theta > PI / 2. && theta < PI) || (theta < -PI / 2. && theta > -PI) {
-            head_tr.rotation = Quat::from_rotation_z(theta + std::f32::consts::PI);
-            head_sprite.flip_x = true;
-        } else {
-            head_tr.rotation = Quat::from_rotation_z(theta);
-            head_sprite.flip_x = false;
-        }
+    let theta = f32::atan2(cursor_vec.y, cursor_vec.x);
+
+    if (theta > PI / 2. && theta < PI) || (theta < -PI / 2. && theta > -PI) {
+        head_tr.rotation = Quat::from_rotation_z(theta + std::f32::consts::PI);
+        head_sprite.flip_x = true;
+    } else {
+        head_tr.rotation = Quat::from_rotation_z(theta);
+        head_sprite.flip_x = false;
     }
 }
 
@@ -488,22 +487,21 @@ fn change_direction(
 
     let mut direction = direction.single_mut();
 
-    if let Some(cursor_position) = window
-        .cursor_position()
-        .and_then(|cursor| camera.viewport_to_world_2d(camera_transform, cursor))
-    {
-        let cursor_vec = vec2(
-            cursor_position.x - head_gtr.translation().x,
-            cursor_position.y - head_gtr.translation().y,
-        );
+    let Some(cursor_position) = window
+            .cursor_position()
+            .and_then(|cursor| camera.viewport_to_world_2d(camera_transform, cursor)) else { return };
 
-        let theta = f32::atan2(cursor_vec.y, cursor_vec.x);
+    let cursor_vec = vec2(
+        cursor_position.x - head_gtr.translation().x,
+        cursor_position.y - head_gtr.translation().y,
+    );
 
-        if (theta > PI / 2. && theta < PI) || (theta < -PI / 2. && theta > -PI) {
-            *direction = Direction::Left;
-        } else {
-            *direction = Direction::Right;
-        }
+    let theta = f32::atan2(cursor_vec.y, cursor_vec.x);
+
+    if (theta > PI / 2. && theta < PI) || (theta < -PI / 2. && theta > -PI) {
+        *direction = Direction::Left;
+    } else {
+        *direction = Direction::Right;
     }
 }
 
@@ -512,11 +510,11 @@ fn change_graphics_with_direction(
     player_graphics: Res<PlayerGraphics>,
     direction: Query<&Direction, (With<Player>, Changed<Direction>)>,
 ) {
-    let direction = direction.get_single();
-    let direction = match direction {
+    let direction = match direction.get_single() {
         Ok(e) => e,
         Err(_) => return,
     };
+
     match *direction {
         Direction::Right => {
             use PlayerGraphicsPart::*;
@@ -583,32 +581,31 @@ fn select_block(
     let window = window.single();
     let (camera, camera_transform) = camera.single();
 
-    if let Some(cursor_position) = window
-        .cursor_position()
-        .and_then(|cursor| camera.viewport_to_world_2d(camera_transform, cursor))
-    {
-        let pos = vec2(
-            (cursor_position.x / BLOCK_SIZE).round() * BLOCK_SIZE,
-            (cursor_position.y / BLOCK_SIZE).round() * BLOCK_SIZE,
-        );
+    let Some(cursor_position) = window
+            .cursor_position()
+            .and_then(|cursor| camera.viewport_to_world_2d(camera_transform, cursor)) else { return };
 
-        let player_tr = player.single().translation();
-        let player_tr = vec2(player_tr.x, player_tr.y);
+    let pos = vec2(
+        (cursor_position.x / BLOCK_SIZE).round() * BLOCK_SIZE,
+        (cursor_position.y / BLOCK_SIZE).round() * BLOCK_SIZE,
+    );
 
-        if last_cur_pos.0 == pos && last_pl_pos.0 == player_tr {
-            return;
-        }
+    let player_tr = player.single().translation();
+    let player_tr = vec2(player_tr.x, player_tr.y);
 
-        last_cur_pos.0 = pos;
-        last_pl_pos.0 = vec2(player_tr.x, player_tr.y);
+    if last_cur_pos.0 == pos && last_pl_pos.0 == player_tr {
+        return;
+    }
 
-        selected_block.0 = None;
-        if in_reach(player_tr, pos, PLAYER_REACH, BLOCK_SIZE) {
-            for (btr, bent) in blocks.iter() {
-                if btr.translation().x == pos.x && btr.translation().y == pos.y {
-                    selected_block.0 = Some(bent);
-                    break;
-                }
+    last_cur_pos.0 = pos;
+    last_pl_pos.0 = vec2(player_tr.x, player_tr.y);
+
+    selected_block.0 = None;
+    if in_reach(player_tr, pos, PLAYER_REACH, BLOCK_SIZE) {
+        for (btr, bent) in blocks.iter() {
+            if btr.translation().x == pos.x && btr.translation().y == pos.y {
+                selected_block.0 = Some(bent);
+                break;
             }
         }
     }
@@ -647,34 +644,35 @@ fn place_block(
     let window = window.single();
     let (camera, camera_transform) = camera.single();
 
-    if let Some(cursor_position) = window
-        .cursor_position()
-        .and_then(|cursor| camera.viewport_to_world_2d(camera_transform, cursor))
+    let Some(cursor_position) = window
+            .cursor_position()
+            .and_then(|cursor| camera.viewport_to_world_2d(camera_transform, cursor)) else { return };
+
+    let player_tr = player_tr.single().translation();
+    let player_tr = vec2(player_tr.x, player_tr.y);
+    let spawn_pos = (cursor_position / BLOCK_SIZE).round() * BLOCK_SIZE;
+
+    if !(mouse.just_pressed(MouseButton::Right)
+        && in_reach(player_tr, spawn_pos, PLAYER_REACH, BLOCK_SIZE))
     {
-        let player_tr = player_tr.single().translation();
-        let player_tr = vec2(player_tr.x, player_tr.y);
-        let spawn_pos = (cursor_position / BLOCK_SIZE).round() * BLOCK_SIZE;
-
-        if mouse.just_pressed(MouseButton::Right)
-            && in_reach(player_tr, spawn_pos, PLAYER_REACH, BLOCK_SIZE)
-        {
-            if blocks
-                .iter()
-                .any(|&b| b.translation().x == spawn_pos.x && b.translation().y == spawn_pos.y)
-            {
-                return;
-            }
-
-            let chent = commands
-                .spawn(BlockBundle::new(
-                    current_item.0,
-                    spawn_pos,
-                    &blocks_graphics,
-                ))
-                .id();
-            commands.entity(world.single()).add_child(chent);
-        }
+        return;
     }
+
+    if blocks
+        .iter()
+        .any(|&b| b.translation().x == spawn_pos.x && b.translation().y == spawn_pos.y)
+    {
+        return;
+    }
+
+    let chent = commands
+        .spawn(BlockBundle::new(
+            current_item.0,
+            spawn_pos,
+            &blocks_graphics,
+        ))
+        .id();
+    commands.entity(world.single()).add_child(chent);
 }
 
 fn break_block(
@@ -690,26 +688,25 @@ fn break_block(
 
     let player_tr = player_tr.single().translation();
 
-    if let Some(cursor_position) = window
-        .cursor_position()
-        .and_then(|cursor| camera.viewport_to_world_2d(camera_transform, cursor))
-    {
-        if mouse.just_pressed(MouseButton::Left) {
-            let block_pos = (cursor_position / BLOCK_SIZE).round() * BLOCK_SIZE;
+    let Some(cursor_position) = window
+            .cursor_position()
+            .and_then(|cursor| camera.viewport_to_world_2d(camera_transform, cursor)) else { return };
 
-            for (btr, bent) in blocks.iter() {
-                if btr.translation().x == block_pos.x
-                    && btr.translation().y == block_pos.y
-                    && in_reach(
-                        vec2(player_tr.x, player_tr.y),
-                        block_pos,
-                        PLAYER_REACH,
-                        BLOCK_SIZE,
-                    )
-                {
-                    commands.entity(bent).despawn_recursive();
-                    return;
-                }
+    if mouse.just_pressed(MouseButton::Left) {
+        let block_pos = (cursor_position / BLOCK_SIZE).round() * BLOCK_SIZE;
+
+        for (btr, bent) in blocks.iter() {
+            if btr.translation().x == block_pos.x
+                && btr.translation().y == block_pos.y
+                && in_reach(
+                    vec2(player_tr.x, player_tr.y),
+                    block_pos,
+                    PLAYER_REACH,
+                    BLOCK_SIZE,
+                )
+            {
+                commands.entity(bent).despawn_recursive();
+                return;
             }
         }
     }
