@@ -13,6 +13,27 @@ A minecraft 2d clone built with rust and the bevy game engine.
   - [ ] Game modes
   - [ ] Food
 
+- [ ] World generation
+  - [x] Basic plain generation
+  - [x] Chunking
+  - [ ] World saving
+  - [x] Add caves
+  - [ ] Add blobs of various stone types
+  - [x] Add veins of ores
+  - [ ] Add background walls
+  - [ ] Lake generation
+  - [ ] Ocean generation
+  - [ ] Mountain generation
+  - [ ] Biome generation
+  - [ ] Mob generation
+
+- [ ] Building
+  - [x] Placing blocks
+  - [x] Breaking blocks
+  - [x] Basic switching blocks
+  - [ ] Switching blocks
+  - [ ] Picking up blocks
+
 - [ ] General
   - [ ] Universal health system
   - [ ] Lighting
@@ -32,13 +53,6 @@ A minecraft 2d clone built with rust and the bevy game engine.
   - [ ] Crafting system
   - [ ] Crafting graphics
 
-- [ ] Building
-  - [x] Placing blocks
-  - [x] Breaking blocks
-  - [x] Basic switching blocks
-  - [ ] Switching blocks
-  - [ ] Picking up blocks
-
 - [ ] Blocks
   - [ ] Adding water
   - [ ] Adding lava
@@ -56,17 +70,3 @@ A minecraft 2d clone built with rust and the bevy game engine.
   - [ ] Main menu
   - [ ] World creation menu
   - [ ] Pause menu
-
-- [ ] World generation
-  - [x] Basic plain generation
-  - [x] Chunking
-  - [ ] World saving
-  - [x] Add caves
-  - [ ] Add blobs of various stone types
-  - [ ] Add veins of ores
-  - [ ] Add background walls
-  - [ ] Lake generation
-  - [ ] Ocean generation
-  - [ ] Mountain generation
-  - [ ] Biome generation
-  - [ ] Mob generation

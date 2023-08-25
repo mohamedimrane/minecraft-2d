@@ -8,6 +8,7 @@ use rand::{Rng, SeedableRng};
 use rand_chacha::ChaCha8Rng;
 
 // CONSTANTS
+const WORLD_OFFSET: Vec3 = Vec3::new(0., -BLOCK_SIZE * 40., 0.);
 const CHUNK_SIZE: i32 = 16;
 const CHUNK_RENDER_DISTANCE: i32 = 3;
 
@@ -21,6 +22,7 @@ impl Plugin for WorldPlugin {
             // Resources
             .insert_resource(WorldSettings {
                 seed: 59900,
+                // seed: 400069,
                 // seed: 4332575,
                 // seed: 43325075,
                 octaves: 2,
@@ -446,7 +448,7 @@ impl Default for WorldBundle {
         Self {
             tag: World,
             spatial_bundle: SpatialBundle {
-                transform: Transform::from_xyz(0., -BLOCK_SIZE * 40., 0.),
+                transform: Transform::from_translation(WORLD_OFFSET),
                 ..default()
             },
         }

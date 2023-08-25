@@ -635,7 +635,7 @@ fn place_block(
     window: Query<&Window, With<PrimaryWindow>>,
     camera: Query<(&Camera, &GlobalTransform), With<MainCamera>>,
     blocks_graphics: Res<BlockGraphics>,
-    world: Query<Entity, With<World>>,
+    world: Query<(Entity, &GlobalTransform), With<World>>,
     blocks: Query<&GlobalTransform, With<Block>>,
     player_tr: Query<&GlobalTransform, With<Player>>,
     mouse: Res<Input<MouseButton>>,
@@ -650,20 +650,26 @@ fn place_block(
 
     let player_tr = player_tr.single().translation();
     let player_tr = vec2(player_tr.x, player_tr.y);
-    let spawn_pos = (cursor_position / BLOCK_SIZE).round() * BLOCK_SIZE;
+    let block_pos = (cursor_position / BLOCK_SIZE).round() * BLOCK_SIZE;
 
     if !(mouse.just_pressed(MouseButton::Right)
-        && in_reach(player_tr, spawn_pos, PLAYER_REACH, BLOCK_SIZE))
+        && in_reach(player_tr, block_pos, PLAYER_REACH, BLOCK_SIZE))
     {
         return;
     }
 
     if blocks
         .iter()
-        .any(|&b| b.translation().x == spawn_pos.x && b.translation().y == spawn_pos.y)
+        .any(|&b| b.translation().x == block_pos.x && b.translation().y == block_pos.y)
     {
         return;
     }
+
+    println!("{}", block_pos);
+    let (wrl_ent, wrl_tr) = world.single();
+    let wrl_tr = wrl_tr.translation();
+
+    let spawn_pos = vec2(block_pos.x - wrl_tr.x, block_pos.y - wrl_tr.y);
 
     let chent = commands
         .spawn(BlockBundle::new(
@@ -672,7 +678,7 @@ fn place_block(
             &blocks_graphics,
         ))
         .id();
-    commands.entity(world.single()).add_child(chent);
+    commands.entity(wrl_ent).add_child(chent);
 }
 
 fn break_block(
