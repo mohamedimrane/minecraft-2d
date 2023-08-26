@@ -6,7 +6,7 @@ use bevy_rapier2d::prelude::*;
 use std::f32::consts::PI;
 
 use crate::{
-    block::{self, Block, BlockBundle, BlockGraphics, BlockKind, BLOCK_SIZE},
+    block::{Block, BlockBundle, BlockGraphics, BLOCK_SIZE},
     camera::MainCamera,
     inventory::CurrentItem,
     utils::{in_reach, leans_to_left, leans_to_right, map},
@@ -73,12 +73,12 @@ impl Plugin for PlayerPlugin {
             .register_type::<Player>()
             .register_type::<PlayerGraphicsHolder>()
             .register_type::<PlayerGraphicsPart>()
-            .register_type::<PlayerGraphicsPartHead>()
-            .register_type::<PlayerGraphicsPartBody>()
-            .register_type::<PlayerGraphicsPartRightArm>()
-            .register_type::<PlayerGraphicsPartLeftArm>()
-            .register_type::<PlayerGraphicsPartRightLeg>()
-            .register_type::<PlayerGraphicsPartLeftLeg>()
+            .register_type::<PlayerGraphicsHead>()
+            .register_type::<PlayerGraphicsBody>()
+            .register_type::<PlayerGraphicsRightArm>()
+            .register_type::<PlayerGraphicsLeftArm>()
+            .register_type::<PlayerGraphicsRightLeg>()
+            .register_type::<PlayerGraphicsLeftLeg>()
             .register_type::<Speed>()
             .register_type::<Jump>()
             .register_type::<Direction>()
@@ -152,17 +152,17 @@ enum PlayerGraphicsPart {
 }
 
 #[derive(Component, Reflect)]
-struct PlayerGraphicsPartHead;
+struct PlayerGraphicsHead;
 #[derive(Component, Reflect)]
-struct PlayerGraphicsPartBody;
+struct PlayerGraphicsBody;
 #[derive(Component, Reflect)]
-struct PlayerGraphicsPartRightArm;
+struct PlayerGraphicsRightArm;
 #[derive(Component, Reflect)]
-struct PlayerGraphicsPartLeftArm;
+struct PlayerGraphicsLeftArm;
 #[derive(Component, Reflect)]
-struct PlayerGraphicsPartRightLeg;
+struct PlayerGraphicsRightLeg;
 #[derive(Component, Reflect)]
-struct PlayerGraphicsPartLeftLeg;
+struct PlayerGraphicsLeftLeg;
 
 /// [`0`] is the walking speed
 /// [`1`] is the runnign speed
@@ -283,31 +283,32 @@ fn player_controller_movement(
 }
 
 fn animate_head(
-    mut head: Query<(&GlobalTransform, &mut Transform, &mut Sprite), With<PlayerGraphicsPartHead>>,
+    mut head: Query<(&GlobalTransform, &mut Transform, &mut Sprite), With<PlayerGraphicsHead>>,
     window: Query<&Window, With<PrimaryWindow>>,
     camera: Query<(&Camera, &GlobalTransform), With<MainCamera>>,
 ) {
     let window = window.single();
     let (camera, camera_transform) = camera.single();
 
-    let (head_gtr, mut head_tr, mut head_sprite) = head.single_mut();
+    let (head_gtransform, mut head_transform, mut head_sprite) = head.single_mut();
+    let head_gtransform = head_gtransform.translation();
 
     let Some(cursor_position) = window
             .cursor_position()
             .and_then(|cursor| camera.viewport_to_world_2d(camera_transform, cursor)) else { return };
 
     let cursor_vec = vec2(
-        cursor_position.x - head_gtr.translation().x,
-        cursor_position.y - head_gtr.translation().y,
+        cursor_position.x - head_gtransform.x,
+        cursor_position.y - head_gtransform.y,
     );
 
     let theta = f32::atan2(cursor_vec.y, cursor_vec.x);
 
     if (theta > PI / 2. && theta < PI) || (theta < -PI / 2. && theta > -PI) {
-        head_tr.rotation = Quat::from_rotation_z(theta + std::f32::consts::PI);
+        head_transform.rotation = Quat::from_rotation_z(theta + std::f32::consts::PI);
         head_sprite.flip_x = true;
     } else {
-        head_tr.rotation = Quat::from_rotation_z(theta);
+        head_transform.rotation = Quat::from_rotation_z(theta);
         head_sprite.flip_x = false;
     }
 }
@@ -315,17 +316,11 @@ fn animate_head(
 fn animate_arms(
     mut right_arm: Query<
         (&mut Transform, &mut WaveIndex),
-        (
-            With<PlayerGraphicsPartRightArm>,
-            Without<PlayerGraphicsPartLeftArm>,
-        ),
+        (With<PlayerGraphicsRightArm>, Without<PlayerGraphicsLeftArm>),
     >,
     mut left_arm: Query<
         (&mut Transform, &mut WaveIndex),
-        (
-            With<PlayerGraphicsPartLeftArm>,
-            Without<PlayerGraphicsPartRightArm>,
-        ),
+        (With<PlayerGraphicsLeftArm>, Without<PlayerGraphicsRightArm>),
     >,
     time: Res<Time>,
     keys: Res<Input<KeyCode>>,
@@ -335,32 +330,34 @@ fn animate_arms(
     let right_arm = right_arm.single_mut();
     let left_arm = left_arm.single_mut();
 
-    let step = if running { 9. } else { 4.5 } * time.delta_seconds();
+    let step = match running {
+        true => 9.,
+        false => 4.5,
+    } * time.delta_seconds();
 
-    let rad_map = if running {
-        (5. * PI / 4., 7. * PI / 4.)
-    } else {
-        (4. * PI / 3., 5. * PI / 3.)
+    let rad_map = match running {
+        true => (5. * PI / 4., 7. * PI / 4.),
+        false => (4. * PI / 3., 5. * PI / 3.),
     };
 
     let moving = keys.any_pressed([KeyCode::A, KeyCode::D, KeyCode::Left, KeyCode::Right]);
 
-    let (mut tr, mut wave_index) = right_arm;
+    let (mut transform, mut wave_index) = right_arm;
 
     handle_member_animation(
         moving,
-        &mut tr,
+        &mut transform,
         &mut wave_index,
         Direction::Right,
         rad_map,
         step,
     );
 
-    let (mut tr, mut wave_index) = left_arm;
+    let (mut transform, mut wave_index) = left_arm;
 
     handle_member_animation(
         moving,
-        &mut tr,
+        &mut transform,
         &mut wave_index,
         Direction::Left,
         rad_map,
@@ -371,17 +368,11 @@ fn animate_arms(
 fn animate_legs(
     mut right_leg: Query<
         (&mut Transform, &mut WaveIndex),
-        (
-            With<PlayerGraphicsPartRightLeg>,
-            Without<PlayerGraphicsPartLeftLeg>,
-        ),
+        (With<PlayerGraphicsRightLeg>, Without<PlayerGraphicsLeftLeg>),
     >,
     mut left_leg: Query<
         (&mut Transform, &mut WaveIndex),
-        (
-            With<PlayerGraphicsPartLeftLeg>,
-            Without<PlayerGraphicsPartRightLeg>,
-        ),
+        (With<PlayerGraphicsLeftLeg>, Without<PlayerGraphicsRightLeg>),
     >,
     time: Res<Time>,
     keys: Res<Input<KeyCode>>,
@@ -391,35 +382,33 @@ fn animate_legs(
     let right_leg = right_leg.single_mut();
     let left_leg = left_leg.single_mut();
 
-    let step = if keys.pressed(KeyCode::ShiftLeft) {
-        9.
-    } else {
-        4.5
+    let step = match running {
+        true => 9.,
+        false => 4.5,
     } * time.delta_seconds();
 
-    let rad_map = if running {
-        (5. * PI / 4., 7. * PI / 4.)
-    } else {
-        (4. * PI / 3., 5. * PI / 3.)
+    let rad_map = match running {
+        true => (5. * PI / 4., 7. * PI / 4.),
+        false => (4. * PI / 3., 5. * PI / 3.),
     };
 
     let moving = keys.any_pressed([KeyCode::A, KeyCode::D, KeyCode::Left, KeyCode::Right]);
 
-    let (mut tr, mut wave_index) = right_leg;
+    let (mut transform, mut wave_index) = right_leg;
 
     handle_member_animation(
         moving,
-        &mut tr,
+        &mut transform,
         &mut wave_index,
         Direction::Left,
         rad_map,
         step,
     );
 
-    let (mut tr, mut wave_index) = left_leg;
+    let (mut transform, mut wave_index) = left_leg;
     handle_member_animation(
         moving,
-        &mut tr,
+        &mut transform,
         &mut wave_index,
         Direction::Right,
         rad_map,
@@ -429,7 +418,7 @@ fn animate_legs(
 
 fn handle_member_animation(
     moving: bool,
-    tr: &mut Transform,
+    transform: &mut Transform,
     wave_index: &mut WaveIndex,
     direction: Direction,
     rad_map: (f32, f32),
@@ -439,7 +428,7 @@ fn handle_member_animation(
         let sin = wave_index.0.sin();
         let theta = map(sin, -1., 1., rad_map.0, rad_map.1) + PI / 2.;
 
-        tr.rotation = Quat::from_rotation_z(match direction {
+        transform.rotation = Quat::from_rotation_z(match direction {
             Direction::Right => theta,
             Direction::Left => -theta,
         });
@@ -450,24 +439,24 @@ fn handle_member_animation(
         }
     } else {
         // Put arm back in place after stopping movement
-        let angle = tr.rotation.to_euler(EulerRot::ZYX).0;
+        let angle = transform.rotation.to_euler(EulerRot::ZYX).0;
 
         if leans_to_left(angle + 3. * PI / 2.) {
             let angle = angle - step;
 
-            tr.rotation = Quat::from_rotation_z(angle);
+            transform.rotation = Quat::from_rotation_z(angle);
 
             if leans_to_right(angle + 3. * PI / 2.) {
-                tr.rotation = Quat::from_rotation_z(2. * PI);
+                transform.rotation = Quat::from_rotation_z(2. * PI);
                 wave_index.0 = 0.;
             }
         } else if leans_to_right(angle + 3. * PI / 2.) {
             let angle = angle + step;
 
-            tr.rotation = Quat::from_rotation_z(angle);
+            transform.rotation = Quat::from_rotation_z(angle);
 
             if leans_to_left(angle + 3. * PI / 2.) {
-                tr.rotation = Quat::from_rotation_z(2. * PI);
+                transform.rotation = Quat::from_rotation_z(2. * PI);
                 wave_index.0 = 0.;
             }
         }
@@ -476,14 +465,14 @@ fn handle_member_animation(
 
 fn change_direction(
     mut direction: Query<&mut Direction, With<Player>>,
-    head_gtr: Query<&GlobalTransform, With<PlayerGraphicsPartHead>>,
+    head_gtransform: Query<&GlobalTransform, With<PlayerGraphicsHead>>,
     window: Query<&Window, With<PrimaryWindow>>,
     camera: Query<(&Camera, &GlobalTransform), With<MainCamera>>,
 ) {
     let window = window.single();
     let (camera, camera_transform) = camera.single();
 
-    let head_gtr = head_gtr.single();
+    let head_gtransform = head_gtransform.single();
 
     let mut direction = direction.single_mut();
 
@@ -492,8 +481,8 @@ fn change_direction(
             .and_then(|cursor| camera.viewport_to_world_2d(camera_transform, cursor)) else { return };
 
     let cursor_vec = vec2(
-        cursor_position.x - head_gtr.translation().x,
-        cursor_position.y - head_gtr.translation().y,
+        cursor_position.x - head_gtransform.translation().x,
+        cursor_position.y - head_gtransform.translation().y,
     );
 
     let theta = f32::atan2(cursor_vec.y, cursor_vec.x);
@@ -510,32 +499,29 @@ fn change_graphics_with_direction(
     player_graphics: Res<PlayerGraphics>,
     direction: Query<&Direction, (With<Player>, Changed<Direction>)>,
 ) {
-    let direction = match direction.get_single() {
-        Ok(e) => e,
-        Err(_) => return,
-    };
+    let Ok(direction) = direction.get_single() else { return };
 
     match *direction {
         Direction::Right => {
             use PlayerGraphicsPart::*;
-            for (mut grp_sprite, mut grp_tr, grp) in graphics_parts.iter_mut() {
-                match *grp {
+            for (mut grp_sprite, mut grp_transform, grpart) in graphics_parts.iter_mut() {
+                match *grpart {
                     Body => grp_sprite.rect = Some(player_graphics.body_front),
                     RightArm => {
                         grp_sprite.rect = Some(player_graphics.right_arm_front);
-                        grp_tr.translation.z = FRONT_ARM_Z_INDEX;
+                        grp_transform.translation.z = FRONT_ARM_Z_INDEX;
                     }
                     LeftArm => {
                         grp_sprite.rect = Some(player_graphics.left_arm_back);
-                        grp_tr.translation.z = BACK_ARM_Z_INDEX;
+                        grp_transform.translation.z = BACK_ARM_Z_INDEX;
                     }
                     RightLeg => {
                         grp_sprite.rect = Some(player_graphics.right_leg_front);
-                        grp_tr.translation.z = FRONT_LEG_Z_INDEX;
+                        grp_transform.translation.z = FRONT_LEG_Z_INDEX;
                     }
                     LeftLeg => {
                         grp_sprite.rect = Some(player_graphics.left_leg_back);
-                        grp_tr.translation.z = BACK_LEG_Z_INDEX;
+                        grp_transform.translation.z = BACK_LEG_Z_INDEX;
                     }
                     _ => (),
                 }
@@ -543,24 +529,24 @@ fn change_graphics_with_direction(
         }
         Direction::Left => {
             use PlayerGraphicsPart::*;
-            for (mut grp_sprite, mut grp_tr, grp) in graphics_parts.iter_mut() {
-                match *grp {
+            for (mut grp_sprite, mut grp_transform, grpart) in graphics_parts.iter_mut() {
+                match *grpart {
                     Body => grp_sprite.rect = Some(player_graphics.body_back),
                     RightArm => {
                         grp_sprite.rect = Some(player_graphics.right_arm_back);
-                        grp_tr.translation.z = BACK_ARM_Z_INDEX;
+                        grp_transform.translation.z = BACK_ARM_Z_INDEX;
                     }
                     LeftArm => {
                         grp_sprite.rect = Some(player_graphics.left_arm_front);
-                        grp_tr.translation.z = FRONT_ARM_Z_INDEX;
+                        grp_transform.translation.z = FRONT_ARM_Z_INDEX;
                     }
                     RightLeg => {
                         grp_sprite.rect = Some(player_graphics.right_leg_back);
-                        grp_tr.translation.z = BACK_LEG_Z_INDEX;
+                        grp_transform.translation.z = BACK_LEG_Z_INDEX;
                     }
                     LeftLeg => {
                         grp_sprite.rect = Some(player_graphics.left_leg_front);
-                        grp_tr.translation.z = FRONT_LEG_Z_INDEX;
+                        grp_transform.translation.z = FRONT_LEG_Z_INDEX;
                     }
                     _ => (),
                 }
@@ -570,13 +556,13 @@ fn change_graphics_with_direction(
 }
 
 fn select_block(
-    window: Query<&Window, With<PrimaryWindow>>,
-    camera: Query<(&Camera, &GlobalTransform), With<MainCamera>>,
+    blocks: Query<(&GlobalTransform, Entity), (With<Block>, Without<BlockSelector>)>,
+    player: Query<&GlobalTransform, With<Player>>,
     mut selected_block: ResMut<SelectedBlock>,
     mut last_cur_pos: ResMut<LastCursorPosition>,
     mut last_pl_pos: ResMut<LastPlayerPosition>,
-    blocks: Query<(&GlobalTransform, Entity), (With<Block>, Without<BlockSelector>)>,
-    player: Query<&GlobalTransform, With<Player>>,
+    window: Query<&Window, With<PrimaryWindow>>,
+    camera: Query<(&Camera, &GlobalTransform), With<MainCamera>>,
 ) {
     let window = window.single();
     let (camera, camera_transform) = camera.single();
@@ -590,23 +576,26 @@ fn select_block(
         (cursor_position.y / BLOCK_SIZE).round() * BLOCK_SIZE,
     );
 
-    let player_tr = player.single().translation();
-    let player_tr = vec2(player_tr.x, player_tr.y);
+    let player_transform = player.single().translation();
+    let player_transform = vec2(player_transform.x, player_transform.y);
 
-    if last_cur_pos.0 == pos && last_pl_pos.0 == player_tr {
+    if last_cur_pos.0 == pos && last_pl_pos.0 == player_transform {
         return;
     }
 
     last_cur_pos.0 = pos;
-    last_pl_pos.0 = vec2(player_tr.x, player_tr.y);
+    last_pl_pos.0 = vec2(player_transform.x, player_transform.y);
 
     selected_block.0 = None;
-    if in_reach(player_tr, pos, PLAYER_REACH, BLOCK_SIZE) {
-        for (btr, bent) in blocks.iter() {
-            if btr.translation().x == pos.x && btr.translation().y == pos.y {
-                selected_block.0 = Some(bent);
-                break;
-            }
+
+    if !in_reach(player_transform, pos, PLAYER_REACH, BLOCK_SIZE) {
+        return;
+    }
+
+    for (block_transform, block_ent) in blocks.iter() {
+        if block_transform.translation().x == pos.x && block_transform.translation().y == pos.y {
+            selected_block.0 = Some(block_ent);
+            break;
         }
     }
 }
@@ -632,16 +621,16 @@ fn highlight_selected_block(
 
 fn place_block(
     mut commands: Commands,
-    window: Query<&Window, With<PrimaryWindow>>,
-    camera: Query<(&Camera, &GlobalTransform), With<MainCamera>>,
-    blocks_graphics: Res<BlockGraphics>,
     world: Query<&GlobalTransform, With<World>>,
     chunks: Query<(Entity, &ChunkPosition), With<Chunk>>,
     blocks: Query<&GlobalTransform, With<Block>>,
-    player_tr: Query<&GlobalTransform, With<Player>>,
-    chunk_pos: Res<PlayerChunkPosition>,
-    mouse: Res<Input<MouseButton>>,
+    player_transform: Query<&GlobalTransform, With<Player>>,
+    current_chunk: Res<PlayerChunkPosition>,
     current_item: Res<CurrentItem>,
+    blocks_graphics: Res<BlockGraphics>,
+    mouse: Res<Input<MouseButton>>,
+    window: Query<&Window, With<PrimaryWindow>>,
+    camera: Query<(&Camera, &GlobalTransform), With<MainCamera>>,
 ) {
     let window = window.single();
     let (camera, camera_transform) = camera.single();
@@ -650,12 +639,12 @@ fn place_block(
             .cursor_position()
             .and_then(|cursor| camera.viewport_to_world_2d(camera_transform, cursor)) else { return };
 
-    let player_tr = player_tr.single().translation();
-    let player_tr = vec2(player_tr.x, player_tr.y);
+    let player_transform = player_transform.single().translation();
+    let player_transform = vec2(player_transform.x, player_transform.y);
     let block_pos = (cursor_position / BLOCK_SIZE).round() * BLOCK_SIZE;
 
     if !(mouse.just_pressed(MouseButton::Right)
-        && in_reach(player_tr, block_pos, PLAYER_REACH, BLOCK_SIZE))
+        && in_reach(player_transform, block_pos, PLAYER_REACH, BLOCK_SIZE))
     {
         return;
     }
@@ -666,65 +655,72 @@ fn place_block(
     {
         return;
     }
-    let wrl_tr = world.single();
-    let wrl_tr = wrl_tr.translation();
+
+    let world_transform = world.single().translation();
 
     let chunk_ent = {
         let mut ent = None;
-        for (chent, chpos) in chunks.iter() {
-            if chpos.0 == chunk_pos.0 {
-                ent = Some(chent);
+        for (chunk_ent, chunk_pos) in chunks.iter() {
+            if chunk_pos.0 == current_chunk.0 {
+                ent = Some(chunk_ent);
                 break;
             }
         }
         ent.unwrap()
     };
 
-    let spawn_pos = vec2(block_pos.x - wrl_tr.x, block_pos.y - wrl_tr.y);
+    let spawn_pos = vec2(
+        block_pos.x - world_transform.x,
+        block_pos.y - world_transform.y,
+    );
 
-    let chent = commands
+    let block_ent = commands
         .spawn(BlockBundle::new(
             current_item.0,
             spawn_pos,
             &blocks_graphics,
         ))
         .id();
-    commands.entity(chunk_ent).add_child(chent);
+    commands.entity(chunk_ent).add_child(block_ent);
 }
 
 fn break_block(
     mut commands: Commands,
+    blocks: Query<(&GlobalTransform, Entity), With<Block>>,
+    player_transform: Query<&GlobalTransform, With<Player>>,
+    mouse: Res<Input<MouseButton>>,
     window: Query<&Window, With<PrimaryWindow>>,
     camera: Query<(&Camera, &GlobalTransform), With<MainCamera>>,
-    blocks: Query<(&GlobalTransform, Entity), With<Block>>,
-    player_tr: Query<&GlobalTransform, With<Player>>,
-    mouse: Res<Input<MouseButton>>,
 ) {
     let window = window.single();
     let (camera, camera_transform) = camera.single();
 
-    let player_tr = player_tr.single().translation();
+    let player_transform = player_transform.single().translation();
 
     let Some(cursor_position) = window
             .cursor_position()
             .and_then(|cursor| camera.viewport_to_world_2d(camera_transform, cursor)) else { return };
 
-    if mouse.just_pressed(MouseButton::Left) {
-        let block_pos = (cursor_position / BLOCK_SIZE).round() * BLOCK_SIZE;
+    if !mouse.just_pressed(MouseButton::Left) {
+        return;
+    }
 
-        for (btr, bent) in blocks.iter() {
-            if btr.translation().x == block_pos.x
-                && btr.translation().y == block_pos.y
-                && in_reach(
-                    vec2(player_tr.x, player_tr.y),
-                    block_pos,
-                    PLAYER_REACH,
-                    BLOCK_SIZE,
-                )
-            {
-                commands.entity(bent).despawn_recursive();
-                return;
-            }
+    let block_pos = (cursor_position / BLOCK_SIZE).round() * BLOCK_SIZE;
+
+    for (block_transform, block_ent) in blocks.iter() {
+        let block_transform = block_transform.translation();
+
+        if block_transform.x == block_pos.x
+            && block_transform.y == block_pos.y
+            && in_reach(
+                vec2(player_transform.x, player_transform.y),
+                block_pos,
+                PLAYER_REACH,
+                BLOCK_SIZE,
+            )
+        {
+            commands.entity(block_ent).despawn_recursive();
+            return;
         }
     }
 }
@@ -809,7 +805,7 @@ impl PlayerBundle {
 }
 
 impl PlayerGraphicsPartBundle {
-    fn new_head(gr: &PlayerGraphics) -> (Self, PlayerGraphicsPartHead) {
+    fn new_head(gr: &PlayerGraphics) -> (Self, PlayerGraphicsHead) {
         (
             Self {
                 sprite: Sprite {
@@ -825,11 +821,11 @@ impl PlayerGraphicsPartBundle {
                     ..default()
                 },
             },
-            PlayerGraphicsPartHead,
+            PlayerGraphicsHead,
         )
     }
 
-    fn new_body(gr: &PlayerGraphics) -> (Self, PlayerGraphicsPartBody) {
+    fn new_body(gr: &PlayerGraphics) -> (Self, PlayerGraphicsBody) {
         (
             Self {
                 sprite: Sprite {
@@ -845,11 +841,11 @@ impl PlayerGraphicsPartBundle {
                     ..default()
                 },
             },
-            PlayerGraphicsPartBody,
+            PlayerGraphicsBody,
         )
     }
 
-    fn new_right_arm(gr: &PlayerGraphics) -> (Self, PlayerGraphicsPartRightArm, WaveIndex) {
+    fn new_right_arm(gr: &PlayerGraphics) -> (Self, PlayerGraphicsRightArm, WaveIndex) {
         (
             Self {
                 sprite: Sprite {
@@ -865,12 +861,12 @@ impl PlayerGraphicsPartBundle {
                     ..default()
                 },
             },
-            PlayerGraphicsPartRightArm,
+            PlayerGraphicsRightArm,
             WaveIndex(0.),
         )
     }
 
-    fn new_left_arm(gr: &PlayerGraphics) -> (Self, PlayerGraphicsPartLeftArm, WaveIndex) {
+    fn new_left_arm(gr: &PlayerGraphics) -> (Self, PlayerGraphicsLeftArm, WaveIndex) {
         (
             Self {
                 sprite: Sprite {
@@ -886,12 +882,12 @@ impl PlayerGraphicsPartBundle {
                     ..default()
                 },
             },
-            PlayerGraphicsPartLeftArm,
+            PlayerGraphicsLeftArm,
             WaveIndex(0.),
         )
     }
 
-    fn new_right_leg(gr: &PlayerGraphics) -> (Self, PlayerGraphicsPartRightLeg, WaveIndex) {
+    fn new_right_leg(gr: &PlayerGraphics) -> (Self, PlayerGraphicsRightLeg, WaveIndex) {
         (
             Self {
                 sprite: Sprite {
@@ -907,12 +903,12 @@ impl PlayerGraphicsPartBundle {
                     ..default()
                 },
             },
-            PlayerGraphicsPartRightLeg,
+            PlayerGraphicsRightLeg,
             WaveIndex(0.),
         )
     }
 
-    fn new_left_leg(gr: &PlayerGraphics) -> (Self, PlayerGraphicsPartLeftLeg, WaveIndex) {
+    fn new_left_leg(gr: &PlayerGraphics) -> (Self, PlayerGraphicsLeftLeg, WaveIndex) {
         (
             Self {
                 sprite: Sprite {
@@ -928,7 +924,7 @@ impl PlayerGraphicsPartBundle {
                     ..default()
                 },
             },
-            PlayerGraphicsPartLeftLeg,
+            PlayerGraphicsLeftLeg,
             WaveIndex(0.),
         )
     }

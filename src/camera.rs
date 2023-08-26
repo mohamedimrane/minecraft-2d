@@ -20,14 +20,14 @@ fn spawn_camera(mut commands: Commands) {
 }
 
 fn camera_follow_player(
-    mut camera_tr: Query<&mut Transform, With<MainCamera>>,
-    player_tr: Query<&GlobalTransform, With<Player>>,
+    mut camera_transfrom: Query<&mut Transform, With<MainCamera>>,
+    player_transform: Query<&GlobalTransform, With<Player>>,
 ) {
-    let mut camera_tr = camera_tr.single_mut();
-    let player_tr = player_tr.single().translation();
+    let mut camera_transform = camera_transfrom.single_mut();
+    let player_transform = player_transform.single().translation();
 
-    camera_tr.translation.x = player_tr.x;
-    camera_tr.translation.y = player_tr.y;
+    camera_transform.translation.x = player_transform.x;
+    camera_transform.translation.y = player_transform.y;
 }
 
 // COMPONENTS

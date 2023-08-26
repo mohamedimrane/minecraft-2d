@@ -156,15 +156,14 @@ fn spawn_world(mut commands: Commands) {
 }
 
 fn update_player_chunk_pos(
-    player_tr: Query<&GlobalTransform, With<Player>>,
-    chunks: Query<(Entity, &ChunkPosition), With<Chunk>>,
-    mut pl_ch_pos: ResMut<PlayerChunkPosition>,
+    player_transform: Query<&GlobalTransform, With<Player>>,
+    mut player_chunk_pos: ResMut<PlayerChunkPosition>,
 ) {
-    let player_tr = player_tr.single().translation();
+    let player_transform = player_transform.single().translation();
 
-    let chunk_x = (player_tr.x / (CHUNK_SIZE as f32 * BLOCK_SIZE)).round();
-    if chunk_x != pl_ch_pos.0 as f32 {
-        pl_ch_pos.0 = chunk_x as i32;
+    let chunk_x = (player_transform.x / (CHUNK_SIZE as f32 * BLOCK_SIZE)).round();
+    if chunk_x != player_chunk_pos.0 as f32 {
+        player_chunk_pos.0 = chunk_x as i32;
     }
 }
 
@@ -172,37 +171,37 @@ fn refresh_world(
     mut commands: Commands,
     world: Query<Entity, With<World>>,
     chunks_pos: Query<(Entity, &ChunkPosition), With<Chunk>>,
-    last_pl_ch_pos: Res<PlayerChunkPosition>,
-    stgs: Res<WorldSettings>,
+    player_chunk_pos: Res<PlayerChunkPosition>,
+    settings: Res<WorldSettings>,
     block_graphics: Res<BlockGraphics>,
 ) {
-    if !last_pl_ch_pos.is_changed() {
+    if !player_chunk_pos.is_changed() {
         return;
     }
 
     let world_ent = world.single();
 
-    let mut rng = ChaCha8Rng::seed_from_u64(stgs.seed);
+    let mut rng = ChaCha8Rng::seed_from_u64(settings.seed);
 
-    let mut noise = FastNoise::seeded(stgs.seed);
+    let mut noise = FastNoise::seeded(settings.seed);
     noise.set_noise_type(NoiseType::PerlinFractal);
-    noise.set_fractal_octaves(stgs.octaves);
-    noise.set_fractal_lacunarity(stgs.lacunarity);
+    noise.set_fractal_octaves(settings.octaves);
+    noise.set_fractal_lacunarity(settings.lacunarity);
 
-    for ch in chunks_pos.iter() {
-        if last_pl_ch_pos.0 < ch.1 .0 - CHUNK_RENDER_DISTANCE
-            || last_pl_ch_pos.0 > ch.1 .0 + CHUNK_RENDER_DISTANCE
+    for chunk_pos in chunks_pos.iter() {
+        if player_chunk_pos.0 < chunk_pos.1 .0 - CHUNK_RENDER_DISTANCE
+            || player_chunk_pos.0 > chunk_pos.1 .0 + CHUNK_RENDER_DISTANCE
         {
-            commands.entity(ch.0).despawn_recursive();
+            commands.entity(chunk_pos.0).despawn_recursive();
         }
     }
 
     commands.entity(world_ent).with_children(|cb| {
-        for i in
-            (last_pl_ch_pos.0 - CHUNK_RENDER_DISTANCE)..=(last_pl_ch_pos.0 + CHUNK_RENDER_DISTANCE)
+        for i in (player_chunk_pos.0 - CHUNK_RENDER_DISTANCE)
+            ..=(player_chunk_pos.0 + CHUNK_RENDER_DISTANCE)
         {
             if !chunks_pos.iter().any(|x| i == x.1 .0) {
-                generate_chunk(i, cb, &mut noise, &mut rng, &stgs, &block_graphics);
+                generate_chunk(i, cb, &mut noise, &mut rng, &settings, &block_graphics);
             }
         }
     });
