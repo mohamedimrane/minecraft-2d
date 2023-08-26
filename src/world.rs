@@ -71,7 +71,7 @@ impl Plugin for WorldPlugin {
             // Systems
             // .add_systems(Startup, spawn_test_platform)
             .add_systems(Startup, spawn_world)
-            .add_systems(Update, (update_last_player_chunk_pos, refresh_world));
+            .add_systems(Update, (update_player_chunk_pos, refresh_world));
     }
 }
 
@@ -133,7 +133,7 @@ struct WorldSettings {
 }
 
 #[derive(Resource)]
-struct PlayerChunkPosition(i32);
+pub struct PlayerChunkPosition(pub i32);
 
 // COMPONENTS
 
@@ -144,10 +144,10 @@ pub struct World;
 pub struct Chunk;
 
 #[derive(Component)]
-pub struct ChunkPosition(i32);
+pub struct ChunkPosition(pub i32);
 
 #[derive(Component)]
-pub struct BlockPosition(Vec2);
+struct BlockPosition(Vec2);
 
 // SYSTEMS
 
@@ -155,15 +155,16 @@ fn spawn_world(mut commands: Commands) {
     commands.spawn((WorldBundle::default(), Name::new("World")));
 }
 
-fn update_last_player_chunk_pos(
+fn update_player_chunk_pos(
     player_tr: Query<&GlobalTransform, With<Player>>,
-    mut last_pl_ch_pos: ResMut<PlayerChunkPosition>,
+    chunks: Query<(Entity, &ChunkPosition), With<Chunk>>,
+    mut pl_ch_pos: ResMut<PlayerChunkPosition>,
 ) {
     let player_tr = player_tr.single().translation();
 
     let chunk_x = (player_tr.x / (CHUNK_SIZE as f32 * BLOCK_SIZE)).round();
-    if chunk_x != last_pl_ch_pos.0 as f32 {
-        last_pl_ch_pos.0 = chunk_x as i32;
+    if chunk_x != pl_ch_pos.0 as f32 {
+        pl_ch_pos.0 = chunk_x as i32;
     }
 }
 

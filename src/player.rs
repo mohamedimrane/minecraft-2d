@@ -10,7 +10,7 @@ use crate::{
     camera::MainCamera,
     inventory::CurrentItem,
     utils::{in_reach, leans_to_left, leans_to_right, map},
-    world::World,
+    world::{Chunk, ChunkPosition, PlayerChunkPosition, World},
 };
 
 // CONSTANTS
@@ -635,9 +635,11 @@ fn place_block(
     window: Query<&Window, With<PrimaryWindow>>,
     camera: Query<(&Camera, &GlobalTransform), With<MainCamera>>,
     blocks_graphics: Res<BlockGraphics>,
-    world: Query<(Entity, &GlobalTransform), With<World>>,
+    world: Query<&GlobalTransform, With<World>>,
+    chunks: Query<(Entity, &ChunkPosition), With<Chunk>>,
     blocks: Query<&GlobalTransform, With<Block>>,
     player_tr: Query<&GlobalTransform, With<Player>>,
+    chunk_pos: Res<PlayerChunkPosition>,
     mouse: Res<Input<MouseButton>>,
     current_item: Res<CurrentItem>,
 ) {
@@ -664,10 +666,19 @@ fn place_block(
     {
         return;
     }
-
-    println!("{}", block_pos);
-    let (wrl_ent, wrl_tr) = world.single();
+    let wrl_tr = world.single();
     let wrl_tr = wrl_tr.translation();
+
+    let chunk_ent = {
+        let mut ent = None;
+        for (chent, chpos) in chunks.iter() {
+            if chpos.0 == chunk_pos.0 {
+                ent = Some(chent);
+                break;
+            }
+        }
+        ent.unwrap()
+    };
 
     let spawn_pos = vec2(block_pos.x - wrl_tr.x, block_pos.y - wrl_tr.y);
 
@@ -678,7 +689,7 @@ fn place_block(
             &blocks_graphics,
         ))
         .id();
-    commands.entity(wrl_ent).add_child(chent);
+    commands.entity(chunk_ent).add_child(chent);
 }
 
 fn break_block(
