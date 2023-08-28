@@ -216,6 +216,21 @@ fn generate_chunk(
                 + stgs.height_addition;
 
             for y in 0..=height as i32 {
+                let name = Name::new(format!("Block {}:{}", x, y));
+
+                if y == 0 {
+                    cb.spawn((
+                        BlockBundle::new(
+                            BlockKind::Bedrock,
+                            vec2(x as f32 * BLOCK_SIZE, 0.),
+                            &block_graphics,
+                        ),
+                        name,
+                    ));
+
+                    continue;
+                }
+
                 noise.set_frequency(stgs.cave_frequency);
 
                 let v = noise.get_noise(x as f32 / stgs.cave_divider, y as f32 / stgs.cave_divider);
@@ -223,8 +238,6 @@ fn generate_chunk(
                 if v < stgs.air_porbality
                     && !blocks.iter().any(|&b| b.x == x as f32 && b.y == y as f32)
                 {
-                    let name = Name::new(format!("Block {}:{}", x, y));
-
                     let mut kind = BlockKind::Stone;
 
                     noise.set_frequency(stgs.coal.rarity);
