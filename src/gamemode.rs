@@ -10,7 +10,7 @@ impl Plugin for GameModePlugin {
             // Resources
             .insert_resource(GameMode::default())
             // Systems
-            .add_systems(Startup, switch_gamemode);
+            .add_systems(Update, switch_gamemode);
     }
 }
 
