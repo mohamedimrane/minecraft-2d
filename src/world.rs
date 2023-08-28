@@ -22,47 +22,50 @@ impl Plugin for WorldPlugin {
             // Resources
             .insert_resource(WorldSettings {
                 seed: 59900,
-                // seed: 400069,
-                // seed: 4332575,
-                // seed: 43325075,
                 octaves: 2,
                 lacunarity: 5.0,
 
                 terrain_frequency: 4.,
                 terrain_divider: 140.,
 
-                // cave_frequency: 3.,
                 cave_frequency: 3.5,
-                // cave_divider: 50.,
                 cave_divider: 140.,
-                // air_porbality: 0.26,
-                air_porbality: 0.18,
 
+                air_porbality: 0.18,
                 dirt_layer_height: 3,
                 tree_chance: 8,
 
                 ores_map_step: 10,
 
-                coal_rarity: 0.5,
-                coal_size: -0.18,
-                coal_divider: 3.,
+                coal: OreSettings {
+                    rarity: 0.5,
+                    size: -0.18,
+                    divider: 3.,
+                },
 
-                // copper_rarity: 0.4,
-                copper_rarity: 1.,
-                copper_size: -0.18,
-                copper_divider: 4.,
+                copper: OreSettings {
+                    rarity: 1.,
+                    size: -0.18,
+                    divider: 4.,
+                },
 
-                iron_rarity: 3.5,
-                iron_size: -0.18,
-                iron_divider: 10.,
+                iron: OreSettings {
+                    rarity: 3.5,
+                    size: -0.18,
+                    divider: 10.,
+                },
 
-                gold_rarity: 4.5,
-                gold_size: -0.25,
-                gold_divider: 8.,
+                gold: OreSettings {
+                    rarity: 4.5,
+                    size: -0.25,
+                    divider: 8.,
+                },
 
-                diamond_rarity: 3.5,
-                diamond_size: -0.25,
-                diamond_divider: 7.,
+                diamond: OreSettings {
+                    rarity: 3.5,
+                    size: -0.25,
+                    divider: 7.,
+                },
 
                 height_multiplier: 40.,
                 height_addition: 40.,
@@ -95,38 +98,14 @@ struct WorldSettings {
 
     ores_map_step: i32,
 
-    coal_rarity: f32,
-    coal_size: f32,
-    coal_divider: f32,
-
-    copper_rarity: f32,
-    copper_size: f32,
-    copper_divider: f32,
-
-    iron_rarity: f32,
-    iron_size: f32,
-    iron_divider: f32,
-
-    gold_rarity: f32,
-    gold_size: f32,
-    gold_divider: f32,
-
-    // lapis_rarity: f32,
-    // lapis_size: f32,
-    // lapis_divider: f32,
-
-    // redstone_rarity: f32,
-    // redstone_size: f32,
-    // redstone_divider: f32,
-
-    // emrald_rarity: f32,
-    // emrald_size: f32,
-    // emrald_divider: f32,
-
-    //
-    diamond_rarity: f32,
-    diamond_size: f32,
-    diamond_divider: f32,
+    coal: OreSettings,
+    copper: OreSettings,
+    iron: OreSettings,
+    gold: OreSettings,
+    // lapis: OreSettings,
+    // redstone: OreSettings,
+    // emrald: OreSettings,
+    diamond: OreSettings,
 
     height_multiplier: f32,
     height_addition: f32,
@@ -134,6 +113,13 @@ struct WorldSettings {
 
 #[derive(Resource)]
 pub struct PlayerChunkPosition(pub i32);
+
+// STRUCTS
+struct OreSettings {
+    rarity: f32,
+    size: f32,
+    divider: f32,
+}
 
 // COMPONENTS
 
@@ -241,43 +227,43 @@ fn generate_chunk(
 
                     let mut kind = BlockKind::Stone;
 
-                    noise.set_frequency(stgs.coal_rarity);
+                    noise.set_frequency(stgs.coal.rarity);
                     let coal_v =
-                        noise.get_noise(x as f32 / stgs.coal_divider, y as f32 / stgs.coal_divider);
+                        noise.get_noise(x as f32 / stgs.coal.divider, y as f32 / stgs.coal.divider);
 
-                    noise.set_frequency(stgs.copper_rarity);
+                    noise.set_frequency(stgs.copper.rarity);
                     let copper_v = noise.get_noise(
-                        (x + stgs.ores_map_step) as f32 / stgs.copper_divider,
-                        (y + stgs.ores_map_step) as f32 / stgs.copper_divider,
+                        (x + stgs.ores_map_step) as f32 / stgs.copper.divider,
+                        (y + stgs.ores_map_step) as f32 / stgs.copper.divider,
                     );
 
-                    noise.set_frequency(stgs.iron_rarity);
+                    noise.set_frequency(stgs.iron.rarity);
                     let iron_v = noise.get_noise(
-                        (x + stgs.ores_map_step * 2) as f32 / stgs.iron_divider,
-                        (y + stgs.ores_map_step * 2) as f32 / stgs.iron_divider,
+                        (x + stgs.ores_map_step * 2) as f32 / stgs.iron.divider,
+                        (y + stgs.ores_map_step * 2) as f32 / stgs.iron.divider,
                     );
 
-                    noise.set_frequency(stgs.gold_rarity);
+                    noise.set_frequency(stgs.gold.rarity);
                     let gold_v = noise.get_noise(
-                        (x + stgs.ores_map_step * 3) as f32 / stgs.gold_divider,
-                        (y + stgs.ores_map_step * 3) as f32 / stgs.gold_divider,
+                        (x + stgs.ores_map_step * 3) as f32 / stgs.gold.divider,
+                        (y + stgs.ores_map_step * 3) as f32 / stgs.gold.divider,
                     );
 
-                    noise.set_frequency(stgs.diamond_rarity);
+                    noise.set_frequency(stgs.diamond.rarity);
                     let diamond_v = noise.get_noise(
-                        (x + stgs.ores_map_step * 4) as f32 / stgs.diamond_divider,
-                        (y + stgs.ores_map_step * 4) as f32 / stgs.diamond_divider,
+                        (x + stgs.ores_map_step * 4) as f32 / stgs.diamond.divider,
+                        (y + stgs.ores_map_step * 4) as f32 / stgs.diamond.divider,
                     );
 
-                    if diamond_v < stgs.diamond_size {
+                    if diamond_v < stgs.diamond.size {
                         kind = BlockKind::DiamondOre;
-                    } else if gold_v < stgs.gold_size {
+                    } else if gold_v < stgs.gold.size {
                         kind = BlockKind::GoldOre;
-                    } else if iron_v < stgs.iron_size {
+                    } else if iron_v < stgs.iron.size {
                         kind = BlockKind::IronOre;
-                    } else if copper_v < stgs.copper_size {
+                    } else if copper_v < stgs.copper.size {
                         kind = BlockKind::CopperOre;
-                    } else if coal_v < stgs.coal_size {
+                    } else if coal_v < stgs.coal.size {
                         kind = BlockKind::CoalOre;
                     }
 
