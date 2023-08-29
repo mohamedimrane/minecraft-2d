@@ -1,6 +1,7 @@
 use crate::{
     block::{BlockBundle, BlockGraphics, BlockKind, BLOCK_SIZE},
     player::Player,
+    utils::in_bounds_y as inside,
 };
 use bevy::{math::vec2, prelude::*};
 use bracket_noise::prelude::*;
@@ -41,30 +42,40 @@ impl Plugin for WorldPlugin {
                     rarity: 0.5,
                     size: -0.18,
                     divider: 3.,
+                    below: None,
+                    above: Some(20),
                 },
 
                 copper: OreSettings {
                     rarity: 1.,
                     size: -0.18,
                     divider: 4.,
+                    below: None,
+                    above: Some(20),
                 },
 
                 iron: OreSettings {
                     rarity: 3.5,
                     size: -0.18,
                     divider: 10.,
+                    below: None,
+                    above: None,
                 },
 
                 gold: OreSettings {
                     rarity: 4.5,
                     size: -0.25,
                     divider: 8.,
+                    below: Some(30),
+                    above: Some(5),
                 },
 
                 diamond: OreSettings {
                     rarity: 3.5,
                     size: -0.25,
                     divider: 7.,
+                    below: Some(15),
+                    above: None,
                 },
 
                 height_multiplier: 40.,
@@ -119,6 +130,8 @@ struct OreSettings {
     rarity: f32,
     size: f32,
     divider: f32,
+    below: Option<i32>,
+    above: Option<i32>,
 }
 
 // COMPONENTS
@@ -268,16 +281,13 @@ fn generate_chunk(
                         (y + stgs.ores_map_step * 4) as f32 / stgs.diamond.divider,
                     );
 
-                    if diamond_v < stgs.diamond.size {
-                        kind = BlockKind::DiamondOre;
-                    } else if gold_v < stgs.gold.size {
-                        kind = BlockKind::GoldOre;
-                    } else if iron_v < stgs.iron.size {
-                        kind = BlockKind::IronOre;
-                    } else if copper_v < stgs.copper.size {
-                        kind = BlockKind::CopperOre;
-                    } else if coal_v < stgs.coal.size {
-                        kind = BlockKind::CoalOre;
+                    match true {
+                        _ if is_ore(diamond_v, y, &stgs.diamond) => kind = BlockKind::DiamondOre,
+                        _ if is_ore(gold_v, y, &stgs.gold) => kind = BlockKind::GoldOre,
+                        _ if is_ore(iron_v, y, &stgs.iron) => kind = BlockKind::IronOre,
+                        _ if is_ore(copper_v, y, &stgs.copper) => kind = BlockKind::CopperOre,
+                        _ if is_ore(coal_v, y, &stgs.coal) => kind = BlockKind::CoalOre,
+                        _ => {}
                     }
 
                     if height as i32 - y <= stgs.dirt_layer_height {
@@ -306,6 +316,10 @@ fn generate_chunk(
             }
         }
     });
+}
+
+fn is_ore(v: f32, y: i32, ore_stgs: &OreSettings) -> bool {
+    v < ore_stgs.size && inside(ore_stgs.below, ore_stgs.above, y)
 }
 
 fn spawn_tree(

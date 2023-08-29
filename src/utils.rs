@@ -1,4 +1,5 @@
 use std::{
+    cmp::Ordering,
     f32::consts::PI,
     ops::{Add, Div, Mul, Sub},
 };
@@ -28,4 +29,16 @@ pub fn in_reach(tr1: Vec2, tr2: Vec2, reach: f32, block_size: f32) -> bool {
         && tr1.x > tr2.x - reach * block_size
         && tr1.y < tr2.y + reach * block_size
         && tr1.y > tr2.y - reach * block_size
+}
+
+pub fn cmp_opt_lit<T: PartialOrd + PartialEq>(a: Option<T>, b: T, default: Ordering) -> Ordering {
+    let Some(a) = a else { return default };
+    a.partial_cmp(&b).unwrap()
+}
+
+pub fn in_bounds_y(below: Option<i32>, above: Option<i32>, y: i32) -> bool {
+    use Ordering::*;
+    let a = cmp_opt_lit(below, y, Greater);
+    let b = cmp_opt_lit(above, y, Less);
+    (a == Greater || a == Equal) && (b == Less || b == Equal)
 }
