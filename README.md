@@ -12,6 +12,18 @@ A minecraft 2d clone built with rust and the bevy game engine.
   - [ ] Swimming
   - [ ] Game modes
   - [ ] Food
+  - [ ] Inventory
+    - [x] Basic block switching system
+    - [ ] Inventory system
+    - [ ] Inventory graphics
+  - [ ] Building
+    - [x] Placing blocks
+    - [x] Breaking blocks
+    - [ ] Picking up blocks
+
+- [ ] Crafting
+  - [ ] Crafting system
+  - [ ] Crafting graphics
 
 - [ ] World generation
   - [x] Basic plain generation
@@ -24,15 +36,8 @@ A minecraft 2d clone built with rust and the bevy game engine.
   - [ ] Lake generation
   - [ ] Ocean generation
   - [ ] Mountain generation
-  - [ ] Biome generation
+  - [x] Biome generation
   - [ ] Mob generation
-
-- [ ] Building
-  - [x] Placing blocks
-  - [x] Breaking blocks
-  - [x] Basic switching blocks
-  - [ ] Switching blocks
-  - [ ] Picking up blocks
 
 - [ ] General
   - [ ] Universal health system
@@ -44,15 +49,6 @@ A minecraft 2d clone built with rust and the bevy game engine.
   - [ ] Add untity editor style debug windows
   - [ ] Add console for minecraft style commands
   
-- [ ] Inventory
-  - [x] Basic block switching system
-  - [ ] Inventory system
-  - [ ] Inventory graphics
-
-- [ ] Crafting
-  - [ ] Crafting system
-  - [ ] Crafting graphics
-
 - [ ] Blocks
   - [ ] Adding water
   - [ ] Adding lava
