@@ -11,7 +11,7 @@ use rand_chacha::ChaCha8Rng;
 // CONSTANTS
 const WORLD_OFFSET: Vec3 = Vec3::new(0., -BLOCK_SIZE * 40., 0.);
 const CHUNK_SIZE: i32 = 16;
-const CHUNK_RENDER_DISTANCE: i32 = 3;
+const CHUNK_RENDER_DISTANCE: i32 = 30;
 
 // PLUGINS
 
@@ -26,60 +26,134 @@ impl Plugin for WorldPlugin {
                 octaves: 2,
                 lacunarity: 5.0,
 
-                terrain_frequency: 4.,
-                terrain_divider: 140.,
+                biomes: Biomes {
+                    frequency: 0.8,
+                    divider: 100.,
 
-                cave_frequency: 3.5,
-                cave_divider: 140.,
+                    plain: BiomeSettings {
+                        v: 1.,
 
-                air_porbality: 0.18,
-                dirt_layer_height: 3,
-                tree_chance: 8,
+                        terrain_frequency: 4.,
+                        terrain_divider: 140.,
 
-                ores_map_step: 10,
+                        cave_frequency: 3.5,
+                        cave_divider: 140.,
 
-                coal: OreSettings {
-                    rarity: 0.5,
-                    size: -0.18,
-                    divider: 3.,
-                    below: None,
-                    above: Some(20),
+                        air_porbality: 0.18,
+                        exposed_block_layer_height: 3,
+                        tree_chance: 8,
+
+                        exposed_block_top: BlockKind::Grass,
+                        exposed_block: BlockKind::Dirt,
+
+                        ores_map_step: 10,
+
+                        coal: OreSettings {
+                            rarity: 0.5,
+                            size: -0.18,
+                            divider: 3.,
+                            below: None,
+                            above: Some(20),
+                        },
+
+                        copper: OreSettings {
+                            rarity: 1.,
+                            size: -0.18,
+                            divider: 4.,
+                            below: None,
+                            above: Some(20),
+                        },
+
+                        iron: OreSettings {
+                            rarity: 3.5,
+                            size: -0.18,
+                            divider: 10.,
+                            below: None,
+                            above: None,
+                        },
+
+                        gold: OreSettings {
+                            rarity: 4.5,
+                            size: -0.25,
+                            divider: 8.,
+                            below: Some(30),
+                            above: Some(5),
+                        },
+
+                        diamond: OreSettings {
+                            rarity: 3.5,
+                            size: -0.25,
+                            divider: 7.,
+                            below: Some(15),
+                            above: None,
+                        },
+
+                        height_multiplier: 40.,
+                        height_addition: 40.,
+                    },
+
+                    desert: BiomeSettings {
+                        v: 0.,
+
+                        terrain_frequency: 2.,
+                        terrain_divider: 140.,
+
+                        cave_frequency: 3.5,
+                        cave_divider: 140.,
+
+                        air_porbality: 0.18,
+                        exposed_block_layer_height: 3,
+                        tree_chance: 8,
+
+                        exposed_block_top: BlockKind::Cobblestone,
+                        exposed_block: BlockKind::Stone,
+
+                        ores_map_step: 10,
+
+                        coal: OreSettings {
+                            rarity: 0.5,
+                            size: -0.18,
+                            divider: 3.,
+                            below: None,
+                            above: Some(20),
+                        },
+
+                        copper: OreSettings {
+                            rarity: 1.,
+                            size: -0.18,
+                            divider: 4.,
+                            below: None,
+                            above: Some(20),
+                        },
+
+                        iron: OreSettings {
+                            rarity: 3.5,
+                            size: -0.18,
+                            divider: 10.,
+                            below: None,
+                            above: None,
+                        },
+
+                        gold: OreSettings {
+                            rarity: 4.5,
+                            size: -0.25,
+                            divider: 8.,
+                            below: Some(50),
+                            above: None,
+                        },
+
+                        diamond: OreSettings {
+                            rarity: 3.5,
+                            size: -0.25,
+                            divider: 7.,
+                            below: Some(15),
+                            above: None,
+                        },
+
+                        height_multiplier: 40.,
+                        height_addition: 40.,
+                    },
                 },
-
-                copper: OreSettings {
-                    rarity: 1.,
-                    size: -0.18,
-                    divider: 4.,
-                    below: None,
-                    above: Some(20),
-                },
-
-                iron: OreSettings {
-                    rarity: 3.5,
-                    size: -0.18,
-                    divider: 10.,
-                    below: None,
-                    above: None,
-                },
-
-                gold: OreSettings {
-                    rarity: 4.5,
-                    size: -0.25,
-                    divider: 8.,
-                    below: Some(30),
-                    above: Some(5),
-                },
-
-                diamond: OreSettings {
-                    rarity: 3.5,
-                    size: -0.25,
-                    divider: 7.,
-                    below: Some(15),
-                    above: None,
-                },
-
-                height_multiplier: 40.,
-                height_addition: 40.,
             })
             .insert_resource(PlayerChunkPosition(0))
             // Systems
@@ -97,18 +171,37 @@ struct WorldSettings {
     octaves: i32,
     lacunarity: f32,
 
+    biomes: Biomes,
+}
+
+#[derive(Resource)]
+pub struct PlayerChunkPosition(pub i32);
+
+// STRUCTS
+struct Biomes {
+    frequency: f32,
+    divider: f32,
+    plain: BiomeSettings,
+    desert: BiomeSettings,
+}
+
+struct BiomeSettings {
+    v: f32,
+
     terrain_frequency: f32,
     terrain_divider: f32,
     cave_frequency: f32,
     cave_divider: f32,
 
     air_porbality: f32,
-    dirt_layer_height: i32,
+    exposed_block_layer_height: i32,
     /// The greater the rarer
     tree_chance: i32,
 
-    ores_map_step: i32,
+    exposed_block_top: BlockKind,
+    exposed_block: BlockKind,
 
+    ores_map_step: i32,
     coal: OreSettings,
     copper: OreSettings,
     iron: OreSettings,
@@ -122,10 +215,6 @@ struct WorldSettings {
     height_addition: f32,
 }
 
-#[derive(Resource)]
-pub struct PlayerChunkPosition(pub i32);
-
-// STRUCTS
 struct OreSettings {
     rarity: f32,
     size: f32,
@@ -221,12 +310,22 @@ fn generate_chunk(
     .with_children(|cb| {
         let mut blocks = Vec::<Vec2>::new();
 
+        noise.set_frequency(stgs.biomes.frequency);
         for x in (CHUNK_SIZE * chunk_x) + 1..=(CHUNK_SIZE * (chunk_x) + CHUNK_SIZE) {
-            noise.set_frequency(stgs.terrain_frequency);
+            noise.set_frequency(stgs.biomes.frequency);
+            let biome_v = noise.get_noise(x as f32 / stgs.biomes.divider, 1.);
+            let bstgs = match biome_v {
+                _ if biome_v <= stgs.biomes.desert.v => &stgs.biomes.desert,
+                _ if biome_v <= stgs.biomes.plain.v => &stgs.biomes.plain,
+                _ => return,
+            };
 
-            let height = noise.get_noise(x as f32 / stgs.terrain_divider, 1. * stgs.cave_frequency)
-                * stgs.height_multiplier
-                + stgs.height_addition;
+            noise.set_frequency(bstgs.terrain_frequency);
+
+            let height = noise
+                .get_noise(x as f32 / bstgs.terrain_divider, 1. * bstgs.cave_frequency)
+                * bstgs.height_multiplier
+                + bstgs.height_addition;
 
             for y in 0..=height as i32 {
                 let name = Name::new(format!("Block {}:{}", x, y));
@@ -244,60 +343,61 @@ fn generate_chunk(
                     continue;
                 }
 
-                noise.set_frequency(stgs.cave_frequency);
+                noise.set_frequency(bstgs.cave_frequency);
 
-                let v = noise.get_noise(x as f32 / stgs.cave_divider, y as f32 / stgs.cave_divider);
+                let v =
+                    noise.get_noise(x as f32 / bstgs.cave_divider, y as f32 / bstgs.cave_divider);
 
-                if v < stgs.air_porbality
+                if v < bstgs.air_porbality
                     && !blocks.iter().any(|&b| b.x == x as f32 && b.y == y as f32)
                 {
                     let mut kind = BlockKind::Stone;
 
-                    noise.set_frequency(stgs.coal.rarity);
-                    let coal_v =
-                        noise.get_noise(x as f32 / stgs.coal.divider, y as f32 / stgs.coal.divider);
+                    noise.set_frequency(bstgs.coal.rarity);
+                    let coal_v = noise
+                        .get_noise(x as f32 / bstgs.coal.divider, y as f32 / bstgs.coal.divider);
 
-                    noise.set_frequency(stgs.copper.rarity);
+                    noise.set_frequency(bstgs.copper.rarity);
                     let copper_v = noise.get_noise(
-                        (x + stgs.ores_map_step) as f32 / stgs.copper.divider,
-                        (y + stgs.ores_map_step) as f32 / stgs.copper.divider,
+                        (x + bstgs.ores_map_step) as f32 / bstgs.copper.divider,
+                        (y + bstgs.ores_map_step) as f32 / bstgs.copper.divider,
                     );
 
-                    noise.set_frequency(stgs.iron.rarity);
+                    noise.set_frequency(bstgs.iron.rarity);
                     let iron_v = noise.get_noise(
-                        (x + stgs.ores_map_step * 2) as f32 / stgs.iron.divider,
-                        (y + stgs.ores_map_step * 2) as f32 / stgs.iron.divider,
+                        (x + bstgs.ores_map_step * 2) as f32 / bstgs.iron.divider,
+                        (y + bstgs.ores_map_step * 2) as f32 / bstgs.iron.divider,
                     );
 
-                    noise.set_frequency(stgs.gold.rarity);
+                    noise.set_frequency(bstgs.gold.rarity);
                     let gold_v = noise.get_noise(
-                        (x + stgs.ores_map_step * 3) as f32 / stgs.gold.divider,
-                        (y + stgs.ores_map_step * 3) as f32 / stgs.gold.divider,
+                        (x + bstgs.ores_map_step * 3) as f32 / bstgs.gold.divider,
+                        (y + bstgs.ores_map_step * 3) as f32 / bstgs.gold.divider,
                     );
 
-                    noise.set_frequency(stgs.diamond.rarity);
+                    noise.set_frequency(bstgs.diamond.rarity);
                     let diamond_v = noise.get_noise(
-                        (x + stgs.ores_map_step * 4) as f32 / stgs.diamond.divider,
-                        (y + stgs.ores_map_step * 4) as f32 / stgs.diamond.divider,
+                        (x + bstgs.ores_map_step * 4) as f32 / bstgs.diamond.divider,
+                        (y + bstgs.ores_map_step * 4) as f32 / bstgs.diamond.divider,
                     );
 
                     match true {
-                        _ if is_ore(diamond_v, y, &stgs.diamond) => kind = BlockKind::DiamondOre,
-                        _ if is_ore(gold_v, y, &stgs.gold) => kind = BlockKind::GoldOre,
-                        _ if is_ore(iron_v, y, &stgs.iron) => kind = BlockKind::IronOre,
-                        _ if is_ore(copper_v, y, &stgs.copper) => kind = BlockKind::CopperOre,
-                        _ if is_ore(coal_v, y, &stgs.coal) => kind = BlockKind::CoalOre,
+                        _ if is_ore(diamond_v, y, &bstgs.diamond) => kind = BlockKind::DiamondOre,
+                        _ if is_ore(gold_v, y, &bstgs.gold) => kind = BlockKind::GoldOre,
+                        _ if is_ore(iron_v, y, &bstgs.iron) => kind = BlockKind::IronOre,
+                        _ if is_ore(copper_v, y, &bstgs.copper) => kind = BlockKind::CopperOre,
+                        _ if is_ore(coal_v, y, &bstgs.coal) => kind = BlockKind::CoalOre,
                         _ => {}
                     }
 
-                    if height as i32 - y <= stgs.dirt_layer_height {
-                        kind = BlockKind::Dirt;
+                    if height as i32 - y <= bstgs.exposed_block_layer_height {
+                        kind = bstgs.exposed_block;
                     }
 
                     if y == height as i32 {
-                        kind = BlockKind::Grass;
+                        kind = bstgs.exposed_block_top;
 
-                        if rng.gen_bool(1. / stgs.tree_chance as f64) {
+                        if rng.gen_bool(1. / bstgs.tree_chance as f64) {
                             spawn_tree(x as f32, y as f32 + 1., &mut blocks, cb, &block_graphics);
                         }
                     }
