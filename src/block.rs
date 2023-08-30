@@ -70,6 +70,7 @@ pub enum BlockKind {
     Sandstone,
     RedSand,
     RedSandstone,
+    Cactus,
     RedTulip,
     // row 3
     CoalOre,
@@ -116,7 +117,8 @@ impl BlockKind {
             Sandstone => 17,
             RedSand => 18,
             RedSandstone => 19,
-            RedTulip => 20,
+            Cactus => 20,
+            RedTulip => 21,
             // row 3
             CoalOre => 32,
             CoalOreDeepslate => 33,

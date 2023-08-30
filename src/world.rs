@@ -42,6 +42,7 @@ impl Plugin for WorldPlugin {
                         air_porbality: 0.18,
                         exposed_block_top_layer_height: 1,
                         exposed_block_layer_height: 3,
+                        tree_kind: TreeKind::Oak,
                         tree_chance: 8,
 
                         exposed_block_top: BlockKind::Grass,
@@ -105,7 +106,8 @@ impl Plugin for WorldPlugin {
                         air_porbality: 0.18,
                         exposed_block_top_layer_height: 4,
                         exposed_block_layer_height: 2,
-                        tree_chance: 8,
+                        tree_kind: TreeKind::Cactus,
+                        tree_chance: 20,
 
                         exposed_block_top: BlockKind::Sand,
                         exposed_block: BlockKind::Sandstone,
@@ -198,6 +200,7 @@ struct BiomeSettings {
     air_porbality: f32,
     exposed_block_top_layer_height: i32,
     exposed_block_layer_height: i32,
+    tree_kind: TreeKind,
     /// The greater the rarer
     tree_chance: i32,
 
@@ -224,6 +227,12 @@ struct OreSettings {
     divider: f32,
     below: Option<i32>,
     above: Option<i32>,
+}
+
+#[derive(Clone, Copy)]
+enum TreeKind {
+    Oak,
+    Cactus,
 }
 
 // COMPONENTS
@@ -401,9 +410,18 @@ fn generate_chunk(
 
                     if height as i32 - y < bstgs.exposed_block_top_layer_height {
                         kind = bstgs.exposed_block_top;
+                    }
 
+                    if y == height as i32 {
                         if rng.gen_bool(1. / bstgs.tree_chance as f64) {
-                            spawn_tree(x as f32, y as f32 + 1., &mut blocks, cb, &block_graphics);
+                            spawn_tree(
+                                bstgs.tree_kind,
+                                x as f32,
+                                y as f32 + 1.,
+                                &mut blocks,
+                                cb,
+                                &block_graphics,
+                            );
                         }
                     }
 
@@ -428,79 +446,97 @@ fn is_ore(v: f32, y: i32, ore_stgs: &OreSettings) -> bool {
 }
 
 fn spawn_tree(
+    kind: TreeKind,
     x: f32,
     y: f32,
     blocks: &mut Vec<Vec2>,
     commands: &mut ChildBuilder,
     block_graphics: &Res<BlockGraphics>,
 ) {
-    for i in 0..=5 {
-        if blocks
-            .iter()
-            .any(|&b| b.x == x as f32 && b.y == y + i as f32)
-        {
-            continue;
-        }
-
-        let kind = if i >= 3 {
-            BlockKind::LeafedOakLog
-        } else {
-            BlockKind::OakLog
-        };
-
-        commands.spawn((
-            BlockBundle::new(
-                kind,
-                vec2(x * BLOCK_SIZE, (y + i as f32) * BLOCK_SIZE),
-                block_graphics,
-            ),
-            Name::new(format!("Block {}:{}", x, y + i as f32)),
-        ));
-
-        blocks.push(vec2(x, y + i as f32));
-    }
-
-    for i in -2..=2 {
-        for j in 0..=3 {
-            if i == 0
-                || blocks
+    use TreeKind::*;
+    match kind {
+        Oak => {
+            for i in 0..=5 {
+                if blocks
                     .iter()
-                    .any(|&b| b.x == x + i as f32 && b.y == y + j as f32 + 2.)
-            {
-                continue;
+                    .any(|&b| b.x == x as f32 && b.y == y + i as f32)
+                {
+                    continue;
+                }
+
+                let kind = if i >= 3 {
+                    BlockKind::LeafedOakLog
+                } else {
+                    BlockKind::OakLog
+                };
+
+                commands.spawn((
+                    BlockBundle::new(
+                        kind,
+                        vec2(x * BLOCK_SIZE, (y + i as f32) * BLOCK_SIZE),
+                        block_graphics,
+                    ),
+                    Name::new(format!("Block {}:{}", x, y + i as f32)),
+                ));
+
+                blocks.push(vec2(x, y + i as f32));
             }
 
-            commands.spawn((
-                BlockBundle::new(
-                    BlockKind::Leaves,
-                    vec2(
-                        (x + i as f32) * BLOCK_SIZE,
-                        (y + j as f32 + 2.) * BLOCK_SIZE,
+            for i in -2..=2 {
+                for j in 0..=3 {
+                    if i == 0
+                        || blocks
+                            .iter()
+                            .any(|&b| b.x == x + i as f32 && b.y == y + j as f32 + 2.)
+                    {
+                        continue;
+                    }
+
+                    commands.spawn((
+                        BlockBundle::new(
+                            BlockKind::Leaves,
+                            vec2(
+                                (x + i as f32) * BLOCK_SIZE,
+                                (y + j as f32 + 2.) * BLOCK_SIZE,
+                            ),
+                            block_graphics,
+                        ),
+                        Name::new(format!("Block {}:{}", x + i as f32, y + j as f32)),
+                    ));
+
+                    blocks.push(vec2(x + i as f32, y + j as f32 + 2.));
+                }
+            }
+
+            for i in -1..=1 {
+                if blocks.iter().any(|&b| b.x == x + i as f32 && b.y == y + 6.) {
+                    continue;
+                }
+
+                commands.spawn((
+                    BlockBundle::new(
+                        BlockKind::Leaves,
+                        vec2((x + i as f32) * BLOCK_SIZE, (y + 6.) * BLOCK_SIZE),
+                        block_graphics,
                     ),
-                    block_graphics,
-                ),
-                Name::new(format!("Block {}:{}", x + i as f32, y + j as f32)),
-            ));
+                    Name::new(format!("Block {}:{}", x + i as f32, y + 6.)),
+                ));
 
-            blocks.push(vec2(x + i as f32, y + j as f32 + 2.));
+                blocks.push(vec2(x + i as f32, y + 6.));
+            }
         }
-    }
-
-    for i in -1..=1 {
-        if blocks.iter().any(|&b| b.x == x + i as f32 && b.y == y + 6.) {
-            continue;
+        Cactus => {
+            for i in 0..=2 {
+                commands.spawn((
+                    BlockBundle::new(
+                        BlockKind::Cactus,
+                        vec2(x * BLOCK_SIZE, (y + i as f32) * BLOCK_SIZE),
+                        block_graphics,
+                    ),
+                    Name::new(format!("Block {}:{}", x, y + i as f32)),
+                ));
+            }
         }
-
-        commands.spawn((
-            BlockBundle::new(
-                BlockKind::Leaves,
-                vec2((x + i as f32) * BLOCK_SIZE, (y + 6.) * BLOCK_SIZE),
-                block_graphics,
-            ),
-            Name::new(format!("Block {}:{}", x + i as f32, y + 6.)),
-        ));
-
-        blocks.push(vec2(x + i as f32, y + 6.));
     }
 }
 
