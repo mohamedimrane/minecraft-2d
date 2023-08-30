@@ -66,6 +66,10 @@ pub enum BlockKind {
     Furnace,
     FurnaceBurning,
     // row 2
+    Sand,
+    Sandstone,
+    RedSand,
+    RedSandstone,
     RedTulip,
     // row 3
     CoalOre,
@@ -108,6 +112,10 @@ impl BlockKind {
             Furnace => 14,
             FurnaceBurning => 15,
             // row 2
+            Sand => 16,
+            Sandstone => 17,
+            RedSand => 18,
+            RedSandstone => 19,
             RedTulip => 20,
             // row 3
             CoalOre => 32,

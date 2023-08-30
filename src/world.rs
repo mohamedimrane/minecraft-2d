@@ -40,6 +40,7 @@ impl Plugin for WorldPlugin {
                         cave_divider: 140.,
 
                         air_porbality: 0.18,
+                        exposed_block_top_layer_height: 1,
                         exposed_block_layer_height: 3,
                         tree_chance: 8,
 
@@ -102,11 +103,12 @@ impl Plugin for WorldPlugin {
                         cave_divider: 140.,
 
                         air_porbality: 0.18,
-                        exposed_block_layer_height: 3,
+                        exposed_block_top_layer_height: 4,
+                        exposed_block_layer_height: 2,
                         tree_chance: 8,
 
-                        exposed_block_top: BlockKind::Cobblestone,
-                        exposed_block: BlockKind::Stone,
+                        exposed_block_top: BlockKind::Sand,
+                        exposed_block: BlockKind::Sandstone,
 
                         ores_map_step: 10,
 
@@ -194,6 +196,7 @@ struct BiomeSettings {
     cave_divider: f32,
 
     air_porbality: f32,
+    exposed_block_top_layer_height: i32,
     exposed_block_layer_height: i32,
     /// The greater the rarer
     tree_chance: i32,
@@ -390,11 +393,13 @@ fn generate_chunk(
                         _ => {}
                     }
 
-                    if height as i32 - y <= bstgs.exposed_block_layer_height {
+                    if height as i32 - y
+                        < bstgs.exposed_block_layer_height + bstgs.exposed_block_top_layer_height
+                    {
                         kind = bstgs.exposed_block;
                     }
 
-                    if y == height as i32 {
+                    if height as i32 - y < bstgs.exposed_block_top_layer_height {
                         kind = bstgs.exposed_block_top;
 
                         if rng.gen_bool(1. / bstgs.tree_chance as f64) {
