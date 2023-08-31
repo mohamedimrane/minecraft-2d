@@ -29,7 +29,7 @@ impl Plugin for BlockPlugin {
 #[derive(Resource)]
 pub struct BlockGraphics {
     tex: Handle<Image>,
-    atlas_handle: Handle<TextureAtlas>,
+    pub atlas_handle: Handle<TextureAtlas>,
 }
 
 impl Default for BlockGraphics {
@@ -92,7 +92,7 @@ pub enum BlockKind {
 }
 
 impl BlockKind {
-    fn to_index(&self) -> usize {
+    pub fn to_index(&self) -> usize {
         use BlockKind::*;
         match *self {
             // row 1

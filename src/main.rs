@@ -13,6 +13,7 @@ mod block;
 mod camera;
 mod gamemode;
 mod inventory;
+mod item;
 mod player;
 mod utils;
 mod world;

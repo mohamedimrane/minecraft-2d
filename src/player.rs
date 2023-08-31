@@ -2,13 +2,14 @@ use bevy::{
     math::vec2, prelude::*, render::texture::DEFAULT_IMAGE_HANDLE, sprite::Anchor,
     window::PrimaryWindow,
 };
-use bevy_rapier2d::prelude::*;
+use bevy_rapier2d::{prelude::*, rapier::prelude::CollisionEventFlags};
 use std::f32::consts::PI;
 
 use crate::{
-    block::{Block, BlockBundle, BlockGraphics, BLOCK_SIZE},
+    block::{Block, BlockBundle, BlockGraphics, BlockKind, BLOCK_SIZE},
     camera::MainCamera,
     inventory::CurrentItem,
+    item::{spawn_item, ItemSensor},
     utils::{in_reach, leans_to_left, leans_to_right, map},
     world::{Chunk, ChunkPosition, PlayerChunkPosition, World},
 };
@@ -67,6 +68,7 @@ impl Plugin for PlayerPlugin {
                     highlight_selected_block,
                     place_block,
                     break_block,
+                    pick_up_item,
                 ),
             )
             // Reflection
@@ -686,11 +688,12 @@ fn place_block(
 
 fn break_block(
     mut commands: Commands,
-    blocks: Query<(&GlobalTransform, Entity), With<Block>>,
+    blocks: Query<(&GlobalTransform, Entity, &BlockKind), With<Block>>,
     player_transform: Query<&GlobalTransform, With<Player>>,
     mouse: Res<Input<MouseButton>>,
     window: Query<&Window, With<PrimaryWindow>>,
     camera: Query<(&Camera, &GlobalTransform), With<MainCamera>>,
+    blocks_graphics: Res<BlockGraphics>,
 ) {
     let window = window.single();
     let (camera, camera_transform) = camera.single();
@@ -707,7 +710,7 @@ fn break_block(
 
     let block_pos = (cursor_position / BLOCK_SIZE).round() * BLOCK_SIZE;
 
-    for (block_transform, block_ent) in blocks.iter() {
+    for (block_transform, block_ent, block_kind) in blocks.iter() {
         let block_transform = block_transform.translation();
 
         if block_transform.x == block_pos.x
@@ -719,8 +722,47 @@ fn break_block(
                 BLOCK_SIZE,
             )
         {
+            let translation = vec2(block_transform.x, block_transform.y);
+            let ext_impulse = ExternalImpulse {
+                impulse: vec2(0., 50.),
+                ..default()
+            };
+
+            spawn_item(
+                &mut commands,
+                *block_kind,
+                translation,
+                ext_impulse,
+                &blocks_graphics,
+            );
             commands.entity(block_ent).despawn_recursive();
             return;
+        }
+    }
+}
+
+fn pick_up_item(
+    mut commands: Commands,
+    player_ent: Query<Entity, With<Player>>,
+    items_ent: Query<(Entity, &Parent), With<ItemSensor>>,
+    mut collision_events: EventReader<CollisionEvent>,
+) {
+    let player_ent = player_ent.single();
+    // let items_ent = items_ent.iter().map(|item| (item.0, item.1.get()));
+
+    for collision_event in collision_events.iter() {
+        let CollisionEvent::Started(ent0, ent1, CollisionEventFlags::SENSOR) = collision_event else { return };
+        if !(player_ent == *ent0) {
+            return;
+        }
+
+        for item_ent in items_ent.iter() {
+            if item_ent.0 != *ent1 {
+                continue;
+            }
+
+            commands.entity(item_ent.1.get()).despawn_recursive();
+            println!("Received collision event: {:?} ! {:?}", ent0, ent1);
         }
     }
 }
