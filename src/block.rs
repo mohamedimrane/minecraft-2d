@@ -165,9 +165,6 @@ fn load_block_graphics(
 
 #[derive(Bundle)]
 pub struct BlockBundle {
-    // colliders
-    collider: Collider,
-
     // rendering
     sprite: TextureAtlasSprite,
     texture_atlas: Handle<TextureAtlas>,
@@ -181,9 +178,36 @@ pub struct BlockBundle {
 }
 
 impl BlockBundle {
-    pub fn new(kind: BlockKind, translation: Vec2, blocks_graphics: &BlockGraphics) -> Self {
+    pub fn new(
+        kind: BlockKind,
+        translation: Vec2,
+        blocks_graphics: &BlockGraphics,
+    ) -> (Self, Collider) {
+        (
+            Self {
+                kind,
+                sprite: TextureAtlasSprite {
+                    index: kind.to_index(),
+                    custom_size: Some(Vec2::splat(BLOCK_SIZE)),
+                    ..default()
+                },
+                texture_atlas: blocks_graphics.atlas_handle.clone(),
+                block: Block,
+                spatial_bundle: SpatialBundle {
+                    transform: Transform::from_xyz(translation.x, translation.y, BLOCK_Z_INDEX),
+                    ..default()
+                },
+            },
+            Collider::cuboid(BLOCK_COLLIDER_SIZE, BLOCK_COLLIDER_SIZE),
+        )
+    }
+
+    pub fn non_collidable(
+        kind: BlockKind,
+        translation: Vec2,
+        blocks_graphics: &BlockGraphics,
+    ) -> Self {
         Self {
-            collider: Collider::cuboid(BLOCK_COLLIDER_SIZE, BLOCK_COLLIDER_SIZE),
             kind,
             sprite: TextureAtlasSprite {
                 index: kind.to_index(),

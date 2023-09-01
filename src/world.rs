@@ -471,7 +471,7 @@ fn spawn_tree(
                 };
 
                 commands.spawn((
-                    BlockBundle::new(
+                    BlockBundle::non_collidable(
                         kind,
                         vec2(x * BLOCK_SIZE, (y + i as f32) * BLOCK_SIZE),
                         block_graphics,
@@ -493,7 +493,7 @@ fn spawn_tree(
                     }
 
                     commands.spawn((
-                        BlockBundle::new(
+                        BlockBundle::non_collidable(
                             BlockKind::Leaves,
                             vec2(
                                 (x + i as f32) * BLOCK_SIZE,
@@ -514,7 +514,7 @@ fn spawn_tree(
                 }
 
                 commands.spawn((
-                    BlockBundle::new(
+                    BlockBundle::non_collidable(
                         BlockKind::Leaves,
                         vec2((x + i as f32) * BLOCK_SIZE, (y + 6.) * BLOCK_SIZE),
                         block_graphics,
@@ -528,7 +528,7 @@ fn spawn_tree(
         Cactus => {
             for i in 0..=2 {
                 commands.spawn((
-                    BlockBundle::new(
+                    BlockBundle::non_collidable(
                         BlockKind::Cactus,
                         vec2(x * BLOCK_SIZE, (y + i as f32) * BLOCK_SIZE),
                         block_graphics,
