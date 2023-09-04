@@ -47,5 +47,6 @@ fn main() {
             gravity: Vec2::new(0., -1000.),
             ..default()
         })
+        .insert_resource(ClearColor(Color::rgba(126. / 255., 200. / 255., 1., 1.)))
         .run();
 }
