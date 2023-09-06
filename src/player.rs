@@ -992,7 +992,7 @@ impl Default for PlayerBundle {
             ext_impulse: default(),
             locked_axes: LockedAxes::ROTATION_LOCKED,
             spatial_bundle: SpatialBundle {
-                transform: Transform::from_xyz(BLOCK_SIZE, 0., PLAYER_Z_INDEX),
+                transform: Transform::from_xyz(BLOCK_SIZE, 60. * BLOCK_SIZE, PLAYER_Z_INDEX),
                 ..default()
             },
         }

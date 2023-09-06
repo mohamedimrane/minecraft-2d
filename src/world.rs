@@ -4,6 +4,8 @@ use crate::{
     utils::in_bounds_y as inside,
 };
 use bevy::{math::vec2, prelude::*};
+use bevy_editor_pls::default_windows::inspector;
+use bevy_inspector_egui::{prelude::*, quick::ResourceInspectorPlugin};
 use bracket_noise::prelude::*;
 use rand::{Rng, SeedableRng};
 use rand_chacha::ChaCha8Rng;
@@ -11,7 +13,7 @@ use rand_chacha::ChaCha8Rng;
 // CONSTANTS
 const WORLD_OFFSET: Vec3 = Vec3::new(0., -BLOCK_SIZE * 40., 0.);
 const CHUNK_SIZE: i32 = 16;
-const CHUNK_RENDER_DISTANCE: i32 = 30;
+const CHUNK_RENDER_DISTANCE: i32 = 8;
 
 // PLUGINS
 
@@ -22,7 +24,7 @@ impl Plugin for WorldPlugin {
         app
             // Resources
             .insert_resource(WorldSettings {
-                seed: 59900,
+                seed: 0,
                 octaves: 2,
                 lacunarity: 5.0,
 
@@ -31,19 +33,22 @@ impl Plugin for WorldPlugin {
                     divider: 100.,
 
                     plain: BiomeSettings {
-                        v: 1.,
+                        v: 0.,
 
-                        terrain_frequency: 4.,
-                        terrain_divider: 140.,
+                        terrain_frequency: 1.,
+                        terrain_divider: 200.,
 
-                        cave_frequency: 3.5,
-                        cave_divider: 140.,
+                        cave_frequency: 1.1,
+                        cave_divider: 10.,
 
-                        air_porbality: 0.18,
+                        height_multiplier: 40.,
+                        height_addition: 90.,
+
+                        air_porbality: 0.15,
                         exposed_block_top_layer_height: 1,
                         exposed_block_layer_height: 3,
                         tree_kind: TreeKind::Oak,
-                        tree_chance: 8,
+                        tree_chance: 6,
 
                         exposed_block_top: BlockKind::Grass,
                         exposed_block: BlockKind::Dirt,
@@ -89,87 +94,86 @@ impl Plugin for WorldPlugin {
                             below: Some(15),
                             above: None,
                         },
-
-                        height_multiplier: 40.,
-                        height_addition: 40.,
                     },
+                    // desert: BiomeSettings {
+                    //     v: 0.,
 
-                    desert: BiomeSettings {
-                        v: 0.,
+                    //     terrain_frequency: 2.,
+                    //     terrain_divider: 140.,
 
-                        terrain_frequency: 2.,
-                        terrain_divider: 140.,
+                    //     cave_frequency: 3.5,
+                    //     cave_divider: 140.,
 
-                        cave_frequency: 3.5,
-                        cave_divider: 140.,
+                    //     height_multiplier: 40.,
+                    //     height_addition: 90.,
 
-                        air_porbality: 0.18,
-                        exposed_block_top_layer_height: 4,
-                        exposed_block_layer_height: 2,
-                        tree_kind: TreeKind::Cactus,
-                        tree_chance: 20,
+                    //     air_porbality: 0.18,
+                    //     exposed_block_top_layer_height: 4,
+                    //     exposed_block_layer_height: 2,
+                    //     tree_kind: TreeKind::Cactus,
+                    //     tree_chance: 20,
 
-                        exposed_block_top: BlockKind::Sand,
-                        exposed_block: BlockKind::Sandstone,
+                    //     exposed_block_top: BlockKind::Sand,
+                    //     exposed_block: BlockKind::Sandstone,
 
-                        ores_map_step: 10,
+                    //     ores_map_step: 10,
 
-                        coal: OreSettings {
-                            rarity: 0.5,
-                            size: -0.18,
-                            divider: 3.,
-                            below: None,
-                            above: Some(20),
-                        },
+                    //     coal: OreSettings {
+                    //         rarity: 0.5,
+                    //         size: -0.18,
+                    //         divider: 3.,
+                    //         below: None,
+                    //         above: Some(20),
+                    //     },
 
-                        copper: OreSettings {
-                            rarity: 1.,
-                            size: -0.18,
-                            divider: 4.,
-                            below: None,
-                            above: Some(20),
-                        },
+                    //     copper: OreSettings {
+                    //         rarity: 1.,
+                    //         size: -0.18,
+                    //         divider: 4.,
+                    //         below: None,
+                    //         above: Some(20),
+                    //     },
 
-                        iron: OreSettings {
-                            rarity: 3.5,
-                            size: -0.18,
-                            divider: 10.,
-                            below: None,
-                            above: None,
-                        },
+                    //     iron: OreSettings {
+                    //         rarity: 3.5,
+                    //         size: -0.18,
+                    //         divider: 10.,
+                    //         below: None,
+                    //         above: None,
+                    //     },
 
-                        gold: OreSettings {
-                            rarity: 4.5,
-                            size: -0.25,
-                            divider: 8.,
-                            below: Some(50),
-                            above: None,
-                        },
+                    //     gold: OreSettings {
+                    //         rarity: 4.5,
+                    //         size: -0.25,
+                    //         divider: 8.,
+                    //         below: Some(50),
+                    //         above: None,
+                    //     },
 
-                        diamond: OreSettings {
-                            rarity: 3.5,
-                            size: -0.25,
-                            divider: 7.,
-                            below: Some(15),
-                            above: None,
-                        },
-
-                        height_multiplier: 40.,
-                        height_addition: 40.,
-                    },
+                    //     diamond: OreSettings {
+                    //         rarity: 3.5,
+                    //         size: -0.25,
+                    //         divider: 7.,
+                    //         below: Some(15),
+                    //         above: None,
+                    //     },
+                    // },
                 },
             })
             .insert_resource(PlayerChunkPosition(0))
             // Systems
             // .add_systems(Startup, spawn_test_platform)
             .add_systems(Startup, spawn_world)
-            .add_systems(Update, (update_player_chunk_pos, refresh_world));
+            .add_systems(Update, (update_player_chunk_pos, refresh_world))
+            // Reflection
+            .register_type::<WorldSettings>()
+            .add_plugins(ResourceInspectorPlugin::<WorldSettings>::default());
     }
 }
 
 // RESOURCES
 
-#[derive(Resource)]
+#[derive(Resource, Reflect, InspectorOptions)]
 struct WorldSettings {
     seed: u64,
     octaves: i32,
@@ -182,13 +186,24 @@ struct WorldSettings {
 pub struct PlayerChunkPosition(pub i32);
 
 // STRUCTS
+#[derive(Reflect, InspectorOptions)]
 struct Biomes {
     frequency: f32,
     divider: f32,
     plain: BiomeSettings,
-    desert: BiomeSettings,
+    // desert: BiomeSettings,
 }
 
+/// Frequency compresses values in the x axis
+/// The greater the frequency, the more compressed the values are
+/// freq = 1 -> 0000001111110000000000011110000
+/// freq = 2 -> 000111000001100
+
+/// Divider impacts variation in the y axis
+/// The greater the divider, the less varied the heights are
+/// div = 1 -> 013420035335601
+/// div = 2 -> 001234443332100
+#[derive(Reflect, InspectorOptions)]
 struct BiomeSettings {
     v: f32,
 
@@ -196,6 +211,9 @@ struct BiomeSettings {
     terrain_divider: f32,
     cave_frequency: f32,
     cave_divider: f32,
+
+    height_multiplier: f32,
+    height_addition: f32,
 
     air_porbality: f32,
     exposed_block_top_layer_height: i32,
@@ -216,11 +234,9 @@ struct BiomeSettings {
     // redstone: OreSettings,
     // emrald: OreSettings,
     diamond: OreSettings,
-
-    height_multiplier: f32,
-    height_addition: f32,
 }
 
+#[derive(Reflect, InspectorOptions)]
 struct OreSettings {
     rarity: f32,
     size: f32,
@@ -229,7 +245,7 @@ struct OreSettings {
     above: Option<i32>,
 }
 
-#[derive(Clone, Copy)]
+#[derive(Clone, Copy, Reflect)]
 enum TreeKind {
     Oak,
     Cactus,
@@ -274,12 +290,18 @@ fn refresh_world(
     player_chunk_pos: Res<PlayerChunkPosition>,
     settings: Res<WorldSettings>,
     block_graphics: Res<BlockGraphics>,
+    mut first_time_not: Local<bool>,
 ) {
-    if !player_chunk_pos.is_changed() {
+    let first_time = !*first_time_not;
+
+    if !first_time && !settings.is_changed() {
         return;
     }
 
-    let world_ent = world.single();
+    *first_time_not = !false;
+
+    let Ok(world_ent) = world.get_single() else { return };
+    commands.entity(world_ent).despawn_recursive();
 
     let mut rng = ChaCha8Rng::seed_from_u64(settings.seed);
 
@@ -288,23 +310,48 @@ fn refresh_world(
     noise.set_fractal_octaves(settings.octaves);
     noise.set_fractal_lacunarity(settings.lacunarity);
 
-    for chunk_pos in chunks_pos.iter() {
-        if player_chunk_pos.0 < chunk_pos.1 .0 - CHUNK_RENDER_DISTANCE
-            || player_chunk_pos.0 > chunk_pos.1 .0 + CHUNK_RENDER_DISTANCE
-        {
-            commands.entity(chunk_pos.0).despawn_recursive();
-        }
-    }
-
-    commands.entity(world_ent).with_children(|cb| {
-        for i in (player_chunk_pos.0 - CHUNK_RENDER_DISTANCE)
-            ..=(player_chunk_pos.0 + CHUNK_RENDER_DISTANCE)
-        {
-            if !chunks_pos.iter().any(|x| i == x.1 .0) {
-                generate_chunk(i, cb, &mut noise, &mut rng, &settings, &block_graphics);
+    commands
+        .spawn((WorldBundle::default(), Name::new("World")))
+        .with_children(|cb| {
+            for i in (player_chunk_pos.0 - CHUNK_RENDER_DISTANCE)
+                ..=(player_chunk_pos.0 + CHUNK_RENDER_DISTANCE)
+            {
+                if !chunks_pos.iter().any(|x| i == x.1 .0) {
+                    generate_chunk(i, cb, &mut noise, &mut rng, &settings, &block_graphics);
+                }
             }
-        }
-    });
+        });
+
+    // if !player_chunk_pos.is_changed() {
+    //     return;
+    // }
+
+    // let world_ent = world.single();
+
+    // let mut rng = ChaCha8Rng::seed_from_u64(settings.seed);
+
+    // let mut noise = FastNoise::seeded(settings.seed);
+    // noise.set_noise_type(NoiseType::PerlinFractal);
+    // noise.set_fractal_octaves(settings.octaves);
+    // noise.set_fractal_lacunarity(settings.lacunarity);
+
+    // for chunk_pos in chunks_pos.iter() {
+    //     if player_chunk_pos.0 < chunk_pos.1 .0 - CHUNK_RENDER_DISTANCE
+    //         || player_chunk_pos.0 > chunk_pos.1 .0 + CHUNK_RENDER_DISTANCE
+    //     {
+    //         commands.entity(chunk_pos.0).despawn_recursive();
+    //     }
+    // }
+
+    // commands.entity(world_ent).with_children(|cb| {
+    //     for i in (player_chunk_pos.0 - CHUNK_RENDER_DISTANCE)
+    //         ..=(player_chunk_pos.0 + CHUNK_RENDER_DISTANCE)
+    //     {
+    //         if !chunks_pos.iter().any(|x| i == x.1 .0) {
+    //             generate_chunk(i, cb, &mut noise, &mut rng, &settings, &block_graphics);
+    //         }
+    //     }
+    // });
 }
 
 fn generate_chunk(
@@ -326,11 +373,13 @@ fn generate_chunk(
         for x in (CHUNK_SIZE * chunk_x) + 1..=(CHUNK_SIZE * (chunk_x) + CHUNK_SIZE) {
             noise.set_frequency(stgs.biomes.frequency);
             let biome_v = noise.get_noise(x as f32 / stgs.biomes.divider, 1.);
-            let bstgs = match biome_v {
-                _ if biome_v <= stgs.biomes.desert.v => &stgs.biomes.desert,
-                _ if biome_v <= stgs.biomes.plain.v => &stgs.biomes.plain,
-                _ => return,
-            };
+            // let bstgs = match biome_v {
+            //     _ if biome_v <= stgs.biomes.desert.v => &stgs.biomes.desert,
+            //     _ if biome_v <= stgs.biomes.plain.v => &stgs.biomes.plain,
+            //     _ => return,
+            // };
+
+            let bstgs = &stgs.biomes.plain;
 
             noise.set_frequency(bstgs.terrain_frequency);
 
