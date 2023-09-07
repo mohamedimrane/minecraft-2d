@@ -78,7 +78,7 @@ impl<const I: usize, const H: usize, const S: usize> Inventory<I, H, S> {
 impl<const I: usize, const H: usize, const S: usize> Default for Inventory<I, H, S> {
     fn default() -> Self {
         Self {
-            items: [Some(default()); I],
+            items: [None; I],
             hotbar_cursor: 0,
         }
     }
