@@ -171,8 +171,9 @@ impl Plugin for WorldPlugin {
             .add_systems(Startup, spawn_world)
             .add_systems(Update, (update_player_chunk_pos, refresh_world))
             // Reflection
-            .register_type::<WorldSettings>()
-            .add_plugins(ResourceInspectorPlugin::<WorldSettings>::default());
+            // .register_type::<WorldSettings>()
+            // .add_plugins(ResourceInspectorPlugin::<WorldSettings>::default())
+        ;
     }
 }
 
@@ -295,43 +296,18 @@ fn refresh_world(
     player_chunk_pos: Res<PlayerChunkPosition>,
     settings: Res<WorldSettings>,
     block_graphics: Res<BlockGraphics>,
-    mut first_time_not: Local<bool>,
+    // mut first_time_not: Local<bool>,
 ) {
-    let first_time = !*first_time_not;
+    // let first_time = !*first_time_not;
 
-    if !first_time && !settings.is_changed() {
-        return;
-    }
-
-    *first_time_not = !false;
-
-    let Ok(world_ent) = world.get_single() else { return };
-    commands.entity(world_ent).despawn_recursive();
-
-    let mut rng = ChaCha8Rng::seed_from_u64(settings.seed);
-
-    let mut noise = FastNoise::seeded(settings.seed);
-    noise.set_noise_type(NoiseType::PerlinFractal);
-    noise.set_fractal_octaves(settings.octaves);
-    noise.set_fractal_lacunarity(settings.lacunarity);
-
-    commands
-        .spawn((WorldBundle::default(), Name::new("World")))
-        .with_children(|cb| {
-            for i in (player_chunk_pos.0 - CHUNK_RENDER_DISTANCE)
-                ..=(player_chunk_pos.0 + CHUNK_RENDER_DISTANCE)
-            {
-                if !chunks_pos.iter().any(|x| i == x.1 .0) {
-                    generate_chunk(i, cb, &mut noise, &mut rng, &settings, &block_graphics);
-                }
-            }
-        });
-
-    // if !player_chunk_pos.is_changed() {
+    // if !first_time && !settings.is_changed() {
     //     return;
     // }
 
-    // let world_ent = world.single();
+    // *first_time_not = !false;
+
+    // let Ok(world_ent) = world.get_single() else { return };
+    // commands.entity(world_ent).despawn_recursive();
 
     // let mut rng = ChaCha8Rng::seed_from_u64(settings.seed);
 
@@ -340,23 +316,48 @@ fn refresh_world(
     // noise.set_fractal_octaves(settings.octaves);
     // noise.set_fractal_lacunarity(settings.lacunarity);
 
-    // for chunk_pos in chunks_pos.iter() {
-    //     if player_chunk_pos.0 < chunk_pos.1 .0 - CHUNK_RENDER_DISTANCE
-    //         || player_chunk_pos.0 > chunk_pos.1 .0 + CHUNK_RENDER_DISTANCE
-    //     {
-    //         commands.entity(chunk_pos.0).despawn_recursive();
-    //     }
-    // }
-
-    // commands.entity(world_ent).with_children(|cb| {
-    //     for i in (player_chunk_pos.0 - CHUNK_RENDER_DISTANCE)
-    //         ..=(player_chunk_pos.0 + CHUNK_RENDER_DISTANCE)
-    //     {
-    //         if !chunks_pos.iter().any(|x| i == x.1 .0) {
-    //             generate_chunk(i, cb, &mut noise, &mut rng, &settings, &block_graphics);
+    // commands
+    //     .spawn((WorldBundle::default(), Name::new("World")))
+    //     .with_children(|cb| {
+    //         for i in (player_chunk_pos.0 - CHUNK_RENDER_DISTANCE)
+    //             ..=(player_chunk_pos.0 + CHUNK_RENDER_DISTANCE)
+    //         {
+    //             if !chunks_pos.iter().any(|x| i == x.1 .0) {
+    //                 generate_chunk(i, cb, &mut noise, &mut rng, &settings, &block_graphics);
+    //             }
     //         }
-    //     }
-    // });
+    //     });
+
+    if !player_chunk_pos.is_changed() {
+        return;
+    }
+
+    let world_ent = world.single();
+
+    let mut rng = ChaCha8Rng::seed_from_u64(settings.seed);
+
+    let mut noise = FastNoise::seeded(settings.seed);
+    noise.set_noise_type(NoiseType::PerlinFractal);
+    noise.set_fractal_octaves(settings.octaves);
+    noise.set_fractal_lacunarity(settings.lacunarity);
+
+    for chunk_pos in chunks_pos.iter() {
+        if player_chunk_pos.0 < chunk_pos.1 .0 - CHUNK_RENDER_DISTANCE
+            || player_chunk_pos.0 > chunk_pos.1 .0 + CHUNK_RENDER_DISTANCE
+        {
+            commands.entity(chunk_pos.0).despawn_recursive();
+        }
+    }
+
+    commands.entity(world_ent).with_children(|cb| {
+        for i in (player_chunk_pos.0 - CHUNK_RENDER_DISTANCE)
+            ..=(player_chunk_pos.0 + CHUNK_RENDER_DISTANCE)
+        {
+            if !chunks_pos.iter().any(|x| i == x.1 .0) {
+                generate_chunk(i, cb, &mut noise, &mut rng, &settings, &block_graphics);
+            }
+        }
+    });
 }
 
 fn generate_chunk(
