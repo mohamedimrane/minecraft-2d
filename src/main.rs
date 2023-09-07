@@ -14,6 +14,7 @@ mod camera;
 mod gamemode;
 mod inventory;
 mod item;
+mod item_kind;
 mod player;
 mod utils;
 mod world;

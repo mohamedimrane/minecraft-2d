@@ -1,5 +1,6 @@
 use crate::{
-    block::{BlockBundle, BlockGraphics, BlockKind, BLOCK_SIZE},
+    block::{BlockBundle, BlockGraphics, BLOCK_SIZE},
+    item_kind::ItemKind,
     player::Player,
     utils::in_bounds_y as inside,
 };
@@ -55,8 +56,8 @@ impl Plugin for WorldPlugin {
                         tree_kind: TreeKind::Oak,
                         tree_chance: 6,
 
-                        exposed_block_top: BlockKind::Grass,
-                        exposed_block: BlockKind::Dirt,
+                        exposed_block_top: ItemKind::Grass,
+                        exposed_block: ItemKind::Dirt,
 
                         ores_map_step: 10,
 
@@ -228,8 +229,8 @@ struct BiomeSettings {
     /// The greater the rarer
     tree_chance: i32,
 
-    exposed_block_top: BlockKind,
-    exposed_block: BlockKind,
+    exposed_block_top: ItemKind,
+    exposed_block: ItemKind,
 
     ores_map_step: i32,
     coal: OreSettings,
@@ -400,7 +401,7 @@ fn generate_chunk(
                 if y == 0 {
                     cb.spawn((
                         BlockBundle::new(
-                            BlockKind::Bedrock,
+                            ItemKind::Bedrock,
                             vec2(x as f32 * BLOCK_SIZE, 0.),
                             &block_graphics,
                         ),
@@ -418,7 +419,7 @@ fn generate_chunk(
                 if v > bstgs.air_porbality
                     && !blocks.iter().any(|&b| b.x == x as f32 && b.y == y as f32)
                 {
-                    let mut kind = BlockKind::Stone;
+                    let mut kind = ItemKind::Stone;
 
                     noise.set_frequency(bstgs.coal.rarity);
                     let coal_v = noise
@@ -449,11 +450,11 @@ fn generate_chunk(
                     );
 
                     match true {
-                        _ if is_ore(diamond_v, y, &bstgs.diamond) => kind = BlockKind::DiamondOre,
-                        _ if is_ore(gold_v, y, &bstgs.gold) => kind = BlockKind::GoldOre,
-                        _ if is_ore(iron_v, y, &bstgs.iron) => kind = BlockKind::IronOre,
-                        _ if is_ore(copper_v, y, &bstgs.copper) => kind = BlockKind::CopperOre,
-                        _ if is_ore(coal_v, y, &bstgs.coal) => kind = BlockKind::CoalOre,
+                        _ if is_ore(diamond_v, y, &bstgs.diamond) => kind = ItemKind::DiamondOre,
+                        _ if is_ore(gold_v, y, &bstgs.gold) => kind = ItemKind::GoldOre,
+                        _ if is_ore(iron_v, y, &bstgs.iron) => kind = ItemKind::IronOre,
+                        _ if is_ore(copper_v, y, &bstgs.copper) => kind = ItemKind::CopperOre,
+                        _ if is_ore(coal_v, y, &bstgs.coal) => kind = ItemKind::CoalOre,
                         _ => {}
                     }
 
@@ -520,9 +521,9 @@ fn spawn_tree(
                 }
 
                 let kind = if i >= 3 {
-                    BlockKind::LeafedOakLog
+                    ItemKind::LeafedOakLog
                 } else {
-                    BlockKind::OakLog
+                    ItemKind::OakLog
                 };
 
                 commands.spawn((
@@ -549,7 +550,7 @@ fn spawn_tree(
 
                     commands.spawn((
                         BlockBundle::non_collidable(
-                            BlockKind::Leaves,
+                            ItemKind::Leaves,
                             vec2(
                                 (x + i as f32) * BLOCK_SIZE,
                                 (y + j as f32 + 2.) * BLOCK_SIZE,
@@ -570,7 +571,7 @@ fn spawn_tree(
 
                 commands.spawn((
                     BlockBundle::non_collidable(
-                        BlockKind::Leaves,
+                        ItemKind::Leaves,
                         vec2((x + i as f32) * BLOCK_SIZE, (y + 6.) * BLOCK_SIZE),
                         block_graphics,
                     ),
@@ -584,7 +585,7 @@ fn spawn_tree(
             for i in 0..=2 {
                 commands.spawn((
                     BlockBundle::non_collidable(
-                        BlockKind::Cactus,
+                        ItemKind::Cactus,
                         vec2(x * BLOCK_SIZE, (y + i as f32) * BLOCK_SIZE),
                         block_graphics,
                     ),
@@ -601,13 +602,13 @@ fn spawn_test_platform(mut commands: Commands, block_graphics: Res<BlockGraphics
         .with_children(|cb| {
             for i in -10..=10 {
                 cb.spawn(BlockBundle::new(
-                    BlockKind::Grass,
+                    ItemKind::Grass,
                     vec2(60. * i as f32, -300.),
                     &block_graphics,
                 ));
 
                 cb.spawn(BlockBundle::new(
-                    BlockKind::Dirt,
+                    ItemKind::Dirt,
                     vec2(60. * i as f32, -360.),
                     &block_graphics,
                 ));

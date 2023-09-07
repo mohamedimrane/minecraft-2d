@@ -1,6 +1,6 @@
 use bevy::prelude::*;
 
-use crate::block::BlockKind;
+use crate::item_kind::ItemKind;
 
 // CONSTANTS
 
@@ -27,14 +27,14 @@ impl Plugin for InventoryPlugin {
 // RESOURCES
 
 #[derive(Resource, Default)]
-pub struct CurrentItem(pub BlockKind);
+pub struct CurrentItem(pub ItemKind);
 
 #[derive(Resource)]
 struct Inventory<const N: usize, const M: usize>([Option<InventorySlot>; N]);
 
 #[derive(Clone, Copy, Default)]
 struct InventorySlot {
-    kind: BlockKind,
+    kind: ItemKind,
     quantity: usize,
 }
 
@@ -46,7 +46,7 @@ enum InventoryOpError {
 }
 
 impl<const N: usize, const M: usize> Inventory<N, M> {
-    fn add(&mut self, kind: BlockKind, quantity: usize) -> InventoryOpError {
+    fn add(&mut self, kind: ItemKind, quantity: usize) -> InventoryOpError {
         for slot in self.0.clone().iter_mut() {
             let Some(slot) = slot else { continue };
 
@@ -78,7 +78,7 @@ impl<const N: usize, const M: usize> Inventory<N, M> {
         InventoryOpError::Overflow
     }
 
-    fn retrieve(&mut self, kind: BlockKind, quantity: usize) -> InventoryOpError {
+    fn retrieve(&mut self, kind: ItemKind, quantity: usize) -> InventoryOpError {
         for slot in self.0.clone().iter_mut() {
             let Some(mut some_slot) = slot else { continue };
 
@@ -118,16 +118,16 @@ fn manage_block_selection_inv(
 ) {
     for k in keys.get_pressed() {
         current_item.0 = match k {
-            KeyCode::Key1 => BlockKind::Dirt, 
-            KeyCode::Key2 => BlockKind::Grass, 
-            KeyCode::Key3 => BlockKind::Stone, 
-            KeyCode::Key4 => BlockKind::Cobblestone, 
-            KeyCode::Key5 => BlockKind::Deepslate, 
-            KeyCode::Key6 => BlockKind::CobbledDeepslate, 
-            KeyCode::Key7 => BlockKind::Bedrock, 
-            KeyCode::Key8 => BlockKind::HayBale, 
-            KeyCode::Key9 => BlockKind::OakLog, 
-            KeyCode::Key0 => BlockKind::OakPlank, 
+            KeyCode::Key1 => ItemKind::Dirt, 
+            KeyCode::Key2 => ItemKind::Grass, 
+            KeyCode::Key3 => ItemKind::Stone, 
+            KeyCode::Key4 => ItemKind::Cobblestone, 
+            KeyCode::Key5 => ItemKind::Deepslate, 
+            KeyCode::Key6 => ItemKind::CobbledDeepslate, 
+            KeyCode::Key7 => ItemKind::Bedrock, 
+            KeyCode::Key8 => ItemKind::HayBale, 
+            KeyCode::Key9 => ItemKind::OakLog, 
+            KeyCode::Key0 => ItemKind::OakPlank, 
             _ => current_item.0
         }
     }

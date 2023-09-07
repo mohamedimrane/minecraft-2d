@@ -6,10 +6,11 @@ use bevy_rapier2d::{prelude::*, rapier::prelude::CollisionEventFlags};
 use std::f32::consts::PI;
 
 use crate::{
-    block::{Block, BlockBundle, BlockGraphics, BlockKind, BLOCK_SIZE},
+    block::{Block, BlockBundle, BlockGraphics, BLOCK_SIZE},
     camera::MainCamera,
     inventory::CurrentItem,
     item::{spawn_item, ItemSensor},
+    item_kind::ItemKind,
     utils::{in_reach, leans_to_left, leans_to_right, map},
     world::{Chunk, ChunkPosition, PlayerChunkPosition, World},
 };
@@ -688,7 +689,7 @@ fn place_block(
 
 fn break_block(
     mut commands: Commands,
-    blocks: Query<(&GlobalTransform, Entity, &BlockKind), With<Block>>,
+    blocks: Query<(&GlobalTransform, Entity, &ItemKind), With<Block>>,
     player_transform: Query<&GlobalTransform, With<Player>>,
     mouse: Res<Input<MouseButton>>,
     window: Query<&Window, With<PrimaryWindow>>,

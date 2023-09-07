@@ -1,7 +1,7 @@
 use bevy::prelude::*;
 use bevy_rapier2d::prelude::*;
 
-use crate::block::{BlockGraphics, BlockKind};
+use crate::{block::BlockGraphics, item_kind::ItemKind};
 
 // CONSTANTS
 
@@ -21,7 +21,7 @@ pub struct ItemSensor;
 
 pub fn spawn_item(
     commands: &mut Commands,
-    kind: BlockKind,
+    kind: ItemKind,
     translation: Vec2,
     ext_impulse: ExternalImpulse,
     block_graphics: &Res<BlockGraphics>,
