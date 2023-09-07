@@ -17,9 +17,9 @@ impl Plugin for InventoryPlugin {
         app 
             // Resources
             .insert_resource(CurrentItem::default())
-            .insert_resource(Inventory::<INVENTORY_SIZE, HOTBAR_SIZE, STACK_SIZE>::default())
+            .insert_resource(Inv::default())
             // Systems
-            .add_systems(Update, manage_block_selection_inv)
+            .add_systems(Update, (manage_block_selection_inv, manage_hotbar_cursor))
             // Reflection
         ;
     }
@@ -27,11 +27,16 @@ impl Plugin for InventoryPlugin {
 
 // RESOURCES
 
+type Inv = Inventory<INVENTORY_SIZE, HOTBAR_SIZE, STACK_SIZE>;
+
 #[derive(Resource, Default)]
 pub struct CurrentItem(pub ItemKind);
 
 #[derive(Resource)]
-struct Inventory<const INVENTORY_SIZE: usize, const HOTBAR_SIZE: usize, const STACK_SIZE: usize>([Option<InventorySlot>; INVENTORY_SIZE]);
+struct Inventory<const INVENTORY_SIZE: usize, const HOTBAR_SIZE: usize, const STACK_SIZE: usize> { 
+    items: [Option<InventorySlot>; INVENTORY_SIZE], 
+    hotbar_cursor: usize 
+}
 
 #[derive(Clone, Copy, Default)]
 struct InventorySlot {
@@ -40,11 +45,39 @@ struct InventorySlot {
 }
 
 impl<const I: usize, const H: usize, const S: usize> Inventory<I, H, S> {
+    fn shift_cursor_right(&mut self) {
+        if self.hotbar_cursor == H - 1 {
+            self.hotbar_cursor = 1;
+            return;
+        }
+
+        self.hotbar_cursor = 0;
+    }
+
+    fn shift_cursor_left(&mut self) {
+        if self.hotbar_cursor == 0 {
+            self.hotbar_cursor = H;
+            return;
+        }
+
+        self.hotbar_cursor -= 1;
+    }
+
+    fn set_cursor(&mut self, cursor: usize) {
+        if cursor > H - 1 {
+            panic!("cannot set hotbar cursor out of bounds");
+        }
+
+        self.hotbar_cursor = cursor;
+    }
 }
 
 impl<const I: usize, const H: usize, const S: usize> Default for Inventory<I, H, S> {
     fn default() -> Self {
-        Self([Some(default()); I])
+        Self {
+            items: [Some(default()); I], 
+            hotbar_cursor: 0
+        }
     }
 }
 
@@ -68,5 +101,27 @@ fn manage_block_selection_inv(
             KeyCode::Key0 => ItemKind::OakPlank, 
             _ => current_item.0
         }
+    }
+}
+
+fn manage_hotbar_cursor(
+    mut inventory: ResMut<Inv>,
+    keys: Res<Input<KeyCode>>
+) {
+    for k in keys.get_pressed() {
+        inventory.hotbar_cursor = match k {
+            KeyCode::Key1 => 0, 
+            KeyCode::Key2 => 1, 
+            KeyCode::Key3 => 2, 
+            KeyCode::Key4 => 3, 
+            KeyCode::Key5 => 4, 
+            // KeyCode::Key6 => 5, 
+            // KeyCode::Key7 => 6, 
+            // KeyCode::Key8 => 7, 
+            // KeyCode::Key9 => 8, 
+            _ => inventory.hotbar_cursor
+        };
+
+        break;
     }
 }
