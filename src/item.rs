@@ -12,7 +12,7 @@ const ITEM_SENSOR_SIZE: f32 = 30.;
 // COMPONENTS
 
 #[derive(Component)]
-struct Item;
+pub struct Item;
 
 #[derive(Component)]
 pub struct ItemSensor;
@@ -29,6 +29,7 @@ pub fn spawn_item(
     commands
         .spawn((
             Item,
+            kind,
             Name::new("Item"),
             Collider::cuboid(ITEM_COLLIDER_SIZE, ITEM_COLLIDER_SIZE),
             RigidBody::Dynamic,

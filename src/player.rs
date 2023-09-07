@@ -8,9 +8,9 @@ use std::f32::consts::PI;
 use crate::{
     block::{Block, BlockBundle, BlockGraphics, BLOCK_SIZE},
     camera::MainCamera,
-    inventory::{CurrentItem, Inv},
-    item::{spawn_item, ItemSensor},
-    item_kind::ItemKind,
+    inventory::{CurrentItem, Inv, InventorySlot},
+    item::{spawn_item, Item, ItemSensor},
+    item_kind::{self, ItemKind},
     utils::{in_reach, leans_to_left, leans_to_right, map},
     world::{Chunk, ChunkPosition, PlayerChunkPosition, World},
 };
@@ -748,7 +748,9 @@ fn break_block(
 fn pick_up_item(
     mut commands: Commands,
     player_ent: Query<Entity, With<Player>>,
-    items_ent: Query<(Entity, &Parent), With<ItemSensor>>,
+    item_sensors: Query<(Entity, &Parent), With<ItemSensor>>,
+    items: Query<(Entity, &ItemKind), With<Item>>,
+    mut inventory: ResMut<Inv>,
     mut collision_events: EventReader<CollisionEvent>,
 ) {
     let player_ent = player_ent.single();
@@ -760,13 +762,16 @@ fn pick_up_item(
             return;
         }
 
-        for item_ent in items_ent.iter() {
-            if item_ent.0 != *ent1 {
+        for (item_ent, item_parent) in item_sensors.iter() {
+            if item_ent != *ent1 {
                 continue;
             }
 
-            commands.entity(item_ent.1.get()).despawn_recursive();
-            println!("Received collision event: {:?} ! {:?}", ent0, ent1);
+            let (parent_ent, parent_kind) = items.get(item_parent.get()).unwrap();
+
+            inventory.add(*parent_kind, || {
+                commands.entity(parent_ent).despawn_recursive()
+            });
         }
     }
 }

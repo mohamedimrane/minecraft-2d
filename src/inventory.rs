@@ -48,6 +48,34 @@ pub struct InventorySlot {
 }
 
 impl<const I: usize, const H: usize, const S: usize> Inventory<I, H, S> {
+    pub fn add<T>(&mut self, kind: ItemKind, if_accepted_callback: T)
+    where
+        T: FnOnce(),
+    {
+        for slot in self.items.iter_mut() {
+            let Some(ref mut slot) = slot else { continue };
+            if !(slot.kind == kind && slot.quantity < 4) {
+                continue;
+            }
+            slot.quantity += 1;
+
+            if_accepted_callback();
+            // commands.entity(parent_ent).despawn_recursive();
+
+            return;
+        }
+
+        for slot in self.items.iter_mut() {
+            let None = slot else { continue };
+            *slot = Some(InventorySlot { kind, quantity: 1 });
+
+            if_accepted_callback();
+            // commands.entity(parent_ent).despawn_recursive();
+
+            return;
+        }
+    }
+
     fn shift_cursor_right(&mut self) {
         if self.hotbar_cursor == H - 1 {
             self.hotbar_cursor = 1;
