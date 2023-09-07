@@ -38,13 +38,18 @@ impl Plugin for WorldPlugin {
                         terrain_frequency: 1.,
                         terrain_divider: 200.,
 
-                        cave_frequency: 1.1,
-                        cave_divider: 10.,
+                        // cave_frequency: 1.1,
+                        // cave_divider: 10.,
+                        cave_frequency: 13.,
+                        cave_divider: 200.,
 
                         height_multiplier: 40.,
                         height_addition: 90.,
 
-                        air_porbality: 0.15,
+                        // air_porbality: 0.15,
+                        // air_porbality: 0.008,
+                        // air_porbality: 0.25,
+                        air_porbality: -0.13,
                         exposed_block_top_layer_height: 1,
                         exposed_block_layer_height: 3,
                         tree_kind: TreeKind::Oak,
@@ -409,7 +414,7 @@ fn generate_chunk(
                 let v =
                     noise.get_noise(x as f32 / bstgs.cave_divider, y as f32 / bstgs.cave_divider);
 
-                if v < bstgs.air_porbality
+                if v > bstgs.air_porbality
                     && !blocks.iter().any(|&b| b.x == x as f32 && b.y == y as f32)
                 {
                     let mut kind = BlockKind::Stone;
