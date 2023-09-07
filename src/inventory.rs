@@ -4,8 +4,9 @@ use crate::item_kind::ItemKind;
 
 // CONSTANTS
 
-const INVENTORY_SIZE: usize = 36;
-const SLOT_SIZE: usize = 64;
+const INVENTORY_SIZE: usize = 10;
+const HOTBAR_SIZE: usize = 5;
+const STACK_SIZE: usize = 3;
 
 // PLUGINS
 
@@ -16,7 +17,7 @@ impl Plugin for InventoryPlugin {
         app 
             // Resources
             .insert_resource(CurrentItem::default())
-            .insert_resource(Inventory::<INVENTORY_SIZE, SLOT_SIZE>::default())
+            .insert_resource(Inventory::<INVENTORY_SIZE, HOTBAR_SIZE, STACK_SIZE>::default())
             // Systems
             .add_systems(Update, manage_block_selection_inv)
             // Reflection
@@ -30,7 +31,7 @@ impl Plugin for InventoryPlugin {
 pub struct CurrentItem(pub ItemKind);
 
 #[derive(Resource)]
-struct Inventory<const N: usize, const M: usize>([Option<InventorySlot>; N]);
+struct Inventory<const INVENTORY_SIZE: usize, const HOTBAR_SIZE: usize, const STACK_SIZE: usize>([Option<InventorySlot>; INVENTORY_SIZE]);
 
 #[derive(Clone, Copy, Default)]
 struct InventorySlot {
@@ -38,75 +39,12 @@ struct InventorySlot {
     quantity: usize,
 }
 
-#[derive(Clone, Copy)]
-enum InventoryOpError {
-    None,
-    InvalidRetrieval,
-    Overflow,
+impl<const I: usize, const H: usize, const S: usize> Inventory<I, H, S> {
 }
 
-impl<const N: usize, const M: usize> Inventory<N, M> {
-    fn add(&mut self, kind: ItemKind, quantity: usize) -> InventoryOpError {
-        for slot in self.0.clone().iter_mut() {
-            let Some(slot) = slot else { continue };
-
-            if slot.kind != kind || slot.quantity == M {
-                continue;
-            }
-
-            if slot.quantity + quantity > M {
-                slot.quantity += M;
-                return self.add(kind, quantity - M);
-            }
-
-            slot.quantity += quantity;
-            return InventoryOpError::None;
-        }
-
-        for slot in self.0.iter_mut() {
-            let None = slot else { continue };
-
-            if quantity > M {
-                *slot = Some(InventorySlot { kind, quantity: M });
-                return self.add(kind, quantity - M);
-            }
-
-            *slot = Some(InventorySlot { kind, quantity });
-            return InventoryOpError::None;
-        }
-
-        InventoryOpError::Overflow
-    }
-
-    fn retrieve(&mut self, kind: ItemKind, quantity: usize) -> InventoryOpError {
-        for slot in self.0.clone().iter_mut() {
-            let Some(mut some_slot) = slot else { continue };
-
-            if some_slot.kind != kind {
-                continue;
-            }
-
-            if some_slot.quantity < quantity {
-                *slot = None;
-                return self.retrieve(kind, quantity - M);
-            }
-
-            if some_slot.quantity == quantity {
-                *slot = None;
-                return InventoryOpError::None;
-            }
-
-            some_slot.quantity -= quantity;
-            return InventoryOpError::None;
-        }
-
-        return InventoryOpError::InvalidRetrieval;
-    }
-}
-
-impl<const N: usize, const M: usize> Default for Inventory<N, M> {
+impl<const I: usize, const H: usize, const S: usize> Default for Inventory<I, H, S> {
     fn default() -> Self {
-        Self([Some(default()); N])
+        Self([Some(default()); I])
     }
 }
 
