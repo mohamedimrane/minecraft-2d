@@ -29,21 +29,22 @@ impl Plugin for InventoryPlugin {
 
 // RESOURCES
 
-type Inv = Inventory<INVENTORY_SIZE, HOTBAR_SIZE, STACK_SIZE>;
+pub type Inv = Inventory<INVENTORY_SIZE, HOTBAR_SIZE, STACK_SIZE>;
 
 #[derive(Resource, Default)]
 pub struct CurrentItem(pub ItemKind);
 
 #[derive(Resource, Reflect)]
-struct Inventory<const INVENTORY_SIZE: usize, const HOTBAR_SIZE: usize, const STACK_SIZE: usize> {
-    items: [Option<InventorySlot>; INVENTORY_SIZE],
-    hotbar_cursor: usize,
+pub struct Inventory<const INVENTORY_SIZE: usize, const HOTBAR_SIZE: usize, const STACK_SIZE: usize>
+{
+    pub items: [Option<InventorySlot>; INVENTORY_SIZE],
+    pub hotbar_cursor: usize,
 }
 
 #[derive(Clone, Copy, Default, Reflect)]
-struct InventorySlot {
-    kind: ItemKind,
-    quantity: usize,
+pub struct InventorySlot {
+    pub kind: ItemKind,
+    pub quantity: usize,
 }
 
 impl<const I: usize, const H: usize, const S: usize> Inventory<I, H, S> {

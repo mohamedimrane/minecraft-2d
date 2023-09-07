@@ -8,7 +8,7 @@ use std::f32::consts::PI;
 use crate::{
     block::{Block, BlockBundle, BlockGraphics, BLOCK_SIZE},
     camera::MainCamera,
-    inventory::CurrentItem,
+    inventory::{CurrentItem, Inv},
     item::{spawn_item, ItemSensor},
     item_kind::ItemKind,
     utils::{in_reach, leans_to_left, leans_to_right, map},
@@ -629,7 +629,7 @@ fn place_block(
     blocks: Query<&GlobalTransform, With<Block>>,
     player_transform: Query<&GlobalTransform, With<Player>>,
     current_chunk: Res<PlayerChunkPosition>,
-    current_item: Res<CurrentItem>,
+    inventory: Res<Inv>,
     blocks_graphics: Res<BlockGraphics>,
     mouse: Res<Input<MouseButton>>,
     window: Query<&Window, With<PrimaryWindow>>,
@@ -651,6 +651,8 @@ fn place_block(
     {
         return;
     }
+
+    let Some(current_inv_slot) = inventory.items[inventory.hotbar_cursor] else { return };
 
     if blocks
         .iter()
@@ -679,11 +681,12 @@ fn place_block(
 
     let block_ent = commands
         .spawn(BlockBundle::new(
-            current_item.0,
+            current_inv_slot.kind,
             spawn_pos,
             &blocks_graphics,
         ))
         .id();
+
     commands.entity(chunk_ent).add_child(block_ent);
 }
 
