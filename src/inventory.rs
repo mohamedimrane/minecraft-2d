@@ -17,10 +17,9 @@ impl Plugin for InventoryPlugin {
     fn build(&self, app: &mut App) {
         app
             // Resources
-            .insert_resource(CurrentItem::default())
             .insert_resource(Inv::default())
             // Systems
-            .add_systems(Update, (manage_block_selection_inv, manage_hotbar_cursor))
+            .add_systems(Update, manage_hotbar_cursor)
             // Reflection
             .register_type::<Inv>()
             .add_plugins(ResourceInspectorPlugin::<Inv>::default());
@@ -30,9 +29,6 @@ impl Plugin for InventoryPlugin {
 // RESOURCES
 
 pub type Inv = Inventory<INVENTORY_SIZE, HOTBAR_SIZE, STACK_SIZE>;
-
-#[derive(Resource, Default)]
-pub struct CurrentItem(pub ItemKind);
 
 #[derive(Resource, Reflect)]
 pub struct Inventory<const INVENTORY_SIZE: usize, const HOTBAR_SIZE: usize, const STACK_SIZE: usize>
@@ -131,24 +127,6 @@ impl<const I: usize, const H: usize, const S: usize> Default for Inventory<I, H,
 }
 
 // SYSTEMS
-
-fn manage_block_selection_inv(mut current_item: ResMut<CurrentItem>, keys: Res<Input<KeyCode>>) {
-    for k in keys.get_pressed() {
-        current_item.0 = match k {
-            KeyCode::Key1 => ItemKind::Dirt,
-            KeyCode::Key2 => ItemKind::Grass,
-            KeyCode::Key3 => ItemKind::Stone,
-            KeyCode::Key4 => ItemKind::Cobblestone,
-            KeyCode::Key5 => ItemKind::Deepslate,
-            KeyCode::Key6 => ItemKind::CobbledDeepslate,
-            KeyCode::Key7 => ItemKind::Bedrock,
-            KeyCode::Key8 => ItemKind::HayBale,
-            KeyCode::Key9 => ItemKind::OakLog,
-            KeyCode::Key0 => ItemKind::OakPlank,
-            _ => current_item.0,
-        }
-    }
-}
 
 fn manage_hotbar_cursor(mut inventory: ResMut<Inv>, keys: Res<Input<KeyCode>>) {
     for k in keys.get_pressed() {

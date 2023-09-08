@@ -8,7 +8,7 @@ use std::f32::consts::PI;
 use crate::{
     block::{Block, BlockBundle, BlockGraphics, BLOCK_SIZE},
     camera::MainCamera,
-    inventory::{CurrentItem, Inv, InventorySlot},
+    inventory::{Inv, InventorySlot},
     item::{spawn_item, Item, ItemSensor},
     item_kind::{self, ItemKind},
     utils::{in_reach, leans_to_left, leans_to_right, map},
