@@ -14,12 +14,12 @@ A minecraft 2d clone built with rust and the bevy game engine.
   - [ ] Food
   - [ ] Inventory
     - [x] Basic block switching system
-    - [ ] Inventory system
+    - [x] Inventory system
     - [ ] Inventory graphics
-  - [ ] Building
+  - [x] Building
     - [x] Placing blocks
     - [x] Breaking blocks
-    - [ ] Picking up blocks
+    - [x] Picking up blocks
 
 - [ ] Crafting
   - [ ] Crafting system
