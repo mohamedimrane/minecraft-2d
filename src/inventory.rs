@@ -76,7 +76,25 @@ impl<const I: usize, const H: usize, const S: usize> Inventory<I, H, S> {
         }
     }
 
-    fn shift_cursor_right(&mut self) {
+    pub fn remove_at_cursor(&mut self) {
+        let Some(ref mut current_slot) = self.items[self.hotbar_cursor] else { return };
+
+        current_slot.quantity -= 1;
+
+        if current_slot.quantity == 0 {
+            self.items[self.hotbar_cursor] = None;
+        }
+    }
+
+    pub fn current_hotbar_slot(&self) -> &Option<InventorySlot> {
+        &self.items[self.hotbar_cursor]
+    }
+
+    pub fn current_hotbar_slot_mut(&mut self) -> &mut Option<InventorySlot> {
+        &mut self.items[self.hotbar_cursor]
+    }
+
+    pub fn shift_cursor_right(&mut self) {
         if self.hotbar_cursor == H - 1 {
             self.hotbar_cursor = 1;
             return;
@@ -85,7 +103,7 @@ impl<const I: usize, const H: usize, const S: usize> Inventory<I, H, S> {
         self.hotbar_cursor = 0;
     }
 
-    fn shift_cursor_left(&mut self) {
+    pub fn shift_cursor_left(&mut self) {
         if self.hotbar_cursor == 0 {
             self.hotbar_cursor = H;
             return;
@@ -94,7 +112,7 @@ impl<const I: usize, const H: usize, const S: usize> Inventory<I, H, S> {
         self.hotbar_cursor -= 1;
     }
 
-    fn set_cursor(&mut self, cursor: usize) {
+    pub fn set_cursor(&mut self, cursor: usize) {
         if cursor > H - 1 {
             panic!("cannot set hotbar cursor out of bounds");
         }

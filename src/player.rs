@@ -629,7 +629,7 @@ fn place_block(
     blocks: Query<&GlobalTransform, With<Block>>,
     player_transform: Query<&GlobalTransform, With<Player>>,
     current_chunk: Res<PlayerChunkPosition>,
-    inventory: Res<Inv>,
+    mut inventory: ResMut<Inv>,
     blocks_graphics: Res<BlockGraphics>,
     mouse: Res<Input<MouseButton>>,
     window: Query<&Window, With<PrimaryWindow>>,
@@ -652,7 +652,9 @@ fn place_block(
         return;
     }
 
-    let Some(current_inv_slot) = inventory.items[inventory.hotbar_cursor] else { return };
+    if inventory.current_hotbar_slot().is_none() {
+        return;
+    }
 
     if blocks
         .iter()
@@ -660,6 +662,9 @@ fn place_block(
     {
         return;
     }
+
+    let block_kind = inventory.current_hotbar_slot().unwrap().kind;
+    inventory.remove_at_cursor();
 
     let world_transform = world.single().translation();
 
@@ -680,11 +685,7 @@ fn place_block(
     );
 
     let block_ent = commands
-        .spawn(BlockBundle::new(
-            current_inv_slot.kind,
-            spawn_pos,
-            &blocks_graphics,
-        ))
+        .spawn(BlockBundle::new(block_kind, spawn_pos, &blocks_graphics))
         .id();
 
     commands.entity(chunk_ent).add_child(block_ent);
