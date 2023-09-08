@@ -9,14 +9,6 @@ const ITEM_SIZE: f32 = 30.;
 const ITEM_COLLIDER_SIZE: f32 = 15.;
 const ITEM_SENSOR_SIZE: f32 = 30.;
 
-// COMPONENTS
-
-#[derive(Component)]
-pub struct Item;
-
-#[derive(Component)]
-pub struct ItemSensor;
-
 // FUNCTIONS
 
 pub fn spawn_item(
@@ -64,3 +56,11 @@ pub fn spawn_item(
             ));
         });
 }
+
+// COMPONENTS
+
+#[derive(Component)]
+pub struct Item;
+
+#[derive(Component)]
+pub struct ItemSensor;

@@ -90,104 +90,6 @@ impl Plugin for PlayerPlugin {
     }
 }
 
-// RESOURCES
-
-#[derive(Resource)]
-struct PlayerGraphics {
-    tex: Handle<Image>,
-    head: Rect,
-    body_front: Rect,
-    body_back: Rect,
-    right_arm_front: Rect,
-    right_arm_back: Rect,
-    left_arm_front: Rect,
-    left_arm_back: Rect,
-    right_leg_front: Rect,
-    right_leg_back: Rect,
-    left_leg_front: Rect,
-    left_leg_back: Rect,
-}
-
-#[derive(Resource, Default)]
-struct SelectedBlock(Option<Entity>);
-
-#[derive(Resource, Default)]
-struct LastCursorPosition(Vec2);
-
-#[derive(Resource, Default)]
-struct LastPlayerPosition(Vec2);
-
-impl Default for PlayerGraphics {
-    fn default() -> Self {
-        Self {
-            tex: DEFAULT_IMAGE_HANDLE.typed(),
-            head: Rect::new(0., 0., 8., 8.),
-            body_front: Rect::new(8., 0., 12., 12.),
-            body_back: Rect::new(8., 12., 12., 24.),
-            right_arm_front: Rect::new(12., 0., 16., 12.),
-            right_arm_back: Rect::new(12., 12., 16., 24.),
-            left_arm_front: Rect::new(16., 0., 20., 12.),
-            left_arm_back: Rect::new(16., 12., 20., 23.),
-            right_leg_front: Rect::new(20., 0., 24., 12.),
-            right_leg_back: Rect::new(20., 12., 24., 24.),
-            left_leg_front: Rect::new(24., 0., 28., 12.),
-            left_leg_back: Rect::new(24., 12., 28., 24.),
-        }
-    }
-}
-
-// COMPONENTS
-
-#[derive(Component, Reflect)]
-pub struct Player;
-
-#[derive(Component, Reflect)]
-struct PlayerGraphicsHolder;
-
-#[derive(Component, Reflect)]
-enum PlayerGraphicsPart {
-    Head,
-    Body,
-    RightArm,
-    LeftArm,
-    RightLeg,
-    LeftLeg,
-}
-
-#[derive(Component, Reflect)]
-struct PlayerGraphicsHead;
-#[derive(Component, Reflect)]
-struct PlayerGraphicsBody;
-#[derive(Component, Reflect)]
-struct PlayerGraphicsRightArm;
-#[derive(Component, Reflect)]
-struct PlayerGraphicsLeftArm;
-#[derive(Component, Reflect)]
-struct PlayerGraphicsRightLeg;
-#[derive(Component, Reflect)]
-struct PlayerGraphicsLeftLeg;
-
-/// [`0`] is the walking speed
-/// [`1`] is the runnign speed
-#[derive(Component, Reflect)]
-struct Speed(f32, f32);
-
-#[derive(Component, Reflect)]
-struct Jump(f32);
-
-#[derive(Component, Default, Reflect)]
-enum Direction {
-    #[default]
-    Right,
-    Left,
-}
-
-#[derive(Component, Reflect)]
-struct WaveIndex(f32);
-
-#[derive(Component, Reflect)]
-struct BlockSelector;
-
 // SYSTEMS
 
 fn load_player_graphics(
@@ -776,6 +678,104 @@ fn pick_up_item(
         }
     }
 }
+
+// RESOURCES
+
+#[derive(Resource)]
+struct PlayerGraphics {
+    tex: Handle<Image>,
+    head: Rect,
+    body_front: Rect,
+    body_back: Rect,
+    right_arm_front: Rect,
+    right_arm_back: Rect,
+    left_arm_front: Rect,
+    left_arm_back: Rect,
+    right_leg_front: Rect,
+    right_leg_back: Rect,
+    left_leg_front: Rect,
+    left_leg_back: Rect,
+}
+
+#[derive(Resource, Default)]
+struct SelectedBlock(Option<Entity>);
+
+#[derive(Resource, Default)]
+struct LastCursorPosition(Vec2);
+
+#[derive(Resource, Default)]
+struct LastPlayerPosition(Vec2);
+
+impl Default for PlayerGraphics {
+    fn default() -> Self {
+        Self {
+            tex: DEFAULT_IMAGE_HANDLE.typed(),
+            head: Rect::new(0., 0., 8., 8.),
+            body_front: Rect::new(8., 0., 12., 12.),
+            body_back: Rect::new(8., 12., 12., 24.),
+            right_arm_front: Rect::new(12., 0., 16., 12.),
+            right_arm_back: Rect::new(12., 12., 16., 24.),
+            left_arm_front: Rect::new(16., 0., 20., 12.),
+            left_arm_back: Rect::new(16., 12., 20., 23.),
+            right_leg_front: Rect::new(20., 0., 24., 12.),
+            right_leg_back: Rect::new(20., 12., 24., 24.),
+            left_leg_front: Rect::new(24., 0., 28., 12.),
+            left_leg_back: Rect::new(24., 12., 28., 24.),
+        }
+    }
+}
+
+// COMPONENTS
+
+#[derive(Component, Reflect)]
+pub struct Player;
+
+#[derive(Component, Reflect)]
+struct PlayerGraphicsHolder;
+
+#[derive(Component, Reflect)]
+enum PlayerGraphicsPart {
+    Head,
+    Body,
+    RightArm,
+    LeftArm,
+    RightLeg,
+    LeftLeg,
+}
+
+#[derive(Component, Reflect)]
+struct PlayerGraphicsHead;
+#[derive(Component, Reflect)]
+struct PlayerGraphicsBody;
+#[derive(Component, Reflect)]
+struct PlayerGraphicsRightArm;
+#[derive(Component, Reflect)]
+struct PlayerGraphicsLeftArm;
+#[derive(Component, Reflect)]
+struct PlayerGraphicsRightLeg;
+#[derive(Component, Reflect)]
+struct PlayerGraphicsLeftLeg;
+
+/// [`0`] is the walking speed
+/// [`1`] is the runnign speed
+#[derive(Component, Reflect)]
+struct Speed(f32, f32);
+
+#[derive(Component, Reflect)]
+struct Jump(f32);
+
+#[derive(Component, Default, Reflect)]
+enum Direction {
+    #[default]
+    Right,
+    Left,
+}
+
+#[derive(Component, Reflect)]
+struct WaveIndex(f32);
+
+#[derive(Component, Reflect)]
+struct BlockSelector;
 
 // BUNDLES
 

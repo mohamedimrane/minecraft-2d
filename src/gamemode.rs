@@ -14,14 +14,6 @@ impl Plugin for GameModePlugin {
     }
 }
 
-// RESOURCES
-#[derive(Resource, Default)]
-pub enum GameMode {
-    #[default]
-    Creative,
-    Survival,
-}
-
 // SYSTEMS
 
 fn switch_gamemode(mut gamemode: ResMut<GameMode>, keys: Res<Input<KeyCode>>) {
@@ -32,4 +24,12 @@ fn switch_gamemode(mut gamemode: ResMut<GameMode>, keys: Res<Input<KeyCode>>) {
     } else {
         return;
     }
+}
+
+// RESOURCES
+#[derive(Resource, Default)]
+pub enum GameMode {
+    #[default]
+    Creative,
+    Survival,
 }

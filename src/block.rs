@@ -26,6 +26,26 @@ impl Plugin for BlockPlugin {
     }
 }
 
+// SYSTEMS
+
+fn load_block_graphics(
+    asset_server: Res<AssetServer>,
+    mut texture_atlases: ResMut<Assets<TextureAtlas>>,
+    mut block_graphics: ResMut<BlockGraphics>,
+) {
+    block_graphics.tex = asset_server.load("blocks.png");
+    let atlas = TextureAtlas::from_grid(
+        block_graphics.tex.clone(),
+        vec2(16., 16.),
+        16,
+        5,
+        None,
+        None,
+    );
+    let atlas_handle = texture_atlases.add(atlas);
+    block_graphics.atlas_handle = atlas_handle;
+}
+
 // RESOURCES
 
 #[derive(Resource)]
@@ -46,26 +66,6 @@ impl Default for BlockGraphics {
 // COMPONENTS
 #[derive(Component, Reflect)]
 pub struct Block;
-
-// SYSTEMS
-
-fn load_block_graphics(
-    asset_server: Res<AssetServer>,
-    mut texture_atlases: ResMut<Assets<TextureAtlas>>,
-    mut block_graphics: ResMut<BlockGraphics>,
-) {
-    block_graphics.tex = asset_server.load("blocks.png");
-    let atlas = TextureAtlas::from_grid(
-        block_graphics.tex.clone(),
-        vec2(16., 16.),
-        16,
-        5,
-        None,
-        None,
-    );
-    let atlas_handle = texture_atlases.add(atlas);
-    block_graphics.atlas_handle = atlas_handle;
-}
 
 // BUNDLES
 

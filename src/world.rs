@@ -178,86 +178,6 @@ impl Plugin for WorldPlugin {
     }
 }
 
-// RESOURCES
-
-#[derive(Resource, Reflect, InspectorOptions)]
-struct WorldSettings {
-    seed: u64,
-    octaves: i32,
-    lacunarity: f32,
-
-    biomes: Biomes,
-}
-
-#[derive(Resource)]
-pub struct PlayerChunkPosition(pub i32);
-
-// STRUCTS
-#[derive(Reflect, InspectorOptions)]
-struct Biomes {
-    frequency: f32,
-    divider: f32,
-    plain: BiomeSettings,
-    // desert: BiomeSettings,
-}
-
-/// Frequency compresses values in the x axis
-/// The greater the frequency, the more compressed the values are
-/// freq = 1 -> 0000001111110000000000011110000
-/// freq = 2 -> 000111000001100
-
-/// Divider impacts variation in the y axis
-/// The greater the divider, the less varied the heights are
-/// div = 1 -> 013420035335601
-/// div = 2 -> 001234443332100
-#[derive(Reflect, InspectorOptions)]
-struct BiomeSettings {
-    v: f32,
-
-    terrain_frequency: f32,
-    terrain_divider: f32,
-    cave_frequency: f32,
-    cave_divider: f32,
-
-    height_multiplier: f32,
-    height_addition: f32,
-
-    air_porbality: f32,
-    exposed_block_top_layer_height: i32,
-    exposed_block_layer_height: i32,
-    tree_kind: TreeKind,
-    /// The greater the rarer
-    tree_chance: i32,
-
-    exposed_block_top: ItemKind,
-    exposed_block: ItemKind,
-
-    ores_map_step: i32,
-    coal: OreSettings,
-    copper: OreSettings,
-    iron: OreSettings,
-    gold: OreSettings,
-    // lapis: OreSettings,
-    // redstone: OreSettings,
-    // emrald: OreSettings,
-    diamond: OreSettings,
-}
-
-#[derive(Reflect, InspectorOptions)]
-struct OreSettings {
-    rarity: f32,
-    size: f32,
-    divider: f32,
-    below: Option<i32>,
-    above: Option<i32>,
-}
-
-#[derive(Clone, Copy, Reflect)]
-enum TreeKind {
-    Oak,
-    Cactus,
-}
-
 // COMPONENTS
 
 #[derive(Component)]
@@ -628,6 +548,87 @@ fn spawn_test_platform(mut commands: Commands, block_graphics: Res<BlockGraphics
     //     RigidBody::Fixed,
     //     Collider::cuboid(500., 25.),
     // ));
+}
+
+// RESOURCES
+
+#[derive(Resource, Reflect, InspectorOptions)]
+struct WorldSettings {
+    seed: u64,
+    octaves: i32,
+    lacunarity: f32,
+
+    biomes: Biomes,
+}
+
+#[derive(Resource)]
+pub struct PlayerChunkPosition(pub i32);
+
+// STRUCTS
+
+#[derive(Reflect, InspectorOptions)]
+struct Biomes {
+    frequency: f32,
+    divider: f32,
+    plain: BiomeSettings,
+    // desert: BiomeSettings,
+}
+
+/// Frequency compresses values in the x axis
+/// The greater the frequency, the more compressed the values are
+/// freq = 1 -> 0000001111110000000000011110000
+/// freq = 2 -> 000111000001100
+
+/// Divider impacts variation in the y axis
+/// The greater the divider, the less varied the heights are
+/// div = 1 -> 013420035335601
+/// div = 2 -> 001234443332100
+#[derive(Reflect, InspectorOptions)]
+struct BiomeSettings {
+    v: f32,
+
+    terrain_frequency: f32,
+    terrain_divider: f32,
+    cave_frequency: f32,
+    cave_divider: f32,
+
+    height_multiplier: f32,
+    height_addition: f32,
+
+    air_porbality: f32,
+    exposed_block_top_layer_height: i32,
+    exposed_block_layer_height: i32,
+    tree_kind: TreeKind,
+    /// The greater the rarer
+    tree_chance: i32,
+
+    exposed_block_top: ItemKind,
+    exposed_block: ItemKind,
+
+    ores_map_step: i32,
+    coal: OreSettings,
+    copper: OreSettings,
+    iron: OreSettings,
+    gold: OreSettings,
+    // lapis: OreSettings,
+    // redstone: OreSettings,
+    // emrald: OreSettings,
+    diamond: OreSettings,
+}
+
+#[derive(Reflect, InspectorOptions)]
+struct OreSettings {
+    rarity: f32,
+    size: f32,
+    divider: f32,
+    below: Option<i32>,
+    above: Option<i32>,
+}
+
+#[derive(Clone, Copy, Reflect)]
+enum TreeKind {
+    Oak,
+    Cactus,
 }
 
 // BUNDLES

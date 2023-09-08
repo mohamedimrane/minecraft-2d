@@ -26,6 +26,27 @@ impl Plugin for InventoryPlugin {
     }
 }
 
+// SYSTEMS
+
+fn manage_hotbar_cursor(mut inventory: ResMut<Inv>, keys: Res<Input<KeyCode>>) {
+    for k in keys.get_pressed() {
+        inventory.hotbar_cursor = match k {
+            KeyCode::Key1 => 0,
+            KeyCode::Key2 => 1,
+            KeyCode::Key3 => 2,
+            KeyCode::Key4 => 3,
+            KeyCode::Key5 => 4,
+            // KeyCode::Key6 => 5,
+            // KeyCode::Key7 => 6,
+            // KeyCode::Key8 => 7,
+            // KeyCode::Key9 => 8,
+            _ => inventory.hotbar_cursor,
+        };
+
+        break;
+    }
+}
+
 // RESOURCES
 
 pub type Inv = Inventory<INVENTORY_SIZE, HOTBAR_SIZE, STACK_SIZE>;
@@ -123,26 +144,5 @@ impl<const I: usize, const H: usize, const S: usize> Default for Inventory<I, H,
             items: [None; I],
             hotbar_cursor: 0,
         }
-    }
-}
-
-// SYSTEMS
-
-fn manage_hotbar_cursor(mut inventory: ResMut<Inv>, keys: Res<Input<KeyCode>>) {
-    for k in keys.get_pressed() {
-        inventory.hotbar_cursor = match k {
-            KeyCode::Key1 => 0,
-            KeyCode::Key2 => 1,
-            KeyCode::Key3 => 2,
-            KeyCode::Key4 => 3,
-            KeyCode::Key5 => 4,
-            // KeyCode::Key6 => 5,
-            // KeyCode::Key7 => 6,
-            // KeyCode::Key8 => 7,
-            // KeyCode::Key9 => 8,
-            _ => inventory.hotbar_cursor,
-        };
-
-        break;
     }
 }
