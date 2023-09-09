@@ -9,10 +9,14 @@ const INVENTORY_SIZE: usize = 36;
 const HOTBAR_SIZE: usize = 9;
 const STACK_SIZE: usize = 5;
 
+const UI_HOTBAR_RATIO: f32 = 91. / 11.;
 const UI_HOTBAR_BOTTOM_SPACING: f32 = 10.;
-const UI_ITEM_SIZE: f32 = 40.;
-const UI_SLOT_SIZE: f32 = UI_ITEM_SIZE * 1.4;
-const UI_SLOT_SPACING: f32 = 5.;
+
+const UI_SLOT_ITEM_SIZE_RATIO: f32 = 10. / 13.;
+const UI_SLOT_SIZE: f32 = 52.;
+const UI_ITEM_SIZE: f32 = UI_SLOT_SIZE * UI_SLOT_ITEM_SIZE_RATIO;
+const UI_ITEM_MARGIN: f32 = 5.;
+// const UI_SLOT_SPACING: f32 = 4.;
 const UI_SLOT_FONT_SIZE: f32 = 23.;
 
 // PLUGINS
@@ -23,8 +27,10 @@ impl Plugin for InventoryPlugin {
     fn build(&self, app: &mut App) {
         app
             // Resources
+            .insert_resource(UiAssets::default())
             .insert_resource(Inv::default())
             // Systems
+            .add_systems(PreStartup, load_assets)
             .add_systems(Startup, spawn_ui)
             .add_systems(Update, manage_hotbar_cursor)
             // Reflection
@@ -35,10 +41,14 @@ impl Plugin for InventoryPlugin {
 
 // SYSTEMS
 
-fn spawn_ui(mut commands: Commands, block_graphics: Res<BlockGraphics>) {
+fn load_assets(mut assets: ResMut<UiAssets>, asset_server: Res<AssetServer>) {
+    assets.tex = asset_server.load("ui.png");
+}
+
+fn spawn_ui(mut commands: Commands, ui_assets: Res<UiAssets>, block_graphics: Res<BlockGraphics>) {
     commands
         .spawn((NodeBundle {
-            // background_color: Color::GREEN.into(),
+            background_color: Color::GREEN.into(),
             style: Style {
                 width: Val::Percent(100.),
                 height: Val::Percent(100.),
@@ -49,20 +59,29 @@ fn spawn_ui(mut commands: Commands, block_graphics: Res<BlockGraphics>) {
             },
             ..default()
         },))
-        .with_children(|cb| spawn_hotbar(cb, &block_graphics));
+        .with_children(|cb| spawn_hotbar(cb, &ui_assets, &block_graphics));
 }
 
-fn spawn_hotbar(cb: &mut ChildBuilder, block_graphics: &Res<BlockGraphics>) {
+fn spawn_hotbar(
+    cb: &mut ChildBuilder,
+    ui_assets: &Res<UiAssets>,
+    block_graphics: &Res<BlockGraphics>,
+) {
     cb.spawn((
         HotbarUi,
-        NodeBundle {
+        ImageBundle {
             // background_color: Color::RED.into(),
+            image: UiImage {
+                texture: ui_assets.tex.clone(),
+                ..default()
+            },
             style: Style {
                 width: Val::Px(
-                    HOTBAR_SIZE as f32 * UI_SLOT_SIZE + (HOTBAR_SIZE as f32 - 1.) * UI_SLOT_SPACING,
+                    UI_SLOT_SIZE * UI_HOTBAR_RATIO, // HOTBAR_SIZE as f32 * UI_SLOT_SIZE + (HOTBAR_SIZE as f32 - 1.) * UI_SLOT_SPACING,
                 ),
                 height: Val::Px(UI_SLOT_SIZE),
-                justify_content: JustifyContent::SpaceBetween,
+                justify_content: JustifyContent::SpaceEvenly,
+                align_items: AlignItems::Center,
                 margin: UiRect {
                     bottom: Val::Px(UI_HOTBAR_BOTTOM_SPACING),
                     ..default()
@@ -85,8 +104,8 @@ fn spawn_slot(cb: &mut ChildBuilder, block_graphics: &Res<BlockGraphics>) {
         NodeBundle {
             // background_color: Color::BLUE.into(),
             style: Style {
-                width: Val::Px(UI_SLOT_SIZE),
-                height: Val::Px(UI_SLOT_SIZE),
+                width: Val::Px(UI_ITEM_SIZE),
+                height: Val::Px(UI_ITEM_SIZE),
                 ..default()
             },
             ..default()
@@ -106,8 +125,7 @@ fn spawn_slot_image(cb: &mut ChildBuilder, block_graphics: &Res<BlockGraphics>) 
             ..default()
         },
         style: Style {
-            width: Val::Percent(90.),
-            height: Val::Percent(90.),
+            margin: UiRect::all(Val::Px(UI_ITEM_MARGIN)),
             ..default()
         },
         ..default()
@@ -128,7 +146,7 @@ fn spawn_slot_text(cb: &mut ChildBuilder) {
         },
         style: Style {
             position_type: PositionType::Absolute,
-            right: Val::Px(UI_SLOT_SPACING + 3.),
+            right: Val::Px(3.),
             bottom: Val::Px(3.),
             ..default()
         },
@@ -168,6 +186,11 @@ fn manage_hotbar_cursor(mut inventory: ResMut<Inv>, keys: Res<Input<KeyCode>>) {
 }
 
 // RESOURCES
+
+#[derive(Resource, Default)]
+struct UiAssets {
+    tex: Handle<Image>,
+}
 
 pub type Inv = Inventory<INVENTORY_SIZE, HOTBAR_SIZE, STACK_SIZE>;
 
