@@ -5,6 +5,8 @@ use crate::{block::BlockGraphics, item_kind::ItemKind};
 
 // CONSTANTS
 
+const FONT_NAME: &str = "Monocraft.ttf";
+
 const INVENTORY_SIZE: usize = 36;
 const HOTBAR_SIZE: usize = 9;
 const STACK_SIZE: usize = 5;
@@ -17,7 +19,8 @@ const UI_SLOT_SIZE: f32 = 52.;
 const UI_ITEM_SIZE: f32 = UI_SLOT_SIZE * UI_SLOT_ITEM_SIZE_RATIO;
 const UI_ITEM_MARGIN: f32 = 5.;
 // const UI_SLOT_SPACING: f32 = 4.;
-const UI_SLOT_FONT_SIZE: f32 = 23.;
+const UI_SLOT_FONT_SIZE: f32 = 18.;
+const UI_SLOT_FONT_SPACING: f32 = 2.;
 
 // PLUGINS
 
@@ -43,12 +46,13 @@ impl Plugin for InventoryPlugin {
 
 fn load_assets(mut assets: ResMut<UiAssets>, asset_server: Res<AssetServer>) {
     assets.tex = asset_server.load("ui.png");
+    assets.font = asset_server.load(FONT_NAME);
 }
 
 fn spawn_ui(mut commands: Commands, ui_assets: Res<UiAssets>, block_graphics: Res<BlockGraphics>) {
     commands
         .spawn((NodeBundle {
-            background_color: Color::GREEN.into(),
+            // background_color: Color::GREEN.into(),
             style: Style {
                 width: Val::Percent(100.),
                 height: Val::Percent(100.),
@@ -93,12 +97,16 @@ fn spawn_hotbar(
     ))
     .with_children(|cb| {
         for i in 0..HOTBAR_SIZE {
-            spawn_slot(cb, block_graphics);
+            spawn_slot(cb, ui_assets, block_graphics);
         }
     });
 }
 
-fn spawn_slot(cb: &mut ChildBuilder, block_graphics: &Res<BlockGraphics>) {
+fn spawn_slot(
+    cb: &mut ChildBuilder,
+    ui_assets: &Res<UiAssets>,
+    block_graphics: &Res<BlockGraphics>,
+) {
     cb.spawn((
         SlotUi,
         NodeBundle {
@@ -113,7 +121,7 @@ fn spawn_slot(cb: &mut ChildBuilder, block_graphics: &Res<BlockGraphics>) {
     ))
     .with_children(|cb| {
         spawn_slot_image(cb, block_graphics);
-        spawn_slot_text(cb)
+        spawn_slot_text(cb, ui_assets)
     });
 }
 
@@ -132,13 +140,14 @@ fn spawn_slot_image(cb: &mut ChildBuilder, block_graphics: &Res<BlockGraphics>) 
     });
 }
 
-fn spawn_slot_text(cb: &mut ChildBuilder) {
+fn spawn_slot_text(cb: &mut ChildBuilder, ui_assets: &Res<UiAssets>) {
     cb.spawn(TextBundle {
         text: Text {
             sections: vec![TextSection::new(
-                "1",
+                "64",
                 TextStyle {
                     font_size: UI_SLOT_FONT_SIZE,
+                    font: ui_assets.font.clone(),
                     ..default()
                 },
             )],
@@ -146,8 +155,8 @@ fn spawn_slot_text(cb: &mut ChildBuilder) {
         },
         style: Style {
             position_type: PositionType::Absolute,
-            right: Val::Px(3.),
-            bottom: Val::Px(3.),
+            right: Val::Px(UI_SLOT_FONT_SPACING),
+            bottom: Val::Px(UI_SLOT_FONT_SPACING),
             ..default()
         },
         ..default()
@@ -190,6 +199,7 @@ fn manage_hotbar_cursor(mut inventory: ResMut<Inv>, keys: Res<Input<KeyCode>>) {
 #[derive(Resource, Default)]
 struct UiAssets {
     tex: Handle<Image>,
+    font: Handle<Font>,
 }
 
 pub type Inv = Inventory<INVENTORY_SIZE, HOTBAR_SIZE, STACK_SIZE>;
