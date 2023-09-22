@@ -59,18 +59,21 @@ fn load_assets(mut assets: ResMut<UiAssets>, asset_server: Res<AssetServer>) {
 
 fn spawn_ui(mut commands: Commands, ui_assets: Res<UiAssets>, block_graphics: Res<BlockGraphics>) {
     commands
-        .spawn((NodeBundle {
-            // background_color: Color::GREEN.into(),
-            style: Style {
-                width: Val::Percent(100.),
-                height: Val::Percent(100.),
-                flex_direction: FlexDirection::Column,
-                justify_content: JustifyContent::End,
-                align_items: AlignItems::Center,
+        .spawn((
+            Name::new("Hotbar Holder"),
+            NodeBundle {
+                // background_color: Color::GREEN.into(),
+                style: Style {
+                    width: Val::Percent(100.),
+                    height: Val::Percent(100.),
+                    flex_direction: FlexDirection::Column,
+                    justify_content: JustifyContent::End,
+                    align_items: AlignItems::Center,
+                    ..default()
+                },
                 ..default()
             },
-            ..default()
-        },))
+        ))
         .with_children(|cb| spawn_hotbar(cb, &ui_assets, &block_graphics));
 }
 
@@ -124,6 +127,7 @@ fn spawn_hotbar(
     block_graphics: &Res<BlockGraphics>,
 ) {
     cb.spawn((
+        Name::new("Hotbar"),
         HotbarUi,
         ImageBundle {
             // background_color: Color::RED.into(),
@@ -158,6 +162,7 @@ fn spawn_hotbar(
 
 fn spawn_slot_selector(cb: &mut ChildBuilder, ui_assets: &Res<UiAssets>) {
     cb.spawn((
+        Name::new("Slot Selector"),
         SlotSelector,
         ImageBundle {
             image: UiImage {
@@ -182,6 +187,7 @@ fn spawn_slot(
     block_graphics: &Res<BlockGraphics>,
 ) {
     cb.spawn((
+        Name::new("Slot ".to_string() + &number.to_string()),
         Slot,
         SlotNumber(number),
         NodeBundle {
@@ -202,6 +208,7 @@ fn spawn_slot(
 
 fn spawn_slot_image(cb: &mut ChildBuilder, number: u8, block_graphics: &Res<BlockGraphics>) {
     cb.spawn((
+        Name::new("Slot Image"),
         SlotImage,
         SlotNumber(number),
         AtlasImageBundle {
@@ -221,6 +228,7 @@ fn spawn_slot_image(cb: &mut ChildBuilder, number: u8, block_graphics: &Res<Bloc
 
 fn spawn_slot_text(cb: &mut ChildBuilder, number: u8, ui_assets: &Res<UiAssets>) {
     cb.spawn((
+        Name::new("Slot Text"),
         SlotText,
         SlotNumber(number),
         TextBundle {
