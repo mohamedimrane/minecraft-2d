@@ -11,6 +11,10 @@ const INVENTORY_SIZE: usize = 36;
 const HOTBAR_SIZE: usize = 9;
 const STACK_SIZE: usize = 5;
 
+const UI_INVENTORY_RATIO: f32 = 166. / 176.;
+const UI_INVENTORY_WIDTH: f32 = 400.;
+const UI_INVENTORY_HEIGHT: f32 = UI_INVENTORY_WIDTH * UI_INVENTORY_RATIO;
+
 const UI_HOTBAR_RATIO: f32 = 91. / 11.;
 const UI_HOTBAR_BOTTOM_SPACING: f32 = 10.;
 
@@ -54,10 +58,41 @@ impl Plugin for InventoryPlugin {
 fn load_assets(mut assets: ResMut<UiAssets>, asset_server: Res<AssetServer>) {
     assets.hotbar_tex = asset_server.load("hotbar.png");
     assets.hotbar_selected_slot_tex = asset_server.load("hotbar_selected_slot.png");
+    assets.inventory = asset_server.load("inventory.png");
     assets.font = asset_server.load(FONT_NAME);
 }
 
 fn spawn_ui(mut commands: Commands, ui_assets: Res<UiAssets>, block_graphics: Res<BlockGraphics>) {
+    commands
+        .spawn((
+            Name::new("Inventory Holder"),
+            NodeBundle {
+                style: Style {
+                    width: Val::Percent(100.),
+                    height: Val::Percent(100.),
+                    position_type: PositionType::Absolute,
+                    justify_content: JustifyContent::Center,
+                    align_items: AlignItems::Center,
+                    ..default()
+                },
+                ..default()
+            },
+        ))
+        .with_children(|cb| {
+            cb.spawn(ImageBundle {
+                image: UiImage {
+                    texture: ui_assets.inventory.clone(),
+                    ..default()
+                },
+                style: Style {
+                    width: Val::Px(UI_INVENTORY_WIDTH),
+                    height: Val::Px(UI_INVENTORY_HEIGHT),
+                    ..default()
+                },
+                ..default()
+            });
+        });
+
     commands
         .spawn((
             Name::new("Hotbar Holder"),
@@ -291,6 +326,7 @@ fn manage_hotbar_cursor(mut inventory: ResMut<Inv>, keys: Res<Input<KeyCode>>) {
 struct UiAssets {
     hotbar_tex: Handle<Image>,
     hotbar_selected_slot_tex: Handle<Image>,
+    inventory: Handle<Image>,
     font: Handle<Font>,
 }
 
