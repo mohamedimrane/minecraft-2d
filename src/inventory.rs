@@ -35,7 +35,7 @@ impl Plugin for InventoryPlugin {
             // Systems
             .add_systems(PreStartup, load_assets)
             .add_systems(Startup, spawn_ui)
-            .add_systems(Update, manage_hotbar_cursor)
+            .add_systems(Update, (manage_hotbar_cursor, update_hotbar))
             // Reflection
             .register_type::<Inv>()
             .add_plugins(ResourceInspectorPlugin::<Inv>::default());
@@ -64,6 +64,38 @@ fn spawn_ui(mut commands: Commands, ui_assets: Res<UiAssets>, block_graphics: Re
             ..default()
         },))
         .with_children(|cb| spawn_hotbar(cb, &ui_assets, &block_graphics));
+}
+
+fn update_hotbar(
+    mut slot_texts: Query<
+        (&mut Text, &mut Visibility, &SlotNumber),
+        (With<SlotText>, Without<SlotImage>),
+    >,
+    mut slot_images: Query<
+        (&mut UiTextureAtlasImage, &mut Visibility, &SlotNumber),
+        (With<SlotImage>, Without<SlotText>),
+    >,
+    inventory: Res<Inv>,
+) {
+    for (mut slot_text, mut slot_visibility, slot_number) in slot_texts.iter_mut() {
+        match inventory.items[slot_number.0 as usize] {
+            Some(inventory_slot) => {
+                *slot_visibility = Visibility::Inherited;
+                slot_text.sections[0].value = inventory_slot.quantity.to_string();
+            }
+            None => *slot_visibility = Visibility::Hidden,
+        }
+    }
+
+    for (mut slot_image, mut slot_visibility, slot_number) in slot_images.iter_mut() {
+        match inventory.items[slot_number.0 as usize] {
+            Some(inventory_image) => {
+                *slot_visibility = Visibility::Inherited;
+                slot_image.index = inventory_image.kind.to_index();
+            }
+            None => *slot_visibility = Visibility::Hidden,
+        }
+    }
 }
 
 fn spawn_hotbar(
@@ -97,18 +129,20 @@ fn spawn_hotbar(
     ))
     .with_children(|cb| {
         for i in 0..HOTBAR_SIZE {
-            spawn_slot(cb, ui_assets, block_graphics);
+            spawn_slot(cb, i as u8, ui_assets, block_graphics);
         }
     });
 }
 
 fn spawn_slot(
     cb: &mut ChildBuilder,
+    number: u8,
     ui_assets: &Res<UiAssets>,
     block_graphics: &Res<BlockGraphics>,
 ) {
     cb.spawn((
-        SlotUi,
+        Slot,
+        SlotNumber(number),
         NodeBundle {
             // background_color: Color::BLUE.into(),
             style: Style {
@@ -120,47 +154,55 @@ fn spawn_slot(
         },
     ))
     .with_children(|cb| {
-        spawn_slot_image(cb, block_graphics);
-        spawn_slot_text(cb, ui_assets)
+        spawn_slot_image(cb, number, block_graphics);
+        spawn_slot_text(cb, number, ui_assets)
     });
 }
 
-fn spawn_slot_image(cb: &mut ChildBuilder, block_graphics: &Res<BlockGraphics>) {
-    cb.spawn(AtlasImageBundle {
-        texture_atlas: block_graphics.atlas_handle.clone(),
-        texture_atlas_image: UiTextureAtlasImage {
-            index: 0,
+fn spawn_slot_image(cb: &mut ChildBuilder, number: u8, block_graphics: &Res<BlockGraphics>) {
+    cb.spawn((
+        SlotImage,
+        SlotNumber(number),
+        AtlasImageBundle {
+            texture_atlas: block_graphics.atlas_handle.clone(),
+            texture_atlas_image: UiTextureAtlasImage {
+                index: 0,
+                ..default()
+            },
+            style: Style {
+                margin: UiRect::all(Val::Px(UI_ITEM_MARGIN)),
+                ..default()
+            },
             ..default()
         },
-        style: Style {
-            margin: UiRect::all(Val::Px(UI_ITEM_MARGIN)),
-            ..default()
-        },
-        ..default()
-    });
+    ));
 }
 
-fn spawn_slot_text(cb: &mut ChildBuilder, ui_assets: &Res<UiAssets>) {
-    cb.spawn(TextBundle {
-        text: Text {
-            sections: vec![TextSection::new(
-                "64",
-                TextStyle {
-                    font_size: UI_SLOT_FONT_SIZE,
-                    font: ui_assets.font.clone(),
-                    ..default()
-                },
-            )],
+fn spawn_slot_text(cb: &mut ChildBuilder, number: u8, ui_assets: &Res<UiAssets>) {
+    cb.spawn((
+        SlotText,
+        SlotNumber(number),
+        TextBundle {
+            text: Text {
+                sections: vec![TextSection::new(
+                    "64",
+                    TextStyle {
+                        font_size: UI_SLOT_FONT_SIZE,
+                        font: ui_assets.font.clone(),
+                        ..default()
+                    },
+                )],
+                ..default()
+            },
+            style: Style {
+                position_type: PositionType::Absolute,
+                right: Val::Px(UI_SLOT_FONT_SPACING),
+                bottom: Val::Px(UI_SLOT_FONT_SPACING),
+                ..default()
+            },
             ..default()
         },
-        style: Style {
-            position_type: PositionType::Absolute,
-            right: Val::Px(UI_SLOT_FONT_SPACING),
-            bottom: Val::Px(UI_SLOT_FONT_SPACING),
-            ..default()
-        },
-        ..default()
-    });
+    ));
 }
 
 // fn toggle_ui(mut ui: Query<&mut Visibility, With<InventoryUi>>, keys: Res<Input<KeyCode>>) {
@@ -306,4 +348,13 @@ impl<const I: usize, const H: usize, const S: usize> Default for Inventory<I, H,
 struct HotbarUi;
 
 #[derive(Component)]
-struct SlotUi;
+struct Slot;
+
+#[derive(Component)]
+struct SlotImage;
+
+#[derive(Component)]
+struct SlotText;
+
+#[derive(Component)]
+struct SlotNumber(u8);
