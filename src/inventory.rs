@@ -35,7 +35,14 @@ impl Plugin for InventoryPlugin {
             // Systems
             .add_systems(PreStartup, load_assets)
             .add_systems(Startup, spawn_ui)
-            .add_systems(Update, (manage_hotbar_cursor, update_hotbar))
+            .add_systems(
+                Update,
+                (
+                    manage_hotbar_cursor,
+                    update_hotbar,
+                    update_hotbar_selected_slot,
+                ),
+            )
             // Reflection
             .register_type::<Inv>()
             .add_plugins(ResourceInspectorPlugin::<Inv>::default());
@@ -45,7 +52,8 @@ impl Plugin for InventoryPlugin {
 // SYSTEMS
 
 fn load_assets(mut assets: ResMut<UiAssets>, asset_server: Res<AssetServer>) {
-    assets.tex = asset_server.load("ui.png");
+    assets.hotbar_tex = asset_server.load("hotbar.png");
+    assets.hotbar_selected_slot_tex = asset_server.load("hotbar_selected_slot.png");
     assets.font = asset_server.load(FONT_NAME);
 }
 
@@ -98,6 +106,18 @@ fn update_hotbar(
     }
 }
 
+fn update_hotbar_selected_slot(
+    mut slot_selector: Query<&mut Style, With<SlotSelector>>,
+    inventory: Res<Inv>,
+) {
+    if !inventory.is_changed() {
+        return;
+    }
+
+    let cursor = inventory.hotbar_cursor as f32;
+    slot_selector.single_mut().left = Val::Px(UI_SLOT_SIZE * cursor - cursor * UI_ITEM_MARGIN);
+}
+
 fn spawn_hotbar(
     cb: &mut ChildBuilder,
     ui_assets: &Res<UiAssets>,
@@ -108,7 +128,7 @@ fn spawn_hotbar(
         ImageBundle {
             // background_color: Color::RED.into(),
             image: UiImage {
-                texture: ui_assets.tex.clone(),
+                texture: ui_assets.hotbar_tex.clone(),
                 ..default()
             },
             style: Style {
@@ -128,10 +148,31 @@ fn spawn_hotbar(
         },
     ))
     .with_children(|cb| {
+        spawn_slot_selector(cb, ui_assets);
+
         for i in 0..HOTBAR_SIZE {
             spawn_slot(cb, i as u8, ui_assets, block_graphics);
         }
     });
+}
+
+fn spawn_slot_selector(cb: &mut ChildBuilder, ui_assets: &Res<UiAssets>) {
+    cb.spawn((
+        SlotSelector,
+        ImageBundle {
+            image: UiImage {
+                texture: ui_assets.hotbar_selected_slot_tex.clone(),
+                ..default()
+            },
+            style: Style {
+                width: Val::Px(UI_SLOT_SIZE),
+                height: Val::Px(UI_SLOT_SIZE),
+                position_type: PositionType::Absolute,
+                ..default()
+            },
+            ..default()
+        },
+    ));
 }
 
 fn spawn_slot(
@@ -225,10 +266,10 @@ fn manage_hotbar_cursor(mut inventory: ResMut<Inv>, keys: Res<Input<KeyCode>>) {
             KeyCode::Key3 => 2,
             KeyCode::Key4 => 3,
             KeyCode::Key5 => 4,
-            // KeyCode::Key6 => 5,
-            // KeyCode::Key7 => 6,
-            // KeyCode::Key8 => 7,
-            // KeyCode::Key9 => 8,
+            KeyCode::Key6 => 5,
+            KeyCode::Key7 => 6,
+            KeyCode::Key8 => 7,
+            KeyCode::Key9 => 8,
             _ => inventory.hotbar_cursor,
         };
 
@@ -240,7 +281,8 @@ fn manage_hotbar_cursor(mut inventory: ResMut<Inv>, keys: Res<Input<KeyCode>>) {
 
 #[derive(Resource, Default)]
 struct UiAssets {
-    tex: Handle<Image>,
+    hotbar_tex: Handle<Image>,
+    hotbar_selected_slot_tex: Handle<Image>,
     font: Handle<Font>,
 }
 
@@ -349,6 +391,9 @@ struct HotbarUi;
 
 #[derive(Component)]
 struct Slot;
+
+#[derive(Component)]
+struct SlotSelector;
 
 #[derive(Component)]
 struct SlotImage;
