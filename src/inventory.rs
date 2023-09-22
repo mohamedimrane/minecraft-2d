@@ -43,6 +43,7 @@ impl Plugin for InventoryPlugin {
                 Update,
                 (
                     manage_hotbar_cursor,
+                    toggle_inventory,
                     update_hotbar,
                     update_hotbar_selected_slot,
                 ),
@@ -66,6 +67,7 @@ fn spawn_ui(mut commands: Commands, ui_assets: Res<UiAssets>, block_graphics: Re
     commands
         .spawn((
             Name::new("Inventory Holder"),
+            InventoryUi,
             NodeBundle {
                 style: Style {
                     width: Val::Percent(100.),
@@ -75,6 +77,7 @@ fn spawn_ui(mut commands: Commands, ui_assets: Res<UiAssets>, block_graphics: Re
                     align_items: AlignItems::Center,
                     ..default()
                 },
+                visibility: Visibility::Hidden,
                 ..default()
             },
         ))
@@ -110,6 +113,21 @@ fn spawn_ui(mut commands: Commands, ui_assets: Res<UiAssets>, block_graphics: Re
             },
         ))
         .with_children(|cb| spawn_hotbar(cb, &ui_assets, &block_graphics));
+}
+
+fn toggle_inventory(
+    mut inventory: Query<&mut Visibility, With<InventoryUi>>,
+    keys: Res<Input<KeyCode>>,
+) {
+    if !keys.just_pressed(KeyCode::O) {
+        return;
+    }
+
+    let mut inventory = inventory.single_mut();
+    *inventory = match *inventory {
+        Visibility::Inherited | Visibility::Visible => Visibility::Hidden,
+        Visibility::Hidden => Visibility::Inherited,
+    };
 }
 
 fn update_hotbar(
@@ -289,18 +307,6 @@ fn spawn_slot_text(cb: &mut ChildBuilder, number: u8, ui_assets: &Res<UiAssets>)
     ));
 }
 
-// fn toggle_ui(mut ui: Query<&mut Visibility, With<InventoryUi>>, keys: Res<Input<KeyCode>>) {
-//     if !keys.just_pressed(KeyCode::O) {
-//         return;
-//     }
-
-//     let mut ui = ui.single_mut();
-//     *ui = match *ui {
-//         Visibility::Inherited | Visibility::Visible => Visibility::Hidden,
-//         Visibility::Hidden => Visibility::Inherited,
-//     };
-// }
-
 fn manage_hotbar_cursor(mut inventory: ResMut<Inv>, keys: Res<Input<KeyCode>>) {
     for k in keys.get_pressed() {
         inventory.hotbar_cursor = match k {
@@ -432,6 +438,9 @@ impl<const I: usize, const H: usize, const S: usize> Default for Inventory<I, H,
 
 #[derive(Component)]
 struct HotbarUi;
+
+#[derive(Component)]
+struct InventoryUi;
 
 #[derive(Component)]
 struct Slot;
