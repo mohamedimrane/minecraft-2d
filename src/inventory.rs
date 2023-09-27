@@ -145,7 +145,11 @@ fn update_hotbar(
         match inventory.items[slot_number.0 as usize] {
             Some(inventory_slot) => {
                 *slot_visibility = Visibility::Inherited;
-                slot_text.sections[0].value = inventory_slot.quantity.to_string();
+                slot_text.sections[0].value = if inventory_slot.quantity != 1 {
+                    inventory_slot.quantity.to_string()
+                } else {
+                    String::new()
+                };
             }
             None => *slot_visibility = Visibility::Hidden,
         }
