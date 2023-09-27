@@ -44,6 +44,7 @@ impl Plugin for InventoryPlugin {
                 (
                     manage_hotbar_cursor,
                     toggle_inventory,
+                    update_inventory,
                     update_hotbar,
                     update_hotbar_selected_slot,
                 ),
@@ -120,7 +121,7 @@ fn spawn_ui(mut commands: Commands, ui_assets: Res<UiAssets>, block_graphics: Re
                         cb.spawn((
                             Name::new(format!("Inventory Slot {}", i)),
                             NodeBundle {
-                                background_color: Color::GREEN.into(),
+                                // background_color: Color::GREEN.into(),
                                 style: Style {
                                     width: Val::Px(UI_SLOT_SIZE - 5.),
                                     height: Val::Px(UI_SLOT_SIZE - 5.),
@@ -129,7 +130,48 @@ fn spawn_ui(mut commands: Commands, ui_assets: Res<UiAssets>, block_graphics: Re
                                 },
                                 ..default()
                             },
-                        ));
+                        ))
+                        .with_children(|cb| {
+                            cb.spawn((
+                                Name::new("Inventory Slot Image"),
+                                AtlasImageBundle {
+                                    texture_atlas: block_graphics.atlas_handle.clone(),
+                                    texture_atlas_image: UiTextureAtlasImage {
+                                        index: 0,
+                                        ..default()
+                                    },
+                                    style: Style {
+                                        margin: UiRect::all(Val::Px(UI_ITEM_MARGIN)),
+                                        ..default()
+                                    },
+                                    ..default()
+                                },
+                            ));
+
+                            cb.spawn((
+                                Name::new("Inventory Slot Text"),
+                                TextBundle {
+                                    text: Text {
+                                        sections: vec![TextSection::new(
+                                            "64",
+                                            TextStyle {
+                                                font_size: UI_SLOT_FONT_SIZE,
+                                                font: ui_assets.font.clone(),
+                                                ..default()
+                                            },
+                                        )],
+                                        ..default()
+                                    },
+                                    style: Style {
+                                        position_type: PositionType::Absolute,
+                                        right: Val::Px(UI_SLOT_FONT_SPACING),
+                                        bottom: Val::Px(UI_SLOT_FONT_SPACING),
+                                        ..default()
+                                    },
+                                    ..default()
+                                },
+                            ));
+                        });
                     }
                 });
             });
@@ -169,6 +211,8 @@ fn toggle_inventory(
         Visibility::Hidden => Visibility::Inherited,
     };
 }
+
+fn update_inventory() {}
 
 fn update_hotbar(
     mut slot_texts: Query<
