@@ -12,7 +12,7 @@ const HOTBAR_SIZE: usize = 9;
 const STACK_SIZE: usize = 5;
 
 const UI_INVENTORY_RATIO: f32 = 166. / 176.;
-const UI_INVENTORY_WIDTH: f32 = 400.;
+const UI_INVENTORY_WIDTH: f32 = (UI_SLOT_SIZE - 0.) * HOTBAR_SIZE as f32 + 32.;
 const UI_INVENTORY_HEIGHT: f32 = UI_INVENTORY_WIDTH * UI_INVENTORY_RATIO;
 
 const UI_HOTBAR_RATIO: f32 = 91. / 11.;
@@ -64,6 +64,7 @@ fn load_assets(mut assets: ResMut<UiAssets>, asset_server: Res<AssetServer>) {
 }
 
 fn spawn_ui(mut commands: Commands, ui_assets: Res<UiAssets>, block_graphics: Res<BlockGraphics>) {
+    // Spawn inventory holder
     commands
         .spawn((
             Name::new("Inventory Holder"),
@@ -82,20 +83,59 @@ fn spawn_ui(mut commands: Commands, ui_assets: Res<UiAssets>, block_graphics: Re
             },
         ))
         .with_children(|cb| {
-            cb.spawn(ImageBundle {
-                image: UiImage {
-                    texture: ui_assets.inventory.clone(),
+            cb.spawn((
+                Name::new("Inventory Image"),
+                ImageBundle {
+                    image: UiImage {
+                        texture: ui_assets.inventory.clone(),
+                        ..default()
+                    },
+                    style: Style {
+                        width: Val::Px(UI_INVENTORY_WIDTH),
+                        height: Val::Px(UI_INVENTORY_HEIGHT),
+                        ..default()
+                    },
                     ..default()
                 },
-                style: Style {
-                    width: Val::Px(UI_INVENTORY_WIDTH),
-                    height: Val::Px(UI_INVENTORY_HEIGHT),
-                    ..default()
-                },
-                ..default()
+            ))
+            .with_children(|cb| {
+                cb.spawn((
+                    Name::new("Inventory Items Grid"),
+                    NodeBundle {
+                        style: Style {
+                            height: Val::Px(UI_SLOT_SIZE * 3. + 2.),
+                            width: Val::Px(UI_SLOT_SIZE * 9.),
+                            display: Display::Grid,
+                            position_type: PositionType::Absolute,
+                            bottom: Val::Px(UI_SLOT_SIZE + 30.),
+                            left: Val::Px(10.),
+                            grid_template_columns: RepeatedGridTrack::flex(9, 1.),
+                            ..default()
+                        },
+                        ..default()
+                    },
+                ))
+                .with_children(|cb| {
+                    for i in 0..(INVENTORY_SIZE - HOTBAR_SIZE) {
+                        cb.spawn((
+                            Name::new(format!("Inventory Slot {}", i)),
+                            NodeBundle {
+                                background_color: Color::GREEN.into(),
+                                style: Style {
+                                    width: Val::Px(UI_SLOT_SIZE - 5.),
+                                    height: Val::Px(UI_SLOT_SIZE - 5.),
+                                    // margin: UiRect::all(Val::Px(3.)),
+                                    ..default()
+                                },
+                                ..default()
+                            },
+                        ));
+                    }
+                });
             });
         });
 
+    // Spawn hotbar holder
     commands
         .spawn((
             Name::new("Hotbar Holder"),
