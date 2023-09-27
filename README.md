@@ -15,7 +15,8 @@ A minecraft 2d clone built with rust and the bevy game engine.
   - [ ] Inventory
     - [x] Basic block switching system
     - [x] Inventory system
-    - [ ] Inventory graphics
+    - [x] Inventory graphics
+    - [ ] Inventory manipulation
   - [x] Building
     - [x] Placing blocks
     - [x] Breaking blocks
