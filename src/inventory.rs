@@ -120,6 +120,8 @@ fn spawn_ui(mut commands: Commands, ui_assets: Res<UiAssets>, block_graphics: Re
                     for i in 0..(INVENTORY_SIZE - HOTBAR_SIZE) {
                         cb.spawn((
                             Name::new(format!("Inventory Slot {}", i)),
+                            InventorySlotT,
+                            SlotNumber(i as u8),
                             NodeBundle {
                                 // background_color: Color::GREEN.into(),
                                 style: Style {
@@ -134,6 +136,8 @@ fn spawn_ui(mut commands: Commands, ui_assets: Res<UiAssets>, block_graphics: Re
                         .with_children(|cb| {
                             cb.spawn((
                                 Name::new("Inventory Slot Image"),
+                                InventorySlotImage,
+                                SlotNumber(i as u8),
                                 AtlasImageBundle {
                                     texture_atlas: block_graphics.atlas_handle.clone(),
                                     texture_atlas_image: UiTextureAtlasImage {
@@ -150,6 +154,8 @@ fn spawn_ui(mut commands: Commands, ui_assets: Res<UiAssets>, block_graphics: Re
 
                             cb.spawn((
                                 Name::new("Inventory Slot Text"),
+                                InventorySlotText,
+                                SlotNumber(i as u8),
                                 TextBundle {
                                     text: Text {
                                         sections: vec![TextSection::new(
@@ -212,16 +218,50 @@ fn toggle_inventory(
     };
 }
 
-fn update_inventory() {}
+fn update_inventory(
+    mut slot_texts: Query<
+        (&mut Text, &mut Visibility, &SlotNumber),
+        (With<InventorySlotText>, Without<InventorySlotImage>),
+    >,
+    mut slot_images: Query<
+        (&mut UiTextureAtlasImage, &mut Visibility, &SlotNumber),
+        (With<InventorySlotImage>, Without<InventorySlotText>),
+    >,
+    inventory: Res<Inv>,
+) {
+    for (mut slot_text, mut slot_visibility, slot_number) in slot_texts.iter_mut() {
+        match inventory.items[slot_number.0 as usize + HOTBAR_SIZE] {
+            Some(inventory_slot) => {
+                *slot_visibility = Visibility::Inherited;
+                slot_text.sections[0].value = if inventory_slot.quantity != 1 {
+                    inventory_slot.quantity.to_string()
+                } else {
+                    String::new()
+                };
+            }
+            None => *slot_visibility = Visibility::Hidden,
+        }
+    }
+
+    for (mut slot_image, mut slot_visibility, slot_number) in slot_images.iter_mut() {
+        match inventory.items[slot_number.0 as usize + HOTBAR_SIZE] {
+            Some(inventory_image) => {
+                *slot_visibility = Visibility::Inherited;
+                slot_image.index = inventory_image.kind.to_index();
+            }
+            None => *slot_visibility = Visibility::Hidden,
+        }
+    }
+}
 
 fn update_hotbar(
     mut slot_texts: Query<
         (&mut Text, &mut Visibility, &SlotNumber),
-        (With<SlotText>, Without<SlotImage>),
+        (With<HotbarSlotText>, Without<HotbarSlotImage>),
     >,
     mut slot_images: Query<
         (&mut UiTextureAtlasImage, &mut Visibility, &SlotNumber),
-        (With<SlotImage>, Without<SlotText>),
+        (With<HotbarSlotImage>, Without<HotbarSlotText>),
     >,
     inventory: Res<Inv>,
 ) {
@@ -251,7 +291,7 @@ fn update_hotbar(
 }
 
 fn update_hotbar_selected_slot(
-    mut slot_selector: Query<&mut Style, With<SlotSelector>>,
+    mut slot_selector: Query<&mut Style, With<HotbarSlotSelector>>,
     inventory: Res<Inv>,
 ) {
     if !inventory.is_changed() {
@@ -304,7 +344,7 @@ fn spawn_hotbar(
 fn spawn_slot_selector(cb: &mut ChildBuilder, ui_assets: &Res<UiAssets>) {
     cb.spawn((
         Name::new("Slot Selector"),
-        SlotSelector,
+        HotbarSlotSelector,
         ImageBundle {
             image: UiImage {
                 texture: ui_assets.hotbar_selected_slot_tex.clone(),
@@ -329,7 +369,7 @@ fn spawn_slot(
 ) {
     cb.spawn((
         Name::new("Slot ".to_string() + &number.to_string()),
-        Slot,
+        HotbarSlot,
         SlotNumber(number),
         NodeBundle {
             // background_color: Color::BLUE.into(),
@@ -350,7 +390,7 @@ fn spawn_slot(
 fn spawn_slot_image(cb: &mut ChildBuilder, number: u8, block_graphics: &Res<BlockGraphics>) {
     cb.spawn((
         Name::new("Slot Image"),
-        SlotImage,
+        HotbarSlotImage,
         SlotNumber(number),
         AtlasImageBundle {
             texture_atlas: block_graphics.atlas_handle.clone(),
@@ -370,7 +410,7 @@ fn spawn_slot_image(cb: &mut ChildBuilder, number: u8, block_graphics: &Res<Bloc
 fn spawn_slot_text(cb: &mut ChildBuilder, number: u8, ui_assets: &Res<UiAssets>) {
     cb.spawn((
         Name::new("Slot Text"),
-        SlotText,
+        HotbarSlotText,
         SlotNumber(number),
         TextBundle {
             text: Text {
@@ -531,16 +571,25 @@ struct HotbarUi;
 struct InventoryUi;
 
 #[derive(Component)]
-struct Slot;
+struct HotbarSlot;
 
 #[derive(Component)]
-struct SlotSelector;
+struct HotbarSlotSelector;
 
 #[derive(Component)]
-struct SlotImage;
+struct HotbarSlotImage;
 
 #[derive(Component)]
-struct SlotText;
+struct HotbarSlotText;
+
+#[derive(Component)]
+struct InventorySlotT;
+
+#[derive(Component)]
+struct InventorySlotImage;
+
+#[derive(Component)]
+struct InventorySlotText;
 
 #[derive(Component)]
 struct SlotNumber(u8);
