@@ -229,6 +229,10 @@ fn update_inventory(
     >,
     inventory: Res<Inv>,
 ) {
+    if !inventory.is_changed() {
+        return;
+    }
+
     for (mut slot_text, mut slot_visibility, slot_number) in slot_texts.iter_mut() {
         match inventory.items[slot_number.0 as usize + HOTBAR_SIZE] {
             Some(inventory_slot) => {
@@ -265,6 +269,10 @@ fn update_hotbar(
     >,
     inventory: Res<Inv>,
 ) {
+    if !inventory.is_changed() {
+        return;
+    }
+
     for (mut slot_text, mut slot_visibility, slot_number) in slot_texts.iter_mut() {
         match inventory.items[slot_number.0 as usize] {
             Some(inventory_slot) => {
