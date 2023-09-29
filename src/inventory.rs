@@ -18,13 +18,21 @@ const UI_INVENTORY_HEIGHT: f32 = UI_INVENTORY_WIDTH * UI_INVENTORY_RATIO;
 const UI_HOTBAR_RATIO: f32 = 91. / 11.;
 const UI_HOTBAR_BOTTOM_SPACING: f32 = 10.;
 
+const UI_HOTBAR_SIZE_MUTL: f32 = 2.;
+const UI_HOTBAR_PADDING: f32 = 3. * UI_HOTBAR_SIZE_MUTL;
+const UI_HOTBAR_SLOT_SIZE: f32 = 16. * UI_HOTBAR_SIZE_MUTL;
+const UI_HOTBAR_SPACE_BTW_SLOTS: f32 = 4. * UI_HOTBAR_SIZE_MUTL;
+const UI_HOTBAR_SLOT_PADDING: f32 = 2. * UI_HOTBAR_SIZE_MUTL;
+const UI_HOTBAR_SLOT_TEXT_SPACING: f32 = 1. * UI_HOTBAR_SIZE_MUTL;
+const UI_HOTBAR_SLOT_TEXT_FONT_SIZE: f32 = 8. * UI_HOTBAR_SIZE_MUTL;
+
 const UI_SLOT_ITEM_SIZE_RATIO: f32 = 10. / 13.;
 const UI_SLOT_SIZE: f32 = 52.;
 const UI_ITEM_SIZE: f32 = UI_SLOT_SIZE * UI_SLOT_ITEM_SIZE_RATIO;
 const UI_ITEM_MARGIN: f32 = 5.;
 // const UI_SLOT_SPACING: f32 = 4.;
-const UI_SLOT_FONT_SIZE: f32 = 18.;
-const UI_SLOT_FONT_SPACING: f32 = 2.;
+
+const MULT: f32 = 2.;
 
 // PLUGINS
 
@@ -161,7 +169,7 @@ fn spawn_ui(mut commands: Commands, ui_assets: Res<UiAssets>, block_graphics: Re
                                         sections: vec![TextSection::new(
                                             "64",
                                             TextStyle {
-                                                font_size: UI_SLOT_FONT_SIZE,
+                                                font_size: UI_HOTBAR_SLOT_TEXT_FONT_SIZE,
                                                 font: ui_assets.font.clone(),
                                                 ..default()
                                             },
@@ -170,8 +178,8 @@ fn spawn_ui(mut commands: Commands, ui_assets: Res<UiAssets>, block_graphics: Re
                                     },
                                     style: Style {
                                         position_type: PositionType::Absolute,
-                                        right: Val::Px(UI_SLOT_FONT_SPACING),
-                                        bottom: Val::Px(UI_SLOT_FONT_SPACING),
+                                        right: Val::Px(UI_HOTBAR_SLOT_TEXT_SPACING),
+                                        bottom: Val::Px(UI_HOTBAR_SLOT_TEXT_SPACING),
                                         ..default()
                                     },
                                     ..default()
@@ -325,16 +333,15 @@ fn spawn_hotbar(
                 ..default()
             },
             style: Style {
+                padding: UiRect::all(Val::Px(UI_HOTBAR_PADDING)),
                 width: Val::Px(
-                    UI_SLOT_SIZE * UI_HOTBAR_RATIO, // HOTBAR_SIZE as f32 * UI_SLOT_SIZE + (HOTBAR_SIZE as f32 - 1.) * UI_SLOT_SPACING,
+                    UI_HOTBAR_PADDING * 2.
+                        + UI_HOTBAR_SLOT_SIZE * HOTBAR_SIZE as f32
+                        + (HOTBAR_SIZE - 1) as f32 * UI_HOTBAR_SPACE_BTW_SLOTS,
                 ),
-                height: Val::Px(UI_SLOT_SIZE),
-                justify_content: JustifyContent::SpaceEvenly,
-                align_items: AlignItems::Center,
-                margin: UiRect {
-                    bottom: Val::Px(UI_HOTBAR_BOTTOM_SPACING),
-                    ..default()
-                },
+                height: Val::Px(UI_HOTBAR_SLOT_SIZE + UI_HOTBAR_PADDING * 2.),
+                justify_content: JustifyContent::SpaceBetween,
+                margin: UiRect::bottom(Val::Px(UI_HOTBAR_BOTTOM_SPACING)),
                 ..default()
             },
             ..default()
@@ -359,8 +366,8 @@ fn spawn_slot_selector(cb: &mut ChildBuilder, ui_assets: &Res<UiAssets>) {
                 ..default()
             },
             style: Style {
-                width: Val::Px(UI_SLOT_SIZE),
-                height: Val::Px(UI_SLOT_SIZE),
+                width: Val::Px(UI_HOTBAR_SLOT_SIZE),
+                height: Val::Px(UI_HOTBAR_SLOT_SIZE),
                 position_type: PositionType::Absolute,
                 ..default()
             },
@@ -382,8 +389,9 @@ fn spawn_slot(
         NodeBundle {
             // background_color: Color::BLUE.into(),
             style: Style {
-                width: Val::Px(UI_ITEM_SIZE),
-                height: Val::Px(UI_ITEM_SIZE),
+                width: Val::Px(UI_HOTBAR_SLOT_SIZE),
+                height: Val::Px(UI_HOTBAR_SLOT_SIZE),
+                padding: UiRect::all(Val::Px(UI_HOTBAR_SLOT_PADDING)),
                 ..default()
             },
             ..default()
@@ -407,7 +415,9 @@ fn spawn_slot_image(cb: &mut ChildBuilder, number: u8, block_graphics: &Res<Bloc
                 ..default()
             },
             style: Style {
-                margin: UiRect::all(Val::Px(UI_ITEM_MARGIN)),
+                width: Val::Percent(100.),
+                height: Val::Percent(100.),
+                // margin: UiRect::all(Val::Px(UI_ITEM_MARGIN)),
                 ..default()
             },
             ..default()
@@ -425,7 +435,7 @@ fn spawn_slot_text(cb: &mut ChildBuilder, number: u8, ui_assets: &Res<UiAssets>)
                 sections: vec![TextSection::new(
                     "64",
                     TextStyle {
-                        font_size: UI_SLOT_FONT_SIZE,
+                        font_size: UI_HOTBAR_SLOT_TEXT_FONT_SIZE,
                         font: ui_assets.font.clone(),
                         ..default()
                     },
@@ -434,8 +444,8 @@ fn spawn_slot_text(cb: &mut ChildBuilder, number: u8, ui_assets: &Res<UiAssets>)
             },
             style: Style {
                 position_type: PositionType::Absolute,
-                right: Val::Px(UI_SLOT_FONT_SPACING),
-                bottom: Val::Px(UI_SLOT_FONT_SPACING),
+                right: Val::Px(UI_HOTBAR_SLOT_TEXT_SPACING),
+                bottom: Val::Px(UI_HOTBAR_SLOT_TEXT_SPACING),
                 ..default()
             },
             ..default()
