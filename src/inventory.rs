@@ -42,6 +42,7 @@ impl Plugin for InventoryPlugin {
             // Resources
             .insert_resource(UiAssets::default())
             .insert_resource(Inv::default())
+            .insert_resource(IsInventoryOpen::default())
             // Systems
             .add_systems(PreStartup, load_assets)
             .add_systems(Startup, spawn_ui)
@@ -147,6 +148,7 @@ fn spawn_ui(mut commands: Commands, ui_assets: Res<UiAssets>, block_graphics: Re
 
 fn toggle_inventory(
     mut inventory: Query<&mut Visibility, With<InventoryUi>>,
+    mut is_inventory_open: ResMut<IsInventoryOpen>,
     keys: Res<Input<KeyCode>>,
 ) {
     if !keys.just_pressed(KeyCode::O) {
@@ -155,8 +157,14 @@ fn toggle_inventory(
 
     let mut inventory = inventory.single_mut();
     *inventory = match *inventory {
-        Visibility::Inherited | Visibility::Visible => Visibility::Hidden,
-        Visibility::Hidden => Visibility::Inherited,
+        Visibility::Inherited | Visibility::Visible => {
+            is_inventory_open.0 = false;
+            Visibility::Hidden
+        }
+        Visibility::Hidden => {
+            is_inventory_open.0 = true;
+            Visibility::Inherited
+        }
     };
 }
 
@@ -605,6 +613,9 @@ pub struct InventorySlot {
     pub kind: ItemKind,
     pub quantity: usize,
 }
+
+#[derive(Resource, Default)]
+pub struct IsInventoryOpen(pub bool);
 
 impl<const I: usize, const H: usize, const S: usize> Inventory<I, H, S> {
     pub fn add<T>(&mut self, kind: ItemKind, if_accepted_callback: T)

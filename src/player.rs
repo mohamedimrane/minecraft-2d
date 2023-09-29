@@ -8,7 +8,7 @@ use std::f32::consts::PI;
 use crate::{
     block::{Block, BlockBundle, BlockGraphics, BLOCK_SIZE},
     camera::MainCamera,
-    inventory::{Inv, InventorySlot},
+    inventory::{Inv, InventorySlot, IsInventoryOpen},
     item::{spawn_item, Item, ItemSensor},
     item_kind::{self, ItemKind},
     utils::{in_reach, leans_to_left, leans_to_right, map},
@@ -160,7 +160,12 @@ fn player_controller_movement(
     mut player_query: Query<(&Speed, &mut Velocity, &GlobalTransform)>,
     keys: Res<Input<KeyCode>>,
     rapier_context: Res<RapierContext>,
+    is_inventory_open: Res<IsInventoryOpen>,
 ) {
+    if is_inventory_open.0 {
+        return;
+    }
+
     for (speed, mut rb_vel, gtr) in player_query.iter_mut() {
         let left = keys.any_pressed([KeyCode::A, KeyCode::Left]);
         let right = keys.any_pressed([KeyCode::D, KeyCode::Right]);
@@ -373,7 +378,12 @@ fn change_direction(
     head_gtransform: Query<&GlobalTransform, With<PlayerGraphicsHead>>,
     window: Query<&Window, With<PrimaryWindow>>,
     camera: Query<(&Camera, &GlobalTransform), With<MainCamera>>,
+    is_inventory_open: Res<IsInventoryOpen>,
 ) {
+    if is_inventory_open.0 {
+        return;
+    }
+
     let window = window.single();
     let (camera, camera_transform) = camera.single();
 
@@ -468,7 +478,12 @@ fn select_block(
     mut last_pl_pos: ResMut<LastPlayerPosition>,
     window: Query<&Window, With<PrimaryWindow>>,
     camera: Query<(&Camera, &GlobalTransform), With<MainCamera>>,
+    is_inventory_open: Res<IsInventoryOpen>,
 ) {
+    if is_inventory_open.0 {
+        return;
+    }
+
     let window = window.single();
     let (camera, camera_transform) = camera.single();
 
@@ -536,7 +551,12 @@ fn place_block(
     mouse: Res<Input<MouseButton>>,
     window: Query<&Window, With<PrimaryWindow>>,
     camera: Query<(&Camera, &GlobalTransform), With<MainCamera>>,
+    is_inventory_open: Res<IsInventoryOpen>,
 ) {
+    if is_inventory_open.0 {
+        return;
+    }
+
     let window = window.single();
     let (camera, camera_transform) = camera.single();
 
@@ -601,7 +621,12 @@ fn break_block(
     window: Query<&Window, With<PrimaryWindow>>,
     camera: Query<(&Camera, &GlobalTransform), With<MainCamera>>,
     blocks_graphics: Res<BlockGraphics>,
+    is_inventory_open: Res<IsInventoryOpen>,
 ) {
+    if is_inventory_open.0 {
+        return;
+    }
+
     let window = window.single();
     let (camera, camera_transform) = camera.single();
 
