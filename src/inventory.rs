@@ -25,6 +25,7 @@ const UI_HOTBAR_SPACE_BTW_SLOTS: f32 = 4. * UI_HOTBAR_SIZE_MUTL;
 const UI_HOTBAR_SLOT_PADDING: f32 = 2. * UI_HOTBAR_SIZE_MUTL;
 const UI_HOTBAR_SLOT_TEXT_SPACING: f32 = 1. * UI_HOTBAR_SIZE_MUTL;
 const UI_HOTBAR_SLOT_TEXT_FONT_SIZE: f32 = 8. * UI_HOTBAR_SIZE_MUTL;
+const UI_HOTBAR_SLOT_SELECTOR_OFFSET: f32 = 1. * UI_HOTBAR_SIZE_MUTL;
 
 const UI_SLOT_ITEM_SIZE_RATIO: f32 = 10. / 13.;
 const UI_SLOT_SIZE: f32 = 52.;
@@ -315,7 +316,9 @@ fn update_hotbar_selected_slot(
     }
 
     let cursor = inventory.hotbar_cursor as f32;
-    slot_selector.single_mut().left = Val::Px(UI_SLOT_SIZE * cursor - cursor * UI_ITEM_MARGIN);
+    slot_selector.single_mut().left = Val::Px(
+        cursor * (UI_HOTBAR_SLOT_SIZE + UI_HOTBAR_SPACE_BTW_SLOTS) - UI_HOTBAR_SLOT_SELECTOR_OFFSET,
+    );
 }
 
 fn spawn_hotbar(
@@ -366,9 +369,10 @@ fn spawn_slot_selector(cb: &mut ChildBuilder, ui_assets: &Res<UiAssets>) {
                 ..default()
             },
             style: Style {
-                width: Val::Px(UI_HOTBAR_SLOT_SIZE),
-                height: Val::Px(UI_HOTBAR_SLOT_SIZE),
+                width: Val::Px(UI_HOTBAR_SLOT_SIZE + UI_HOTBAR_SPACE_BTW_SLOTS * 2.),
+                height: Val::Px(UI_HOTBAR_SLOT_SIZE + UI_HOTBAR_SPACE_BTW_SLOTS * 2.),
                 position_type: PositionType::Absolute,
+                bottom: Val::Px(-UI_HOTBAR_SPACE_BTW_SLOTS / 4.),
                 ..default()
             },
             ..default()
