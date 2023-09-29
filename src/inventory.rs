@@ -58,7 +58,8 @@ impl Plugin for InventoryPlugin {
             )
             // Reflection
             .register_type::<Inv>()
-            .add_plugins(ResourceInspectorPlugin::<Inv>::default());
+            // .add_plugins(ResourceInspectorPlugin::<Inv>::default())
+        ;
     }
 }
 
