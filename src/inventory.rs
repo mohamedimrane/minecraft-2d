@@ -1,5 +1,5 @@
 use bevy::prelude::*;
-use bevy_inspector_egui::quick::ResourceInspectorPlugin;
+
 
 use crate::{block::BlockGraphics, item_kind::ItemKind};
 

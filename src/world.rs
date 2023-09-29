@@ -5,8 +5,8 @@ use crate::{
     utils::in_bounds_y as inside,
 };
 use bevy::{math::vec2, prelude::*};
-use bevy_editor_pls::default_windows::inspector;
-use bevy_inspector_egui::{prelude::*, quick::ResourceInspectorPlugin};
+
+use bevy_inspector_egui::{prelude::*};
 use bracket_noise::prelude::*;
 use rand::{Rng, SeedableRng};
 use rand_chacha::ChaCha8Rng;
@@ -299,7 +299,7 @@ fn generate_chunk(
         noise.set_frequency(stgs.biomes.frequency);
         for x in (CHUNK_SIZE * chunk_x) + 1..=(CHUNK_SIZE * (chunk_x) + CHUNK_SIZE) {
             noise.set_frequency(stgs.biomes.frequency);
-            let biome_v = noise.get_noise(x as f32 / stgs.biomes.divider, 1.);
+            let _biome_v = noise.get_noise(x as f32 / stgs.biomes.divider, 1.);
             // let bstgs = match biome_v {
             //     _ if biome_v <= stgs.biomes.desert.v => &stgs.biomes.desert,
             //     _ if biome_v <= stgs.biomes.plain.v => &stgs.biomes.plain,

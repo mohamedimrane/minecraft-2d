@@ -8,9 +8,9 @@ use std::f32::consts::PI;
 use crate::{
     block::{Block, BlockBundle, BlockGraphics, BLOCK_SIZE},
     camera::MainCamera,
-    inventory::{Inv, InventorySlot, IsInventoryOpen},
+    inventory::{Inv, IsInventoryOpen},
     item::{spawn_item, Item, ItemSensor},
-    item_kind::{self, ItemKind},
+    item_kind::{ItemKind},
     utils::{in_reach, leans_to_left, leans_to_right, map},
     world::{Chunk, ChunkPosition, PlayerChunkPosition, World},
 };
