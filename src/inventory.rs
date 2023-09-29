@@ -120,106 +120,9 @@ fn spawn_ui(mut commands: Commands, ui_assets: Res<UiAssets>, block_graphics: Re
                 },
             ))
             .with_children(|cb| {
-                cb.spawn((
-                    Name::new("Inventory Top Section"),
-                    NodeBundle {
-                        style: Style {
-                            width: Val::Percent(100.),
-                            height: Val::Px(UI_INVENTORY_TOP_SECTION_HEIGHT),
-                            ..default()
-                        },
-                        ..default()
-                    },
-                ));
-
-                cb.spawn((
-                    Name::new("Inventory Items Grid"),
-                    NodeBundle {
-                        style: Style {
-                            width: Val::Percent(100.),
-                            height: Val::Px(
-                                UI_INVENTORY_SLOT_SIZE * 3. + UI_INVENTORY_SPACE_BTW_SLOTS * 2.,
-                            ),
-                            display: Display::Grid,
-                            grid_template_columns: RepeatedGridTrack::flex(9, 1.),
-                            column_gap: Val::Px(UI_INVENTORY_SPACE_BTW_SLOTS),
-                            row_gap: Val::Px(UI_INVENTORY_SPACE_BTW_SLOTS),
-                            ..default()
-                        },
-                        ..default()
-                    },
-                ))
-                .with_children(|cb| {
-                    for i in 0..(INVENTORY_SIZE - HOTBAR_SIZE) {
-                        cb.spawn((
-                            Name::new(format!("Inventory Slot {}", i)),
-                            InventorySlotT,
-                            SlotNumber(i as u8),
-                            NodeBundle {
-                                style: Style {
-                                    width: Val::Px(UI_INVENTORY_SLOT_SIZE),
-                                    height: Val::Px(UI_INVENTORY_SLOT_SIZE),
-                                    padding: UiRect::all(Val::Px(UI_INVENTORY_SLOT_PADDING)),
-                                    ..default()
-                                },
-                                ..default()
-                            },
-                        ))
-                        .with_children(|cb| {
-                            cb.spawn((
-                                Name::new("Inventory Slot Image"),
-                                InventorySlotImage,
-                                SlotNumber(i as u8),
-                                AtlasImageBundle {
-                                    texture_atlas: block_graphics.atlas_handle.clone(),
-                                    texture_atlas_image: UiTextureAtlasImage {
-                                        index: 0,
-                                        ..default()
-                                    },
-                                    ..default()
-                                },
-                            ));
-
-                            cb.spawn((
-                                Name::new("Inventory Slot Text"),
-                                InventorySlotText,
-                                SlotNumber(i as u8),
-                                TextBundle {
-                                    text: Text {
-                                        sections: vec![TextSection::new(
-                                            "64",
-                                            TextStyle {
-                                                font_size: UI_INVENTORY_SLOT_TEXT_FONT_SIZE,
-                                                font: ui_assets.font.clone(),
-                                                ..default()
-                                            },
-                                        )],
-                                        ..default()
-                                    },
-                                    style: Style {
-                                        position_type: PositionType::Absolute,
-                                        right: Val::Px(UI_INVENTORY_SLOT_TEXT_SPACING),
-                                        bottom: Val::Px(UI_INVENTORY_SLOT_TEXT_SPACING),
-                                        ..default()
-                                    },
-                                    ..default()
-                                },
-                            ));
-                        });
-                    }
-                });
-
-                cb.spawn((
-                    Name::new("Inventory Hotbar"),
-                    NodeBundle {
-                        style: Style {
-                            width: Val::Percent(100.),
-                            height: Val::Px(UI_INVENTORY_SLOT_SIZE),
-                            ..default()
-                        },
-                        ..default()
-                    },
-                ));
+                spawn_inventory_top_section(cb);
+                spawn_inventory_item_section_section(cb, &ui_assets, &block_graphics);
+                spawn_inventory_hotbar_section(cb);
             });
         });
 
@@ -349,6 +252,115 @@ fn update_hotbar_selected_slot(
     slot_selector.single_mut().left = Val::Px(
         cursor * (UI_HOTBAR_SLOT_SIZE + UI_HOTBAR_SPACE_BTW_SLOTS) - UI_HOTBAR_SLOT_SELECTOR_OFFSET,
     );
+}
+
+fn spawn_inventory_top_section(cb: &mut ChildBuilder) {
+    cb.spawn((
+        Name::new("Inventory Top Section"),
+        NodeBundle {
+            style: Style {
+                width: Val::Percent(100.),
+                height: Val::Px(UI_INVENTORY_TOP_SECTION_HEIGHT),
+                ..default()
+            },
+            ..default()
+        },
+    ));
+}
+
+fn spawn_inventory_item_section_section(
+    cb: &mut ChildBuilder,
+    ui_assets: &Res<UiAssets>,
+    block_graphics: &Res<BlockGraphics>,
+) {
+    cb.spawn((
+        Name::new("Inventory Items Grid"),
+        NodeBundle {
+            style: Style {
+                width: Val::Percent(100.),
+                height: Val::Px(UI_INVENTORY_SLOT_SIZE * 3. + UI_INVENTORY_SPACE_BTW_SLOTS * 2.),
+                display: Display::Grid,
+                grid_template_columns: RepeatedGridTrack::flex(9, 1.),
+                column_gap: Val::Px(UI_INVENTORY_SPACE_BTW_SLOTS),
+                row_gap: Val::Px(UI_INVENTORY_SPACE_BTW_SLOTS),
+                ..default()
+            },
+            ..default()
+        },
+    ))
+    .with_children(|cb| {
+        for i in 0..(INVENTORY_SIZE - HOTBAR_SIZE) {
+            cb.spawn((
+                Name::new(format!("Inventory Slot {}", i)),
+                InventorySlotT,
+                SlotNumber(i as u8),
+                NodeBundle {
+                    style: Style {
+                        width: Val::Px(UI_INVENTORY_SLOT_SIZE),
+                        height: Val::Px(UI_INVENTORY_SLOT_SIZE),
+                        padding: UiRect::all(Val::Px(UI_INVENTORY_SLOT_PADDING)),
+                        ..default()
+                    },
+                    ..default()
+                },
+            ))
+            .with_children(|cb| {
+                cb.spawn((
+                    Name::new("Inventory Slot Image"),
+                    InventorySlotImage,
+                    SlotNumber(i as u8),
+                    AtlasImageBundle {
+                        texture_atlas: block_graphics.atlas_handle.clone(),
+                        texture_atlas_image: UiTextureAtlasImage {
+                            index: 0,
+                            ..default()
+                        },
+                        ..default()
+                    },
+                ));
+
+                cb.spawn((
+                    Name::new("Inventory Slot Text"),
+                    InventorySlotText,
+                    SlotNumber(i as u8),
+                    TextBundle {
+                        text: Text {
+                            sections: vec![TextSection::new(
+                                "64",
+                                TextStyle {
+                                    font_size: UI_INVENTORY_SLOT_TEXT_FONT_SIZE,
+                                    font: ui_assets.font.clone(),
+                                    ..default()
+                                },
+                            )],
+                            ..default()
+                        },
+                        style: Style {
+                            position_type: PositionType::Absolute,
+                            right: Val::Px(UI_INVENTORY_SLOT_TEXT_SPACING),
+                            bottom: Val::Px(UI_INVENTORY_SLOT_TEXT_SPACING),
+                            ..default()
+                        },
+                        ..default()
+                    },
+                ));
+            });
+        }
+    });
+}
+
+fn spawn_inventory_hotbar_section(cb: &mut ChildBuilder) {
+    cb.spawn((
+        Name::new("Inventory Hotbar"),
+        NodeBundle {
+            style: Style {
+                width: Val::Percent(100.),
+                height: Val::Px(UI_INVENTORY_SLOT_SIZE),
+                ..default()
+            },
+            ..default()
+        },
+    ));
 }
 
 fn spawn_hotbar(
