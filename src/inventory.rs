@@ -15,7 +15,6 @@ const UI_INVENTORY_RATIO: f32 = 166. / 176.;
 const UI_INVENTORY_WIDTH: f32 = (UI_SLOT_SIZE - 0.) * HOTBAR_SIZE as f32 + 32.;
 const UI_INVENTORY_HEIGHT: f32 = UI_INVENTORY_WIDTH * UI_INVENTORY_RATIO;
 
-const UI_HOTBAR_RATIO: f32 = 91. / 11.;
 const UI_HOTBAR_BOTTOM_SPACING: f32 = 10.;
 
 const UI_HOTBAR_SIZE_MUTL: f32 = 2.;
@@ -26,6 +25,16 @@ const UI_HOTBAR_SLOT_PADDING: f32 = 2. * UI_HOTBAR_SIZE_MUTL;
 const UI_HOTBAR_SLOT_TEXT_SPACING: f32 = 1. * UI_HOTBAR_SIZE_MUTL;
 const UI_HOTBAR_SLOT_TEXT_FONT_SIZE: f32 = 8. * UI_HOTBAR_SIZE_MUTL;
 const UI_HOTBAR_SLOT_SELECTOR_OFFSET: f32 = 1. * UI_HOTBAR_SIZE_MUTL;
+
+const UI_INVENTORY_SIZE_MUTL: f32 = 2.;
+const UI_INVENTORY_PADDING: f32 = 8. * UI_INVENTORY_SIZE_MUTL;
+const UI_INVENTORY_SLOT_SIZE: f32 = 16. * UI_INVENTORY_SIZE_MUTL;
+const UI_INVENTORY_SPACE_BTW_SLOTS: f32 = 2. * UI_INVENTORY_SIZE_MUTL;
+const UI_INVENTORY_SLOT_PADDING: f32 = 1. * UI_INVENTORY_SIZE_MUTL;
+const UI_INVENTORY_SLOT_TEXT_SPACING: f32 = 1. * UI_INVENTORY_SIZE_MUTL;
+const UI_INVENTORY_SLOT_TEXT_FONT_SIZE: f32 = 8. * UI_INVENTORY_SIZE_MUTL;
+const UI_INVENTORY_SECTIONS_SPACING: f32 = 6. * UI_INVENTORY_SIZE_MUTL;
+const UI_INVENTORY_TOP_SECTION_HEIGHT: f32 = 70. * UI_INVENTORY_SIZE_MUTL;
 
 const UI_SLOT_ITEM_SIZE_RATIO: f32 = 10. / 13.;
 const UI_SLOT_SIZE: f32 = 52.;
@@ -101,8 +110,22 @@ fn spawn_ui(mut commands: Commands, ui_assets: Res<UiAssets>, block_graphics: Re
                         ..default()
                     },
                     style: Style {
-                        width: Val::Px(UI_INVENTORY_WIDTH),
-                        height: Val::Px(UI_INVENTORY_HEIGHT),
+                        width: Val::Px(
+                            UI_INVENTORY_PADDING * 2.
+                                + HOTBAR_SIZE as f32 * UI_INVENTORY_SLOT_SIZE
+                                + (HOTBAR_SIZE - 1) as f32 * UI_INVENTORY_SPACE_BTW_SLOTS,
+                        ),
+                        height: Val::Px(
+                            UI_INVENTORY_PADDING * 2.
+                                + UI_INVENTORY_TOP_SECTION_HEIGHT
+                                + UI_INVENTORY_SECTIONS_SPACING * 2.
+                                + UI_INVENTORY_SLOT_SIZE * 3.
+                                + UI_INVENTORY_SPACE_BTW_SLOTS * 2.
+                                + UI_INVENTORY_SLOT_SIZE,
+                        ),
+                        padding: UiRect::all(Val::Px(UI_INVENTORY_PADDING)),
+                        flex_direction: FlexDirection::Column,
+                        justify_content: JustifyContent::SpaceBetween,
                         ..default()
                     },
                     ..default()
@@ -110,16 +133,35 @@ fn spawn_ui(mut commands: Commands, ui_assets: Res<UiAssets>, block_graphics: Re
             ))
             .with_children(|cb| {
                 cb.spawn((
+                    Name::new("Inventory Top Section"),
+                    NodeBundle {
+                        // background_color: Color::RED.into(),
+                        style: Style {
+                            width: Val::Percent(100.),
+                            height: Val::Px(UI_INVENTORY_TOP_SECTION_HEIGHT),
+                            ..default()
+                        },
+                        ..default()
+                    },
+                ));
+
+                cb.spawn((
                     Name::new("Inventory Items Grid"),
                     NodeBundle {
+                        // background_color: Color::CRIMSON.into(),
                         style: Style {
-                            height: Val::Px(UI_SLOT_SIZE * 3. + 2.),
-                            width: Val::Px(UI_SLOT_SIZE * 9.),
+                            // width: Val::Px(
+                            //     UI_INVENTORY_SLOT_SIZE * HOTBAR_SIZE as f32
+                            //         + (HOTBAR_SIZE - 1) as f32 * UI_INVENTORY_SPACE_BTW_SLOTS,
+                            // ),
+                            width: Val::Percent(100.),
+                            height: Val::Px(
+                                UI_INVENTORY_SLOT_SIZE * 3. + UI_INVENTORY_SPACE_BTW_SLOTS * 2.,
+                            ),
                             display: Display::Grid,
-                            position_type: PositionType::Absolute,
-                            bottom: Val::Px(UI_SLOT_SIZE + 30.),
-                            left: Val::Px(10.),
                             grid_template_columns: RepeatedGridTrack::flex(9, 1.),
+                            column_gap: Val::Px(UI_INVENTORY_SPACE_BTW_SLOTS),
+                            row_gap: Val::Px(UI_INVENTORY_SPACE_BTW_SLOTS),
                             ..default()
                         },
                         ..default()
@@ -134,9 +176,9 @@ fn spawn_ui(mut commands: Commands, ui_assets: Res<UiAssets>, block_graphics: Re
                             NodeBundle {
                                 // background_color: Color::GREEN.into(),
                                 style: Style {
-                                    width: Val::Px(UI_SLOT_SIZE - 5.),
-                                    height: Val::Px(UI_SLOT_SIZE - 5.),
-                                    // margin: UiRect::all(Val::Px(3.)),
+                                    width: Val::Px(UI_INVENTORY_SLOT_SIZE),
+                                    height: Val::Px(UI_INVENTORY_SLOT_SIZE),
+                                    padding: UiRect::all(Val::Px(UI_INVENTORY_SLOT_PADDING)),
                                     ..default()
                                 },
                                 ..default()
@@ -153,10 +195,10 @@ fn spawn_ui(mut commands: Commands, ui_assets: Res<UiAssets>, block_graphics: Re
                                         index: 0,
                                         ..default()
                                     },
-                                    style: Style {
-                                        margin: UiRect::all(Val::Px(UI_ITEM_MARGIN)),
-                                        ..default()
-                                    },
+                                    // style: Style {
+                                    //     padding: UiRect::all(Val::Px(UI_INVENTORY_SLOT_PADDING)),
+                                    //     ..default()
+                                    // },
                                     ..default()
                                 },
                             ));
@@ -170,7 +212,7 @@ fn spawn_ui(mut commands: Commands, ui_assets: Res<UiAssets>, block_graphics: Re
                                         sections: vec![TextSection::new(
                                             "64",
                                             TextStyle {
-                                                font_size: UI_HOTBAR_SLOT_TEXT_FONT_SIZE,
+                                                font_size: UI_INVENTORY_SLOT_TEXT_FONT_SIZE,
                                                 font: ui_assets.font.clone(),
                                                 ..default()
                                             },
@@ -179,8 +221,8 @@ fn spawn_ui(mut commands: Commands, ui_assets: Res<UiAssets>, block_graphics: Re
                                     },
                                     style: Style {
                                         position_type: PositionType::Absolute,
-                                        right: Val::Px(UI_HOTBAR_SLOT_TEXT_SPACING),
-                                        bottom: Val::Px(UI_HOTBAR_SLOT_TEXT_SPACING),
+                                        right: Val::Px(UI_INVENTORY_SLOT_TEXT_SPACING),
+                                        bottom: Val::Px(UI_INVENTORY_SLOT_TEXT_SPACING),
                                         ..default()
                                     },
                                     ..default()
@@ -189,6 +231,19 @@ fn spawn_ui(mut commands: Commands, ui_assets: Res<UiAssets>, block_graphics: Re
                         });
                     }
                 });
+
+                cb.spawn((
+                    Name::new("Inventory Hotbar"),
+                    NodeBundle {
+                        // background_color: Color::BLUE.into(),
+                        style: Style {
+                            width: Val::Percent(100.),
+                            height: Val::Px(UI_INVENTORY_SLOT_SIZE),
+                            ..default()
+                        },
+                        ..default()
+                    },
+                ));
             });
         });
 
