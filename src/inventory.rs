@@ -122,7 +122,7 @@ fn spawn_ui(mut commands: Commands, ui_assets: Res<UiAssets>, block_graphics: Re
             .with_children(|cb| {
                 spawn_inventory_top_section(cb);
                 spawn_inventory_item_section_section(cb, &ui_assets, &block_graphics);
-                spawn_inventory_hotbar_section(cb);
+                spawn_inventory_hotbar_section(cb, &ui_assets, &block_graphics);
             });
         });
 
@@ -163,11 +163,11 @@ fn toggle_inventory(
 fn update_inventory(
     mut slot_texts: Query<
         (&mut Text, &mut Visibility, &SlotNumber),
-        (With<InventorySlotText>, Without<InventorySlotImage>),
+        (With<InventorySlotTextUi>, Without<InventorySlotImageUi>),
     >,
     mut slot_images: Query<
         (&mut UiTextureAtlasImage, &mut Visibility, &SlotNumber),
-        (With<InventorySlotImage>, Without<InventorySlotText>),
+        (With<InventorySlotImageUi>, Without<InventorySlotTextUi>),
     >,
     inventory: Res<Inv>,
 ) {
@@ -203,11 +203,11 @@ fn update_inventory(
 fn update_hotbar(
     mut slot_texts: Query<
         (&mut Text, &mut Visibility, &SlotNumber),
-        (With<HotbarSlotText>, Without<HotbarSlotImage>),
+        (With<HotbarSlotTextUi>, Without<HotbarSlotImageUi>),
     >,
     mut slot_images: Query<
         (&mut UiTextureAtlasImage, &mut Visibility, &SlotNumber),
-        (With<HotbarSlotImage>, Without<HotbarSlotText>),
+        (With<HotbarSlotImageUi>, Without<HotbarSlotTextUi>),
     >,
     inventory: Res<Inv>,
 ) {
@@ -241,7 +241,7 @@ fn update_hotbar(
 }
 
 fn update_hotbar_selected_slot(
-    mut slot_selector: Query<&mut Style, With<HotbarSlotSelector>>,
+    mut slot_selector: Query<&mut Style, With<HotbarSlotSelectorUi>>,
     inventory: Res<Inv>,
 ) {
     if !inventory.is_changed() {
@@ -292,7 +292,7 @@ fn spawn_inventory_item_section_section(
         for i in 0..(INVENTORY_SIZE - HOTBAR_SIZE) {
             cb.spawn((
                 Name::new(format!("Inventory Slot {}", i)),
-                InventorySlotT,
+                InventorySlotUi,
                 SlotNumber(i as u8),
                 NodeBundle {
                     style: Style {
@@ -307,7 +307,7 @@ fn spawn_inventory_item_section_section(
             .with_children(|cb| {
                 cb.spawn((
                     Name::new("Inventory Slot Image"),
-                    InventorySlotImage,
+                    InventorySlotImageUi,
                     SlotNumber(i as u8),
                     AtlasImageBundle {
                         texture_atlas: block_graphics.atlas_handle.clone(),
@@ -321,7 +321,7 @@ fn spawn_inventory_item_section_section(
 
                 cb.spawn((
                     Name::new("Inventory Slot Text"),
-                    InventorySlotText,
+                    InventorySlotTextUi,
                     SlotNumber(i as u8),
                     TextBundle {
                         text: Text {
@@ -349,18 +349,91 @@ fn spawn_inventory_item_section_section(
     });
 }
 
-fn spawn_inventory_hotbar_section(cb: &mut ChildBuilder) {
+fn spawn_inventory_hotbar_section(
+    cb: &mut ChildBuilder,
+    ui_assets: &Res<UiAssets>,
+    block_graphics: &Res<BlockGraphics>,
+) {
     cb.spawn((
         Name::new("Inventory Hotbar"),
         NodeBundle {
             style: Style {
                 width: Val::Percent(100.),
                 height: Val::Px(UI_INVENTORY_SLOT_SIZE),
+                display: Display::Grid,
+                grid_template_columns: RepeatedGridTrack::flex(9, 1.),
+                column_gap: Val::Px(UI_INVENTORY_SPACE_BTW_SLOTS),
+                row_gap: Val::Px(UI_INVENTORY_SPACE_BTW_SLOTS),
                 ..default()
             },
             ..default()
         },
-    ));
+    ))
+    .with_children(|cb| {
+        for i in 0..HOTBAR_SIZE {
+            cb.spawn((
+                Name::new(format!("Inventory Hotbar Slot {}", i)),
+                HotbarSlotUi,
+                SlotNumber(i as u8),
+                NodeBundle {
+                    style: Style {
+                        width: Val::Px(UI_INVENTORY_SLOT_SIZE),
+                        height: Val::Px(UI_INVENTORY_SLOT_SIZE),
+                        padding: UiRect::all(Val::Px(UI_INVENTORY_SLOT_PADDING)),
+                        ..default()
+                    },
+                    ..default()
+                },
+            ))
+            .with_children(|cb| {
+                cb.spawn((
+                    Name::new("Inventory Hotbar Slot Image"),
+                    HotbarSlotImageUi,
+                    SlotNumber(i as u8),
+                    AtlasImageBundle {
+                        texture_atlas: block_graphics.atlas_handle.clone(),
+                        texture_atlas_image: UiTextureAtlasImage {
+                            index: 0,
+                            ..default()
+                        },
+                        style: Style {
+                            width: Val::Percent(100.),
+                            height: Val::Percent(100.),
+                            padding: UiRect::all(Val::Px(UI_INVENTORY_SLOT_PADDING)),
+                            ..default()
+                        },
+                        ..default()
+                    },
+                ));
+
+                cb.spawn((
+                    Name::new("Inventory Hotbar Slot Text"),
+                    HotbarSlotTextUi,
+                    SlotNumber(i as u8),
+                    TextBundle {
+                        text: Text {
+                            sections: vec![TextSection::new(
+                                "64",
+                                TextStyle {
+                                    font_size: UI_HOTBAR_SLOT_TEXT_FONT_SIZE,
+                                    font: ui_assets.font.clone(),
+                                    ..default()
+                                },
+                            )],
+                            ..default()
+                        },
+                        style: Style {
+                            position_type: PositionType::Absolute,
+                            right: Val::Px(UI_HOTBAR_SLOT_TEXT_SPACING),
+                            bottom: Val::Px(UI_HOTBAR_SLOT_TEXT_SPACING),
+                            ..default()
+                        },
+                        ..default()
+                    },
+                ));
+            });
+        }
+    });
 }
 
 fn spawn_hotbar(
@@ -372,7 +445,6 @@ fn spawn_hotbar(
         Name::new("Hotbar"),
         HotbarUi,
         ImageBundle {
-            // background_color: Color::RED.into(),
             image: UiImage {
                 texture: ui_assets.hotbar_tex.clone(),
                 ..default()
@@ -396,15 +468,15 @@ fn spawn_hotbar(
         spawn_slot_selector(cb, ui_assets);
 
         for i in 0..HOTBAR_SIZE {
-            spawn_slot(cb, i as u8, ui_assets, block_graphics);
+            spawn_hotbar_slot(cb, i as u8, ui_assets, block_graphics);
         }
     });
 }
 
 fn spawn_slot_selector(cb: &mut ChildBuilder, ui_assets: &Res<UiAssets>) {
     cb.spawn((
-        Name::new("Slot Selector"),
-        HotbarSlotSelector,
+        Name::new("Hotbar Slot Selector"),
+        HotbarSlotSelectorUi,
         ImageBundle {
             image: UiImage {
                 texture: ui_assets.hotbar_selected_slot_tex.clone(),
@@ -422,18 +494,17 @@ fn spawn_slot_selector(cb: &mut ChildBuilder, ui_assets: &Res<UiAssets>) {
     ));
 }
 
-fn spawn_slot(
+fn spawn_hotbar_slot(
     cb: &mut ChildBuilder,
     number: u8,
     ui_assets: &Res<UiAssets>,
     block_graphics: &Res<BlockGraphics>,
 ) {
     cb.spawn((
-        Name::new("Slot ".to_string() + &number.to_string()),
-        HotbarSlot,
+        Name::new(format!("Hotbar Slot {}", number)),
+        HotbarSlotUi,
         SlotNumber(number),
         NodeBundle {
-            // background_color: Color::BLUE.into(),
             style: Style {
                 width: Val::Px(UI_HOTBAR_SLOT_SIZE),
                 height: Val::Px(UI_HOTBAR_SLOT_SIZE),
@@ -444,59 +515,51 @@ fn spawn_slot(
         },
     ))
     .with_children(|cb| {
-        spawn_slot_image(cb, number, block_graphics);
-        spawn_slot_text(cb, number, ui_assets)
+        cb.spawn((
+            Name::new("Hotbar Slot Image"),
+            HotbarSlotImageUi,
+            SlotNumber(number),
+            AtlasImageBundle {
+                texture_atlas: block_graphics.atlas_handle.clone(),
+                texture_atlas_image: UiTextureAtlasImage {
+                    index: 0,
+                    ..default()
+                },
+                style: Style {
+                    width: Val::Percent(100.),
+                    height: Val::Percent(100.),
+                    ..default()
+                },
+                ..default()
+            },
+        ));
+
+        cb.spawn((
+            Name::new("Hotbar Slot Text"),
+            HotbarSlotTextUi,
+            SlotNumber(number),
+            TextBundle {
+                text: Text {
+                    sections: vec![TextSection::new(
+                        "64",
+                        TextStyle {
+                            font_size: UI_HOTBAR_SLOT_TEXT_FONT_SIZE,
+                            font: ui_assets.font.clone(),
+                            ..default()
+                        },
+                    )],
+                    ..default()
+                },
+                style: Style {
+                    position_type: PositionType::Absolute,
+                    right: Val::Px(UI_HOTBAR_SLOT_TEXT_SPACING),
+                    bottom: Val::Px(UI_HOTBAR_SLOT_TEXT_SPACING),
+                    ..default()
+                },
+                ..default()
+            },
+        ));
     });
-}
-
-fn spawn_slot_image(cb: &mut ChildBuilder, number: u8, block_graphics: &Res<BlockGraphics>) {
-    cb.spawn((
-        Name::new("Slot Image"),
-        HotbarSlotImage,
-        SlotNumber(number),
-        AtlasImageBundle {
-            texture_atlas: block_graphics.atlas_handle.clone(),
-            texture_atlas_image: UiTextureAtlasImage {
-                index: 0,
-                ..default()
-            },
-            style: Style {
-                width: Val::Percent(100.),
-                height: Val::Percent(100.),
-                // margin: UiRect::all(Val::Px(UI_ITEM_MARGIN)),
-                ..default()
-            },
-            ..default()
-        },
-    ));
-}
-
-fn spawn_slot_text(cb: &mut ChildBuilder, number: u8, ui_assets: &Res<UiAssets>) {
-    cb.spawn((
-        Name::new("Slot Text"),
-        HotbarSlotText,
-        SlotNumber(number),
-        TextBundle {
-            text: Text {
-                sections: vec![TextSection::new(
-                    "64",
-                    TextStyle {
-                        font_size: UI_HOTBAR_SLOT_TEXT_FONT_SIZE,
-                        font: ui_assets.font.clone(),
-                        ..default()
-                    },
-                )],
-                ..default()
-            },
-            style: Style {
-                position_type: PositionType::Absolute,
-                right: Val::Px(UI_HOTBAR_SLOT_TEXT_SPACING),
-                bottom: Val::Px(UI_HOTBAR_SLOT_TEXT_SPACING),
-                ..default()
-            },
-            ..default()
-        },
-    ));
 }
 
 fn manage_hotbar_cursor(mut inventory: ResMut<Inv>, keys: Res<Input<KeyCode>>) {
@@ -635,25 +698,25 @@ struct HotbarUi;
 struct InventoryUi;
 
 #[derive(Component)]
-struct HotbarSlot;
+struct HotbarSlotUi;
 
 #[derive(Component)]
-struct HotbarSlotSelector;
+struct HotbarSlotSelectorUi;
 
 #[derive(Component)]
-struct HotbarSlotImage;
+struct HotbarSlotImageUi;
 
 #[derive(Component)]
-struct HotbarSlotText;
+struct HotbarSlotTextUi;
 
 #[derive(Component)]
-struct InventorySlotT;
+struct InventorySlotUi;
 
 #[derive(Component)]
-struct InventorySlotImage;
+struct InventorySlotImageUi;
 
 #[derive(Component)]
-struct InventorySlotText;
+struct InventorySlotTextUi;
 
 #[derive(Component)]
 struct SlotNumber(u8);
