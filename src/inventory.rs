@@ -11,10 +11,6 @@ const INVENTORY_SIZE: usize = 36;
 const HOTBAR_SIZE: usize = 9;
 const STACK_SIZE: usize = 5;
 
-const UI_INVENTORY_RATIO: f32 = 166. / 176.;
-const UI_INVENTORY_WIDTH: f32 = (UI_SLOT_SIZE - 0.) * HOTBAR_SIZE as f32 + 32.;
-const UI_INVENTORY_HEIGHT: f32 = UI_INVENTORY_WIDTH * UI_INVENTORY_RATIO;
-
 const UI_HOTBAR_BOTTOM_SPACING: f32 = 10.;
 
 const UI_HOTBAR_SIZE_MUTL: f32 = 2.;
@@ -35,14 +31,6 @@ const UI_INVENTORY_SLOT_TEXT_SPACING: f32 = 1. * UI_INVENTORY_SIZE_MUTL;
 const UI_INVENTORY_SLOT_TEXT_FONT_SIZE: f32 = 8. * UI_INVENTORY_SIZE_MUTL;
 const UI_INVENTORY_SECTIONS_SPACING: f32 = 6. * UI_INVENTORY_SIZE_MUTL;
 const UI_INVENTORY_TOP_SECTION_HEIGHT: f32 = 70. * UI_INVENTORY_SIZE_MUTL;
-
-const UI_SLOT_ITEM_SIZE_RATIO: f32 = 10. / 13.;
-const UI_SLOT_SIZE: f32 = 52.;
-const UI_ITEM_SIZE: f32 = UI_SLOT_SIZE * UI_SLOT_ITEM_SIZE_RATIO;
-const UI_ITEM_MARGIN: f32 = 5.;
-// const UI_SLOT_SPACING: f32 = 4.;
-
-const MULT: f32 = 2.;
 
 // PLUGINS
 
@@ -135,7 +123,6 @@ fn spawn_ui(mut commands: Commands, ui_assets: Res<UiAssets>, block_graphics: Re
                 cb.spawn((
                     Name::new("Inventory Top Section"),
                     NodeBundle {
-                        // background_color: Color::RED.into(),
                         style: Style {
                             width: Val::Percent(100.),
                             height: Val::Px(UI_INVENTORY_TOP_SECTION_HEIGHT),
@@ -148,12 +135,7 @@ fn spawn_ui(mut commands: Commands, ui_assets: Res<UiAssets>, block_graphics: Re
                 cb.spawn((
                     Name::new("Inventory Items Grid"),
                     NodeBundle {
-                        // background_color: Color::CRIMSON.into(),
                         style: Style {
-                            // width: Val::Px(
-                            //     UI_INVENTORY_SLOT_SIZE * HOTBAR_SIZE as f32
-                            //         + (HOTBAR_SIZE - 1) as f32 * UI_INVENTORY_SPACE_BTW_SLOTS,
-                            // ),
                             width: Val::Percent(100.),
                             height: Val::Px(
                                 UI_INVENTORY_SLOT_SIZE * 3. + UI_INVENTORY_SPACE_BTW_SLOTS * 2.,
@@ -174,7 +156,6 @@ fn spawn_ui(mut commands: Commands, ui_assets: Res<UiAssets>, block_graphics: Re
                             InventorySlotT,
                             SlotNumber(i as u8),
                             NodeBundle {
-                                // background_color: Color::GREEN.into(),
                                 style: Style {
                                     width: Val::Px(UI_INVENTORY_SLOT_SIZE),
                                     height: Val::Px(UI_INVENTORY_SLOT_SIZE),
@@ -195,10 +176,6 @@ fn spawn_ui(mut commands: Commands, ui_assets: Res<UiAssets>, block_graphics: Re
                                         index: 0,
                                         ..default()
                                     },
-                                    // style: Style {
-                                    //     padding: UiRect::all(Val::Px(UI_INVENTORY_SLOT_PADDING)),
-                                    //     ..default()
-                                    // },
                                     ..default()
                                 },
                             ));
@@ -235,7 +212,6 @@ fn spawn_ui(mut commands: Commands, ui_assets: Res<UiAssets>, block_graphics: Re
                 cb.spawn((
                     Name::new("Inventory Hotbar"),
                     NodeBundle {
-                        // background_color: Color::BLUE.into(),
                         style: Style {
                             width: Val::Percent(100.),
                             height: Val::Px(UI_INVENTORY_SLOT_SIZE),
@@ -252,7 +228,6 @@ fn spawn_ui(mut commands: Commands, ui_assets: Res<UiAssets>, block_graphics: Re
         .spawn((
             Name::new("Hotbar Holder"),
             NodeBundle {
-                // background_color: Color::GREEN.into(),
                 style: Style {
                     width: Val::Percent(100.),
                     height: Val::Percent(100.),
