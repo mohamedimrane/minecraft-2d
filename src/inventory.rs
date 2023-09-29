@@ -88,6 +88,7 @@ fn spawn_ui(mut commands: Commands, ui_assets: Res<UiAssets>, block_graphics: Re
                     ..default()
                 },
                 visibility: Visibility::Hidden,
+                z_index: ZIndex::Local(2),
                 ..default()
             },
         ))
@@ -128,6 +129,23 @@ fn spawn_ui(mut commands: Commands, ui_assets: Res<UiAssets>, block_graphics: Re
             });
         });
 
+    commands.spawn((
+        Name::new("Ui Cover"),
+        UiCover,
+        NodeBundle {
+            background_color: Color::rgba(41. / 255., 39. / 255., 39. / 255., 0.9).into(),
+            style: Style {
+                width: Val::Percent(100.),
+                height: Val::Percent(100.),
+                position_type: PositionType::Absolute,
+                ..default()
+            },
+            z_index: ZIndex::Local(1),
+            visibility: Visibility::Hidden,
+            ..default()
+        },
+    ));
+
     // Spawn hotbar holder
     commands
         .spawn((
@@ -141,6 +159,7 @@ fn spawn_ui(mut commands: Commands, ui_assets: Res<UiAssets>, block_graphics: Re
                     align_items: AlignItems::Center,
                     ..default()
                 },
+                z_index: ZIndex::Local(0),
                 ..default()
             },
         ))
@@ -148,7 +167,8 @@ fn spawn_ui(mut commands: Commands, ui_assets: Res<UiAssets>, block_graphics: Re
 }
 
 fn toggle_inventory(
-    mut inventory: Query<&mut Visibility, With<InventoryUi>>,
+    mut inventory: Query<&mut Visibility, (With<InventoryUi>, Without<UiCover>)>,
+    mut ui_cover: Query<&mut Visibility, (With<UiCover>, Without<InventoryUi>)>,
     mut is_inventory_open: ResMut<IsInventoryOpen>,
     keys: Res<Input<KeyCode>>,
 ) {
@@ -157,13 +177,16 @@ fn toggle_inventory(
     }
 
     let mut inventory = inventory.single_mut();
+    let mut cover = ui_cover.single_mut();
     *inventory = match *inventory {
         Visibility::Inherited | Visibility::Visible => {
             is_inventory_open.0 = false;
+            *cover = Visibility::Hidden;
             Visibility::Hidden
         }
         Visibility::Hidden => {
             is_inventory_open.0 = true;
+            *cover = Visibility::Inherited;
             Visibility::Inherited
         }
     };
@@ -729,6 +752,9 @@ struct InventorySlotImageUi;
 
 #[derive(Component)]
 struct InventorySlotTextUi;
+
+#[derive(Component)]
+struct UiCover;
 
 #[derive(Component)]
 struct SlotNumber(u8);
