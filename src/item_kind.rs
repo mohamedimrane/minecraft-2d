@@ -1,5 +1,14 @@
 use bevy::prelude::*;
 
+#[derive(PartialEq, Eq, Clone, Copy)]
+pub enum BlockSoundType {
+    Dirt,
+    Gravel,
+    Sand,
+    Stone,
+    Wood,
+}
+
 #[derive(Component, Default, PartialEq, Eq, Clone, Copy, Debug, Reflect)]
 pub enum ItemKind {
     #[default]
@@ -50,6 +59,26 @@ impl ItemKind {
     pub fn is_block(&self) -> bool {
         match self {
             _ => true,
+        }
+    }
+
+    pub fn get_sound_type(&self) -> Option<BlockSoundType> {
+        if !self.is_block() {
+            return None;
+        }
+
+        use ItemKind::*;
+        match *self {
+            Dirt | Grass | HayBale | Leaves => Some(BlockSoundType::Dirt),
+            Sand | RedSand => Some(BlockSoundType::Sand),
+            Stone | Cobblestone | Deepslate | CobbledDeepslate | Bedrock | Furnace
+            | FurnaceBurning | Sandstone | RedSandstone | CoalOre | CoalOreDeepslate
+            | CopperOre | CopperOreDeepslate | IronOre | IronOreDeepslate | GoldOre
+            | GoldOreDeepslate | LapisOre | LapisOreDeepslate | RedstoneOre
+            | RedstoneOreDeepslate | EmraldOre | EmraldOreDeepslate | DiamondOre
+            | DiamondOreDeepslate => Some(BlockSoundType::Stone),
+            OakLog | LeafedOakLog | OakPlank | CraftingTable => Some(BlockSoundType::Wood),
+            _ => None,
         }
     }
 

@@ -11,7 +11,7 @@ use crate::{
     camera::MainCamera,
     inventory::{Inv, IsInventoryOpen},
     item::{spawn_item, Item, ItemSensor},
-    item_kind::ItemKind,
+    item_kind::{BlockSoundType, ItemKind},
     utils::{in_reach, leans_to_left, leans_to_right, map},
     world::{Chunk, ChunkPosition, PlayerChunkPosition, World},
 };
@@ -51,6 +51,7 @@ impl Plugin for PlayerPlugin {
         app
             // Resources
             .insert_resource(PlayerGraphics::default())
+            .insert_resource(PlayerAudio::default())
             .insert_resource(SelectedBlock::default())
             .insert_resource(LastCursorPosition::default())
             .insert_resource(LastPlayerPosition::default())
@@ -105,11 +106,11 @@ fn load_player_graphics(
 
 fn load_audio(asset_server: Res<AssetServer>, mut player_audio: ResMut<PlayerAudio>) {
     *player_audio = PlayerAudio {
-        break_dirt: asset_server.load("audio/break_dirt.ogg"),
-        break_gravel: asset_server.load("audio/break_gravel.ogg"),
-        break_sand: asset_server.load("audio/break_sand.ogg"),
-        break_stone: asset_server.load("audio/break_stone.ogg"),
-        break_wood: asset_server.load("audio/break_wood.ogg"),
+        break_dirt: asset_server.load("sounds/break_dirt.ogg"),
+        break_gravel: asset_server.load("sounds/break_gravel.ogg"),
+        break_sand: asset_server.load("sounds/break_sand.ogg"),
+        break_stone: asset_server.load("sounds/break_stone.ogg"),
+        break_wood: asset_server.load("sounds/break_wood.ogg"),
     }
 }
 
@@ -632,7 +633,9 @@ fn break_block(
     window: Query<&Window, With<PrimaryWindow>>,
     camera: Query<(&Camera, &GlobalTransform), With<MainCamera>>,
     blocks_graphics: Res<BlockGraphics>,
+    player_audio: Res<PlayerAudio>,
     is_inventory_open: Res<IsInventoryOpen>,
+    audio: Res<Audio>,
 ) {
     if is_inventory_open.0 {
         return;
@@ -672,6 +675,18 @@ fn break_block(
                 impulse: vec2(0., 50.),
                 ..default()
             };
+
+            if let Some(block_type) = block_kind.get_sound_type() {
+                let audio_handle = match block_type {
+                    BlockSoundType::Dirt => player_audio.break_dirt.clone(),
+                    BlockSoundType::Gravel => player_audio.break_gravel.clone(),
+                    BlockSoundType::Sand => player_audio.break_sand.clone(),
+                    BlockSoundType::Stone => player_audio.break_stone.clone(),
+                    BlockSoundType::Wood => player_audio.break_wood.clone(),
+                };
+
+                audio.play(audio_handle);
+            }
 
             spawn_item(
                 &mut commands,
