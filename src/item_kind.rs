@@ -2,6 +2,7 @@ use bevy::prelude::*;
 
 #[derive(PartialEq, Eq, Clone, Copy)]
 pub enum BlockSoundType {
+    Cloth,
     Dirt,
     Gravel,
     Sand,
@@ -69,6 +70,7 @@ impl ItemKind {
 
         use ItemKind::*;
         match *self {
+            OakSapling | RedTulip | Cactus => Some(BlockSoundType::Cloth),
             Dirt | Grass | HayBale | Leaves => Some(BlockSoundType::Dirt),
             Sand | RedSand => Some(BlockSoundType::Sand),
             Stone | Cobblestone | Deepslate | CobbledDeepslate | Bedrock | Furnace

@@ -106,6 +106,7 @@ fn load_player_graphics(
 
 fn load_audio(asset_server: Res<AssetServer>, mut player_audio: ResMut<PlayerAudio>) {
     *player_audio = PlayerAudio {
+        break_cloth: asset_server.load("sounds/break_cloth.ogg"),
         break_dirt: asset_server.load("sounds/break_dirt.ogg"),
         break_gravel: asset_server.load("sounds/break_gravel.ogg"),
         break_sand: asset_server.load("sounds/break_sand.ogg"),
@@ -678,6 +679,7 @@ fn break_block(
 
             if let Some(block_type) = block_kind.get_sound_type() {
                 let audio_handle = match block_type {
+                    BlockSoundType::Cloth => player_audio.break_cloth.clone(),
                     BlockSoundType::Dirt => player_audio.break_dirt.clone(),
                     BlockSoundType::Gravel => player_audio.break_gravel.clone(),
                     BlockSoundType::Sand => player_audio.break_sand.clone(),
@@ -752,6 +754,7 @@ struct PlayerGraphics {
 
 #[derive(Resource, Default)]
 struct PlayerAudio {
+    break_cloth: Handle<AudioSource>,
     break_dirt: Handle<AudioSource>,
     break_gravel: Handle<AudioSource>,
     break_sand: Handle<AudioSource>,
