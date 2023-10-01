@@ -9,6 +9,7 @@ A minecraft 2d clone built with rust and the bevy game engine.
   - [x] Player graphics
   - [x] Basic player animations
   - [x] Player animations
+  - [ ] Add sounds
   - [ ] Swimming
   - [ ] Game modes
   - [ ] Food

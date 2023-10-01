@@ -2,6 +2,7 @@ use bevy::{
     math::vec2, prelude::*, render::texture::DEFAULT_IMAGE_HANDLE, sprite::Anchor,
     window::PrimaryWindow,
 };
+use bevy_kira_audio::prelude::{AudioSource, *};
 use bevy_rapier2d::{prelude::*, rapier::prelude::CollisionEventFlags};
 use std::f32::consts::PI;
 
@@ -10,7 +11,7 @@ use crate::{
     camera::MainCamera,
     inventory::{Inv, IsInventoryOpen},
     item::{spawn_item, Item, ItemSensor},
-    item_kind::{ItemKind},
+    item_kind::ItemKind,
     utils::{in_reach, leans_to_left, leans_to_right, map},
     world::{Chunk, ChunkPosition, PlayerChunkPosition, World},
 };
@@ -54,7 +55,7 @@ impl Plugin for PlayerPlugin {
             .insert_resource(LastCursorPosition::default())
             .insert_resource(LastPlayerPosition::default())
             // Systems
-            .add_systems(PreStartup, load_player_graphics)
+            .add_systems(PreStartup, (load_player_graphics, load_audio))
             .add_systems(Startup, (spawn_player, spawn_block_selector))
             .add_systems(FixedUpdate, player_controller_movement)
             .add_systems(
@@ -99,6 +100,16 @@ fn load_player_graphics(
     *player_graphics = PlayerGraphics {
         tex: asset_server.load("player.png"),
         ..default()
+    }
+}
+
+fn load_audio(asset_server: Res<AssetServer>, mut player_audio: ResMut<PlayerAudio>) {
+    *player_audio = PlayerAudio {
+        break_dirt: asset_server.load("audio/break_dirt.ogg"),
+        break_gravel: asset_server.load("audio/break_gravel.ogg"),
+        break_sand: asset_server.load("audio/break_sand.ogg"),
+        break_stone: asset_server.load("audio/break_stone.ogg"),
+        break_wood: asset_server.load("audio/break_wood.ogg"),
     }
 }
 
@@ -654,6 +665,8 @@ fn break_block(
                 BLOCK_SIZE,
             )
         {
+            // Break block
+
             let translation = vec2(block_transform.x, block_transform.y);
             let ext_impulse = ExternalImpulse {
                 impulse: vec2(0., 50.),
@@ -720,6 +733,15 @@ struct PlayerGraphics {
     right_leg_back: Rect,
     left_leg_front: Rect,
     left_leg_back: Rect,
+}
+
+#[derive(Resource, Default)]
+struct PlayerAudio {
+    break_dirt: Handle<AudioSource>,
+    break_gravel: Handle<AudioSource>,
+    break_sand: Handle<AudioSource>,
+    break_stone: Handle<AudioSource>,
+    break_wood: Handle<AudioSource>,
 }
 
 #[derive(Resource, Default)]
